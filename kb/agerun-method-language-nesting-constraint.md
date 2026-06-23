@@ -1,9 +1,9 @@
 # AgeRun Method Language Function Nesting Constraint
 
 ## Learning
-Effectful function calls cannot be nested within expressions in the AgeRun method language. Registered
-pure calls such as `parse(...)` are expressions and can be nested, while calls such as `send(...)`,
-`spawn(...)`, and instruction-form `if(...)` remain sequenced instructions.
+Effectful function calls cannot be nested within expressions in the AgeRun method language.
+Registered pure calls such as `parse(...)`, `if(...)`, and `append(...)` are expressions and can be
+nested, while calls such as `send(...)` and `spawn(...)` remain sequenced instructions.
 
 ## Importance
 This constraint keeps side effects explicit while allowing pure value-producing calls to compose.
@@ -13,12 +13,8 @@ selected branch expressions.
 
 ## Example
 ```c
-// Invalid - effectful function call nested in another call
-// send(0, if(memory.initialized > 0, "Ready", "Not ready"))  // ERROR: Parse failure
-
-// Valid - using intermediate variable
-memory.status := if(memory.initialized > 0, "Ready", "Not ready")
-send(0, memory.status)
+// Valid - pure if call nested in an instruction argument
+send(0, if(memory.initialized > 0, "Ready", "Not ready"))
 
 // Invalid - effectful spawn nested in if
 // memory.id := if(condition > 0, spawn("echo", "1.0.0", 0), 0)  // ERROR: Parse failure
@@ -30,6 +26,10 @@ memory.id := if(condition > 0, memory.spawn_result, 0)
 // Valid - pure parse call in expression position
 memory.parsed := parse("name={name}", message.text)
 memory.wrapper := {payload: parse("id={id}", message.text)}
+
+// Valid - pure append call in expression position
+memory.items := append(memory.items, message.value)
+send(0, {items: append(message.items, message.value)})
 ```
 
 ## Generalization

@@ -349,6 +349,7 @@ static void test_parse_build_pure_function_call_expression(void) {
     AR_ASSERT(ar_log__get_last_error_message(own_log) == NULL,
               "Parser should not log an error for pure build expression");
 
+    // Cleanup
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
     ar_log__destroy(own_log);
@@ -420,6 +421,121 @@ static void test_parse_nested_tail_pure_function_call_expression(void) {
 
     // Cleanup
     ar_expression_ast__destroy(own_ast);
+    ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
+}
+
+static void test_parse_append_pure_function_call_expression(void) {
+    printf("Testing append pure function call expression parsing...\n");
+
+    // Given a pure append() call in expression position
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log creation should succeed");
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(
+        own_log,
+        "append([1, 2], 3)"
+    );
+    AR_ASSERT(own_parser != NULL, "Expression parser creation should succeed");
+
+    // When parsing it as an expression
+    ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
+
+    // Then the expression parser should accept the pure call
+    AR_ASSERT(own_ast != NULL, "Append call expression should parse");
+    AR_ASSERT(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Append call should produce a call expression AST");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(own_ast), "append") == 0,
+              "Append call should preserve the function name");
+    AR_ASSERT(ar_expression_ast__get_function_arg_count(own_ast) == 2,
+              "Append call should preserve both arguments");
+    AR_ASSERT(ar_log__get_last_error_message(own_log) == NULL,
+              "Parser should not log an error for pure append expression");
+
+    // Cleanup
+    ar_expression_ast__destroy(own_ast);
+    ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
+}
+
+static void test_parse_append_composes_in_literals_and_nested_calls(void) {
+    printf("Testing append composition in literals and nested calls...\n");
+
+    // Given a list literal containing append()
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log creation should succeed");
+    ar_expression_parser_t *own_parser =
+        ar_expression_parser__create(own_log, "[append([1], 2)]");
+    AR_ASSERT(own_parser != NULL, "Parser creation should succeed");
+
+    // When parsing the list expression
+    ar_expression_ast_t *own_list_ast = ar_expression_parser__parse_expression(own_parser);
+
+    // Then the list item should be an append() call
+    AR_ASSERT(own_list_ast != NULL, "List literal with append() should parse");
+    AR_ASSERT(ar_expression_ast__get_type(own_list_ast) == AR_EXPRESSION_AST_TYPE__LITERAL_LIST,
+              "Outer expression should be a list literal");
+    const ar_expression_ast_t *ref_list_item = ar_expression_ast__get_list_item(own_list_ast, 0);
+    AR_ASSERT(ref_list_item != NULL, "List item should be present");
+    AR_ASSERT(ar_expression_ast__get_type(ref_list_item) == AR_EXPRESSION_AST_TYPE__CALL,
+              "List item should parse as a call");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(ref_list_item), "append") == 0,
+              "List item call should be append");
+    ar_expression_ast__destroy(own_list_ast);
+    ar_expression_parser__destroy(own_parser);
+
+    // Given a map literal containing append()
+    own_parser = ar_expression_parser__create(own_log, "{items: append([1], 2)}");
+    AR_ASSERT(own_parser != NULL, "Parser creation should succeed");
+
+    // When parsing the map expression
+    ar_expression_ast_t *own_map_ast = ar_expression_parser__parse_expression(own_parser);
+
+    // Then the map value should be an append() call
+    AR_ASSERT(own_map_ast != NULL, "Map literal with append() should parse");
+    AR_ASSERT(ar_expression_ast__get_type(own_map_ast) == AR_EXPRESSION_AST_TYPE__LITERAL_MAP,
+              "Outer expression should be a map literal");
+    const ar_expression_ast_t *ref_map_value = ar_expression_ast__get_map_value(own_map_ast, 0);
+    AR_ASSERT(ref_map_value != NULL, "Map value should be present");
+    AR_ASSERT(ar_expression_ast__get_type(ref_map_value) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Map value should parse as a call");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(ref_map_value), "append") == 0,
+              "Map value call should be append");
+    ar_expression_ast__destroy(own_map_ast);
+    ar_expression_parser__destroy(own_parser);
+
+    // Given nested pure calls using append() as an argument and as an if() branch
+    own_parser = ar_expression_parser__create(
+        own_log,
+        "head(if(1, append(tail([1, 2]), 3), []))"
+    );
+    AR_ASSERT(own_parser != NULL, "Parser creation should succeed");
+
+    // When parsing the nested call expression
+    ar_expression_ast_t *own_head_ast = ar_expression_parser__parse_expression(own_parser);
+
+    // Then the nested branch should contain an append() call expression
+    AR_ASSERT(own_head_ast != NULL, "Nested head(if(append())) expression should parse");
+    AR_ASSERT(ar_expression_ast__get_type(own_head_ast) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Outer expression should be a call");
+    const ar_expression_ast_t *ref_if_arg =
+        ar_expression_ast__get_function_arg(own_head_ast, 0);
+    AR_ASSERT(ref_if_arg != NULL, "Head argument should be present");
+    AR_ASSERT(ar_expression_ast__get_type(ref_if_arg) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Head argument should parse as a call");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(ref_if_arg), "if") == 0,
+              "Head argument call should be if");
+    const ar_expression_ast_t *ref_append_branch =
+        ar_expression_ast__get_function_arg(ref_if_arg, 1);
+    AR_ASSERT(ref_append_branch != NULL, "if() true branch should be present");
+    AR_ASSERT(ar_expression_ast__get_type(ref_append_branch) == AR_EXPRESSION_AST_TYPE__CALL,
+              "if() true branch should parse as a call");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(ref_append_branch), "append") == 0,
+              "if() true branch call should be append");
+    AR_ASSERT(ar_log__get_last_error_message(own_log) == NULL,
+              "Parser should not log an error for append() composition");
+
+    // Cleanup
+    ar_expression_ast__destroy(own_head_ast);
     ar_expression_parser__destroy(own_parser);
     ar_log__destroy(own_log);
 }
@@ -1235,6 +1351,8 @@ int main(void) {
     test_parse_build_pure_function_call_expression();
     test_parse_head_pure_function_call_expression();
     test_parse_nested_tail_pure_function_call_expression();
+    test_parse_append_pure_function_call_expression();
+    test_parse_append_composes_in_literals_and_nested_calls();
     test_parse_if_pure_function_call_expression();
     test_parse_if_composes_in_literals_and_nested_calls();
     test_reject_effectful_function_call_expression();

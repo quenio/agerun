@@ -451,7 +451,6 @@ static ar_instruction_ast_t* _dispatch_function(ar_instruction_parser_t *mut_par
 static bool _is_instruction_result_function(const char *ref_func_name, size_t func_len) {
     return (func_len == 4 && strncmp(ref_func_name, "send", 4) == 0) ||
            (func_len == 8 && strncmp(ref_func_name, "complete", 8) == 0) ||
-           (func_len == 6 && strncmp(ref_func_name, "append", 6) == 0) ||
            (func_len == 7 && strncmp(ref_func_name, "compile", 7) == 0) ||
            (func_len == 5 && strncmp(ref_func_name, "spawn", 5) == 0) ||
            (func_len == 9 && strncmp(ref_func_name, "deprecate", 9) == 0) ||

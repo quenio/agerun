@@ -5,6 +5,7 @@ const c = @cImport({
     @cInclude("ar_build.h");
     @cInclude("ar_head.h");
     @cInclude("ar_tail.h");
+    @cInclude("ar_append.h");
     @cInclude("ar_condition.h");
     @cInclude("ar_data.h");
     @cInclude("ar_log.h");
@@ -511,6 +512,37 @@ fn _evaluate_tail_call(
     return own_result;
 }
 
+fn _evaluate_append_call(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t
+) ?*c.ar_data_t {
+    if (c.ar_expression_ast__get_function_arg_count(ref_node) != 2) {
+        return c.ar_append__create_result(null, null);
+    }
+
+    const ref_list_ast = c.ar_expression_ast__get_function_arg(ref_node, 0);
+    const ref_value_ast = c.ar_expression_ast__get_function_arg(ref_node, 1);
+
+    const list_result = if (ref_list_ast != null)
+        _evaluate_read_only_expression(ref_log, ref_frame, ref_list_ast)
+    else
+        null;
+    defer if (list_result != null) _destroy_temporary_result(list_result, ref_frame);
+
+    const value_result = if (ref_value_ast != null)
+        _evaluate_read_only_expression(ref_log, ref_frame, ref_value_ast)
+    else
+        null;
+    defer if (value_result != null) _destroy_temporary_result(value_result, ref_frame);
+
+    const own_result = c.ar_append__create_result(list_result, value_result);
+    if (own_result == null) {
+        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create append result");
+    }
+    return own_result;
+}
+
 fn _create_zero_result(
     ref_log: ?*c.ar_log_t
 ) ?*c.ar_data_t {
@@ -594,6 +626,10 @@ fn _evaluate_function_call(
 
     if (c.strcmp(function_name, "tail") == 0) {
         return _evaluate_tail_call(ref_log, ref_frame, ref_node);
+    }
+
+    if (c.strcmp(function_name, "append") == 0) {
+        return _evaluate_append_call(ref_log, ref_frame, ref_node);
     }
 
     c.ar_log__error(ref_log, "evaluate_function_call: Unknown pure function");

@@ -15,7 +15,7 @@ The expression evaluator module provides functionality for evaluating expression
 - **Memory and Context Access**: Supports evaluation of memory.x and context.x paths via frame
 - **Container Literals**: Evaluates list and map literal AST nodes into fresh ar_data_t containers
 - **Pure Function Calls**: Evaluates registered pure calls such as `parse(...)`, `build(...)`,
-  `if(...)`, `head(...)`, and `tail(...)` into fresh values
+  `if(...)`, `append(...)`, `head(...)`, and `tail(...)` into fresh values
 - **Binary Operations**: Implements all arithmetic and comparison operators
 - **Recursive Evaluation**: Properly handles nested expressions through recursion
 - **Ownership Semantics**: Clear distinction between references (memory access) and owned values (operations)
@@ -52,9 +52,9 @@ The evaluator follows strict ownership semantics:
 - **Literal Results**: Returns new owned values that caller must destroy
 - **Literal Container Results**: Returns new list/map values containing owned evaluated child values
 - **Pure Call Results**: Return new owned values; `parse(...)` returns a new MAP, `build(...)`
-  returns a new STRING, `if(...)` returns the selected branch value or integer `0`, `head(...)`
-  returns a copied item or integer `0`, and `tail(...)` returns a new LIST or integer `0` when
-  allocation succeeds
+  returns a new STRING, `if(...)` returns the selected branch value or integer `0`, `append(...)`
+  returns a new LIST or integer `0`, `head(...)` returns a copied item or integer `0`, and
+  `tail(...)` returns a new LIST or integer `0` when allocation succeeds
 - **Operation Results**: Returns new owned values that caller must destroy
 - **Binary Operations**: Creates new values for all arithmetic and comparison results
 
@@ -92,6 +92,14 @@ For `if(...)`:
 - Nonzero integers select the true branch.
 - Only the selected branch expression is evaluated; the unselected branch is never evaluated.
 - If the selected branch cannot produce a value, expression-level `if(...)` returns integer `0`.
+- Argument handling is path-neutral; storage rules, not argument paths, protect `memory.self`.
+
+For `append(...)`:
+- LIST values return a new LIST containing deep copies of every source item followed by a deep copy
+  of the appended value.
+- Empty LIST values return a new one-item LIST.
+- Missing values, non-LIST list inputs, and copy failures return integer `0`.
+- The source list and appended value are never mutated.
 - Argument handling is path-neutral; storage rules, not argument paths, protect `memory.self`.
 
 For `head(...)`:

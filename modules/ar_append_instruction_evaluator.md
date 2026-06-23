@@ -1,7 +1,7 @@
 # ar_append_instruction_evaluator
 
-The `ar_append_instruction_evaluator` module evaluates `append(...)` instructions inside an
-`ar_frame_t`.
+The `ar_append_instruction_evaluator` module evaluates standalone compatibility `append(...)`
+instructions inside an `ar_frame_t`.
 
 ## Responsibility
 
@@ -11,7 +11,7 @@ The `ar_append_instruction_evaluator` module evaluates `append(...)` instruction
 - treat `message`, `context`, fresh expression, non-LIST, missing, and protected `memory.self` targets as no-ops
 - evaluate the second argument as a normal expression
 - transfer the append value into the target list with `ar_data__list_add_last_data()`
-- write optional result assignments as integer `1` or `0`
+- write optional lower-level result assignments as integer `1` or `0`
 
 ## Public API
 
@@ -49,12 +49,13 @@ evaluation, copy, and list-insert failures also leave the target unchanged after
 If the instruction has a result assignment, the evaluator stores integer `0`; otherwise the
 instruction still completes successfully so method execution can continue.
 
-## Result assignment safety
+## Compatibility Result Assignment Safety
 
-Assigned append instructions validate the result path before mutating the target list. Non-memory
-result paths and protected `memory.self` paths fail without appending. For successful appends, the
-evaluator stores integer `1`; if that success result cannot be stored after the list append, the
-evaluator removes the appended item before failing.
+Lower-level ASTs with append result paths validate the result path before mutating the target list.
+Non-memory result paths and protected `memory.self` paths fail without appending. For successful
+appends, the evaluator stores integer `1`; if that success result cannot be stored after the list
+append, the evaluator removes the appended item before failing. The unified instruction parser now
+routes assigned `append(...)` source text through ordinary assignment of the pure expression result.
 
 ## Nested values
 

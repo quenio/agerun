@@ -1088,6 +1088,270 @@ static void _assert_empty_list(ar_data_t *ref_data) {
               "List result should be empty");
 }
 
+static void test_evaluate_append_function_call_preserves_source(void) {
+    printf("Testing expression evaluator append function call preserves source...\n");
+
+    // Given memory has a source list and value that append() will read
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_append_function_call_preserves_source");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+
+    // Given the source list contains copied source items
+    ar_data_t *own_source = ar_data__create_list();
+    AR_ASSERT(own_source != NULL, "Source list creation should succeed");
+    AR_ASSERT(ar_data__list_add_last_integer(own_source, 1),
+              "Source list should store first item");
+    ar_data_t *own_payload = ar_data__create_map();
+    AR_ASSERT(own_payload != NULL, "Payload map creation should succeed");
+    ar_data_t *own_nested_items = ar_data__create_list();
+    AR_ASSERT(own_nested_items != NULL, "Nested list creation should succeed");
+    AR_ASSERT(ar_data__list_add_last_integer(own_nested_items, 2),
+              "Nested list should store first item");
+    AR_ASSERT(ar_data__set_map_data(own_payload, "items", own_nested_items),
+              "Payload should store nested list");
+    own_nested_items = NULL;
+    AR_ASSERT(ar_data__list_add_last_data(own_source, own_payload),
+              "Source list should store payload");
+    own_payload = NULL;
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "items", own_source),
+              "Memory should store source list");
+    own_source = NULL;
+
+    // Given memory also has the value to append
+    ar_data_t *own_value = ar_data__create_map();
+    AR_ASSERT(own_value != NULL, "Value map creation should succeed");
+    AR_ASSERT(ar_data__set_map_string(own_value, "label", "new"),
+              "Value should store label");
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "value", own_value),
+              "Memory should store value map");
+    own_value = NULL;
+
+    // When evaluating append() as a pure expression
+    ar_data_t *own_result = _evaluate_expression_text(
+        own_fixture,
+        "append(memory.items, memory.value)"
+    );
+
+    // Then it should return a new list and leave the source list unchanged
+    AR_ASSERT(ar_data__get_type(own_result) == AR_DATA_TYPE__LIST,
+              "Append result should be a list");
+    AR_ASSERT(ar_data__list_count(own_result) == 3,
+              "Append result should contain copied source items plus appended value");
+    ar_data_t *ref_source = ar_data__get_map_data(mut_memory, "items");
+    ar_data_t *ref_value = ar_data__get_map_data(mut_memory, "value");
+    AR_ASSERT(ref_source != NULL, "Source list should remain in memory");
+    AR_ASSERT(ref_value != NULL, "Value map should remain in memory");
+    AR_ASSERT(ar_data__list_count(ref_source) == 2,
+              "Source list should not be mutated");
+
+    // Then the source items and appended value should be deep-copied
+    ar_data_t **own_source_items = ar_data__list_items(ref_source);
+    ar_data_t **own_result_items = ar_data__list_items(own_result);
+    AR_ASSERT(own_source_items != NULL, "Source items should be available");
+    AR_ASSERT(own_result_items != NULL, "Result items should be available");
+    AR_ASSERT(own_result_items[0] != own_source_items[0],
+              "Source scalar item should be deep-copied");
+    AR_ASSERT(own_result_items[1] != own_source_items[1],
+              "Source map item should be deep-copied");
+    AR_ASSERT(own_result_items[2] != ref_value,
+              "Appended value should be deep-copied");
+    _assert_integer_value(own_result_items[0], 1);
+
+    // Then nested data should also be independent
+    ar_data_t *ref_source_nested = ar_data__get_map_data(own_source_items[1], "items");
+    ar_data_t *ref_result_nested = ar_data__get_map_data(own_result_items[1], "items");
+    AR_ASSERT(ref_source_nested != NULL, "Source nested list should exist");
+    AR_ASSERT(ref_result_nested != NULL, "Result nested list should exist");
+    AR_ASSERT(ref_result_nested != ref_source_nested,
+              "Nested source list should be deep-copied");
+    AR_ASSERT(ar_data__list_add_last_integer(ref_source_nested, 99),
+              "Mutating source nested list should succeed");
+    AR_ASSERT(ar_data__list_count(ref_source_nested) == 2,
+              "Source nested list should grow");
+    AR_ASSERT(ar_data__list_count(ref_result_nested) == 1,
+              "Result nested list should stay unchanged");
+
+    // Then mutating the original appended value should not affect the result
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_result_items[2], "label"), "new") == 0,
+              "Appended copy should match source value");
+    AR_ASSERT(ar_data__set_map_string(ref_value, "label", "changed"),
+              "Mutating source value should succeed");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_result_items[2], "label"), "new") == 0,
+              "Appended copy should stay independent");
+
+    // Cleanup
+    AR__HEAP__FREE(own_source_items);
+    AR__HEAP__FREE(own_result_items);
+    ar_data__destroy(own_result);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_append_empty_list_function_call(void) {
+    printf("Testing expression evaluator append empty list function call...\n");
+
+    // Given a fixture for evaluating append() against an empty list
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_append_empty_list_function_call");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    // When evaluating append() against an empty list
+    ar_data_t *own_result = _evaluate_expression_text(
+        own_fixture,
+        "append([], \"first\")"
+    );
+
+    // Then it should return a new one-item list
+    AR_ASSERT(ar_data__get_type(own_result) == AR_DATA_TYPE__LIST,
+              "Append result should be a list");
+    AR_ASSERT(ar_data__list_count(own_result) == 1,
+              "Append result should contain one copied value");
+    ar_data_t *ref_first = ar_data__list_first(own_result);
+    _assert_string_value(ref_first, "first");
+
+    // Cleanup
+    ar_data__destroy(own_result);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_append_invalid_inputs_return_zero(void) {
+    printf("Testing expression evaluator append invalid input fallbacks...\n");
+
+    // Given a fixture for evaluating append() fallbacks
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_append_invalid_inputs_return_zero");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    // When the list argument is missing
+    ar_data_t *own_missing_list = _evaluate_expression_text(
+        own_fixture,
+        "append(memory.missing_list, 1)"
+    );
+    _assert_integer_value(own_missing_list, 0);
+    ar_data__destroy(own_missing_list);
+
+    // When the list argument is not a list
+    ar_data_t *own_non_list = _evaluate_expression_text(
+        own_fixture,
+        "append(42, 1)"
+    );
+    _assert_integer_value(own_non_list, 0);
+    ar_data__destroy(own_non_list);
+
+    // When the appended value is missing
+    ar_data_t *own_missing_value = _evaluate_expression_text(
+        own_fixture,
+        "append([], memory.missing_value)"
+    );
+    _assert_integer_value(own_missing_value, 0);
+    ar_data__destroy(own_missing_value);
+
+    // Cleanup
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_append_nested_composition(void) {
+    printf("Testing expression evaluator append nested composition...\n");
+
+    // Given a fixture for evaluating append() composed with other pure calls
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_append_nested_composition");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    // When append() is nested with head(), tail(), if(), parse(), and build()
+    ar_data_t *own_result = _evaluate_expression_text(
+        own_fixture,
+        "head(tail(append([0], "
+        "if(1, parse(\"name={name}\", \"name=Ada\"), build(\"unused\", {})))))"
+    );
+
+    // Then the composed pure calls should produce the appended map value
+    AR_ASSERT(ar_data__get_type(own_result) == AR_DATA_TYPE__MAP,
+              "Nested append result should be a map from parse()");
+    const char *ref_name = ar_data__get_map_string(own_result, "name");
+    AR_ASSERT(ref_name != NULL, "Parsed map should contain name");
+    AR_ASSERT(strcmp(ref_name, "Ada") == 0,
+              "Parsed map should preserve the selected branch value");
+
+    // Cleanup
+    ar_data__destroy(own_result);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_append_is_path_neutral_for_memory_self(void) {
+    printf("Testing expression evaluator append path-neutral memory.self handling...\n");
+
+    // Given memory.self contains a list value
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_append_is_path_neutral_for_memory_self");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+
+    // Given the self value is a list
+    ar_data_t *own_self_list = ar_data__create_list();
+    AR_ASSERT(own_self_list != NULL, "Self list creation should succeed");
+    AR_ASSERT(ar_data__list_add_last_integer(own_self_list, 7),
+              "Self list should store first item");
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "self", own_self_list),
+              "Memory should store self list");
+    own_self_list = NULL;
+
+    // When memory.self is used as an append() argument
+    ar_data_t *own_self_result = _evaluate_expression_text(
+        own_fixture,
+        "append(memory.self, 8)"
+    );
+
+    // Then it should be treated as an ordinary value path
+    AR_ASSERT(ar_data__get_type(own_self_result) == AR_DATA_TYPE__LIST,
+              "Append result should be a list for memory.self list value");
+    AR_ASSERT(ar_data__list_count(own_self_result) == 2,
+              "Append result should contain the self item and appended value");
+    ar_data_t **own_self_items = ar_data__list_items(own_self_result);
+    AR_ASSERT(own_self_items != NULL, "Self result items should be available");
+    _assert_integer_value(own_self_items[0], 7);
+    _assert_integer_value(own_self_items[1], 8);
+    AR__HEAP__FREE(own_self_items);
+    ar_data__destroy(own_self_result);
+
+    // Given memory.self contains nested append arguments
+    ar_data_t *own_nested_items = ar_data__create_list();
+    AR_ASSERT(own_nested_items != NULL, "Nested items creation should succeed");
+    AR_ASSERT(ar_data__list_add_last_integer(own_nested_items, 4),
+              "Nested items should store first item");
+    ar_data_t *own_self_map = ar_data__create_map();
+    AR_ASSERT(own_self_map != NULL, "Self map creation should succeed");
+    AR_ASSERT(ar_data__set_map_data(own_self_map, "items", own_nested_items),
+              "Self map should store nested items");
+    own_nested_items = NULL;
+    AR_ASSERT(ar_data__set_map_integer(own_self_map, "value", 5),
+              "Self map should store nested value");
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "self", own_self_map),
+              "Memory should replace self with nested map");
+    own_self_map = NULL;
+
+    // When nested memory.self paths are used as append() arguments
+    ar_data_t *own_nested_result = _evaluate_expression_text(
+        own_fixture,
+        "append(memory.self.items, memory.self.value)"
+    );
+
+    // Then those paths should also be ordinary argument values
+    AR_ASSERT(ar_data__get_type(own_nested_result) == AR_DATA_TYPE__LIST,
+              "Nested append result should be a list");
+    AR_ASSERT(ar_data__list_count(own_nested_result) == 2,
+              "Nested append result should contain both values");
+    ar_data_t **own_nested_result_items = ar_data__list_items(own_nested_result);
+    AR_ASSERT(own_nested_result_items != NULL, "Nested result items should be available");
+    _assert_integer_value(own_nested_result_items[0], 4);
+    _assert_integer_value(own_nested_result_items[1], 5);
+    AR__HEAP__FREE(own_nested_result_items);
+
+    // Cleanup
+    ar_data__destroy(own_nested_result);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_evaluate_if_function_call_truthiness(void) {
     printf("Testing expression evaluator if function call truthiness...\n");
 
@@ -1965,6 +2229,11 @@ int main(void) {
     test_evaluate_head_tail_nested_composition();
     test_evaluate_head_tail_function_call_in_literals();
     test_evaluate_head_tail_is_path_neutral_for_memory_self();
+    test_evaluate_append_function_call_preserves_source();
+    test_evaluate_append_empty_list_function_call();
+    test_evaluate_append_invalid_inputs_return_zero();
+    test_evaluate_append_nested_composition();
+    test_evaluate_append_is_path_neutral_for_memory_self();
     
     printf("\nAll expression_evaluator tests passed!\n");
     return 0;

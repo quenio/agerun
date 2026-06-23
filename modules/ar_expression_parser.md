@@ -99,6 +99,7 @@ Map literal keys are identifiers only. Quoted keys such as `{"name": "Ada"}` are
 - `parse("name={name}", message.text)` - Produces a `CALL` AST node for template parsing
 - `build("Hello {name}", {name: "Ada"})` - Produces a `CALL` AST node for template building
 - `if(memory.enabled, "yes", "no")` - Produces a `CALL` AST node for lazy value selection
+- `append(memory.items, message.value)` - Produces a `CALL` AST node for pure list construction
 - `head(memory.items)` - Produces a `CALL` AST node for list head extraction
 - `tail(memory.items)` - Produces a `CALL` AST node for list tail extraction
 

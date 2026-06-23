@@ -48,19 +48,22 @@ The facade currently dispatches to specialized parsers for:
 placeholder syntax and stores the optional values expression before returning an
 `AR_INSTRUCTION_AST_TYPE__COMPLETE` node.
 
-`append(...)` is routed to `ar_append_instruction_parser`, which parses both arguments as
-expressions and returns an `AR_INSTRUCTION_AST_TYPE__APPEND` node.
+Standalone `append(...)` is routed to `ar_append_instruction_parser`, which parses both arguments
+as expressions and returns an `AR_INSTRUCTION_AST_TYPE__APPEND` compatibility instruction node.
+Assigned or nested `append(...)` calls are pure expression calls and do not use append instruction
+result storage.
 
 `head(...)` and `tail(...)` are routed to their specialized parsers, each of which parses one list
 expression and returns `AR_INSTRUCTION_AST_TYPE__HEAD` or `AR_INSTRUCTION_AST_TYPE__TAIL`.
 
 Assigned pure calls, such as `memory.result := parse(template, input)`,
-`memory.result := build(template, values)`, `memory.first := head(memory.items)`, or
-`memory.rest := tail(memory.items)`, are parsed as normal assignment instructions whose right-hand
-side is a pure function call expression. Standalone `parse(...)` remains accepted as a function
-instruction for compatibility and discards its result. Standalone `build(...)` keeps the existing
-build instruction behavior. Standalone `head(...)` and `tail(...)` keep their compatibility
-instruction behavior and discard the computed value when no result path is present.
+`memory.result := build(template, values)`, `memory.items := append(memory.items, value)`,
+`memory.first := head(memory.items)`, or `memory.rest := tail(memory.items)`, are parsed as normal
+assignment instructions whose right-hand side is a pure function call expression. Standalone
+`parse(...)` remains accepted as a function instruction for compatibility and discards its result.
+Standalone `build(...)` keeps the existing build instruction behavior. Standalone `append(...)`
+keeps the existing memory-list mutation behavior. Standalone `head(...)` and `tail(...)` keep their
+compatibility instruction behavior and discard the computed value when no result path is present.
 
 ## Current implementation notes
 
@@ -74,8 +77,10 @@ instruction behavior and discard the computed value when no result path is prese
   an instruction function; registered pure calls are left for the expression parser
 - `complete(...)` parsing is intentionally kept out of the facade implementation so syntax rules for
   template placeholders remain isolated in the specialized parser module
-- `append(...)` parsing leaves target ownership and LIST validation to the evaluator so non-memory
-  target expressions can compile and resolve to no-op results at runtime
+- standalone `append(...)` parsing leaves target ownership and LIST validation to the evaluator so
+  non-memory target expressions can compile and resolve to no-op results at runtime
+- assigned `append(...)` calls are ordinary assignment expressions; nested `append(...)` calls are
+  expression AST `CALL` nodes
 - assigned `head(...)` and `tail(...)` calls are ordinary assignment expressions; standalone forms
   still route to the compatibility parsers
 - `head(...)` and `tail(...)` argument parsing accepts any expression; LIST validation,

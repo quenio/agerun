@@ -37,8 +37,9 @@ memory.should_count := memory.should_count * memory.below_required_count
 
 # Count accepted dependency
 memory.append_buffer := if(memory.should_count = 1, memory.received, "")
-memory.append_ok := append(memory.append_buffer, message.dependency)
-memory.received := if(memory.append_ok = 1, memory.append_buffer, memory.received)
+memory.append_result := append(memory.append_buffer, message.dependency)
+memory.append_ok := if(memory.append_result = 0, 0, 1)
+memory.received := if(memory.append_ok = 1, memory.append_result, memory.received)
 memory.done_count := memory.done_count + memory.append_ok
 memory.is_complete := if(memory.done_count >= memory.effective_required_count, 1, 0)
 memory.status := if(memory.is_complete = 1, "complete", "waiting")

@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-06-22 (Promote append to pure expression)
+
+- **Added pure `append(list, value)` expression support**
+
+  The method language now parses `append(...)` as a pure `CALL` expression wherever expressions are
+  accepted, including assignment right-hand sides, instruction arguments, list/map literals, nested
+  pure calls, and selected `if(...)` branch expressions. Pure append returns a new deep-copied LIST
+  and never mutates the source list; invalid inputs return integer `0`.
+
+  **Implementation**: Added the `ar_append` value module, registered `append(...)` in the
+  expression parser/evaluator, routed assigned append through ordinary assignment semantics, and
+  kept standalone `append(memory.items, value)` as the compatibility mutating instruction.
+
+  **Verification**: Focused append, parser, evaluator, instruction, and coordination tests passed.
+  `make check-docs 2>&1`, `make build 2>&1`, `make check-logs 2>&1`, and
+  `make sanitize-tests 2>&1` passed with no memory leaks.
+
+  **Impact**: Methods can now build lists compositionally without temporary mutation steps while
+  preserving existing standalone append behavior.
+
 ## 2026-06-16 (Stop expression parser fallback after rejected calls)
 
 - **Preserved the primary non-pure-call parser error**

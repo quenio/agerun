@@ -34,10 +34,11 @@ memory.should_collect := memory.collect_same_session
 
 # Append accepted payload or count collection failure
 memory.append_buffer := if(memory.should_collect = 1, memory.payloads, "")
-memory.append_ok := append(memory.append_buffer, message.payload)
+memory.append_result := append(memory.append_buffer, message.payload)
+memory.append_ok := if(memory.append_result = 0, 0, 1)
 memory.collect_failed := memory.should_collect - memory.append_ok
 memory.failure_count := memory.failure_count + memory.collect_failed
-memory.payloads := if(memory.append_ok = 1, memory.append_buffer, memory.payloads)
+memory.payloads := if(memory.append_ok = 1, memory.append_result, memory.payloads)
 memory.count := memory.count + memory.append_ok
 
 # Decide completion outcome

@@ -33,9 +33,9 @@ The facade currently coordinates specialized evaluators for:
   boolean status results, and failure handling
 - `ar_local_completion`, which owns local backend initialization and placeholder-value generation
 
-`append(...)` support is handled by `ar_append_instruction_evaluator`, which mutates only an
-existing memory-owned list and stores integer `1` or `0` when the function call has a result
-assignment.
+Standalone compatibility `append(...)` support is handled by `ar_append_instruction_evaluator`,
+which mutates only an existing memory-owned list. Assigned `append(...)` source text normally runs
+through ordinary assignment of the pure expression-call result.
 
 Standalone compatibility `head(...)` and `tail(...)` support is handled by their specialized
 evaluators. Assigned `head(...)` and `tail(...)` calls normally run through ordinary assignment of
@@ -67,8 +67,10 @@ bool ar_instruction_evaluator__evaluate(
 - `complete(...)` failures are handled as normal instruction outcomes: the specialized evaluator
   logs actionable diagnostics, preserves prior memory on failure, and writes boolean `0` when the
   call has a result assignment
-- `append(...)` evaluates the target expression, accepts it only when it resolves to a
+- standalone `append(...)` evaluates the target expression, accepts it only when it resolves to a
   memory-owned LIST, and transfers the claimed or copied value to that list
+- assigned and nested `append(...)` calls are evaluated by the expression evaluator through the pure
+  `ar_append` value module
 - standalone `head(...)` delegates to `ar_head` and returns a deep copy of the first list item, or
   integer `0` for empty/invalid input
 - standalone `tail(...)` delegates to `ar_tail` and returns a new LIST of deep-copied items after

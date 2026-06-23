@@ -105,8 +105,9 @@ static void register_worker_recorder(ar_agency_t *mut_agency) {
     const char *ref_instructions =
         "memory.received_texts := if(memory.received_count = 0, [], memory.received_texts)\n"
         "memory.append_buffer := memory.received_texts\n"
-        "memory.append_ok := append(memory.append_buffer, message.text)\n"
-        "memory.received_texts := if(memory.append_ok = 1, memory.append_buffer, memory.received_texts)\n"
+        "memory.append_result := append(memory.append_buffer, message.text)\n"
+        "memory.append_ok := if(memory.append_result = 0, 0, 1)\n"
+        "memory.received_texts := if(memory.append_ok = 1, memory.append_result, memory.received_texts)\n"
         "memory.received_count := memory.received_count + memory.append_ok\n"
         "memory.last_action := message.action\n"
         "memory.last_request := message.request\n"
