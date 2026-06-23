@@ -79,8 +79,9 @@ memory.empty_child_list := memory.spawn_child_action * memory.child_method_names
 memory.spawn_failed := if(memory.spawn_attempt_result = 0, memory.spawn_child_action, 0)
 memory.spawn_failed := memory.spawn_failed * memory.child_method_names_not_empty
 memory.id_append_buffer := if(memory.spawned_child = 1, memory.child_agent_ids, "")
-memory.id_append_ok := append(memory.id_append_buffer, memory.spawn_attempt_result)
-memory.child_agent_ids := if(memory.id_append_ok = 1, memory.id_append_buffer, memory.child_agent_ids)
+memory.id_append_result := append(memory.id_append_buffer, memory.spawn_attempt_result)
+memory.id_append_ok := if(memory.id_append_result = 0, 0, 1)
+memory.child_agent_ids := if(memory.id_append_ok = 1, memory.id_append_result, memory.child_agent_ids)
 memory.child_record := {
   agent_id: memory.spawn_attempt_result
   method_name: memory.current_method_name
@@ -88,8 +89,9 @@ memory.child_record := {
   child_status: "running"
 }
 memory.record_append_buffer := if(memory.spawned_child = 1, memory.child_records, "")
-memory.record_append_ok := append(memory.record_append_buffer, memory.child_record)
-memory.child_records := if(memory.record_append_ok = 1, memory.record_append_buffer, memory.child_records)
+memory.record_append_result := append(memory.record_append_buffer, memory.child_record)
+memory.record_append_ok := if(memory.record_append_result = 0, 0, 1)
+memory.child_records := if(memory.record_append_ok = 1, memory.record_append_result, memory.child_records)
 memory.child_count := memory.child_count + memory.record_append_ok
 
 # Queue remaining child spawns
@@ -195,16 +197,18 @@ memory.tracked_failure_event := memory.tracked_failure_event * memory.lifecycle_
 
 # Apply tracked lifecycle policy
 memory.handled_lifecycle_append_buffer := if(memory.tracked_failure_event = 1, memory.handled_lifecycle_child_agent_ids, "")
-memory.handled_lifecycle_append_ok := append(memory.handled_lifecycle_append_buffer, message.child_agent_id)
-memory.handled_lifecycle_child_agent_ids := if(memory.handled_lifecycle_append_ok = 1, memory.handled_lifecycle_append_buffer, memory.handled_lifecycle_child_agent_ids)
+memory.handled_lifecycle_append_result := append(memory.handled_lifecycle_append_buffer, message.child_agent_id)
+memory.handled_lifecycle_append_ok := if(memory.handled_lifecycle_append_result = 0, 0, 1)
+memory.handled_lifecycle_child_agent_ids := if(memory.handled_lifecycle_append_ok = 1, memory.handled_lifecycle_append_result, memory.handled_lifecycle_child_agent_ids)
 memory.should_restart := memory.tracked_failure_event * memory.restart_policy
 memory.restart_method := if(memory.should_restart = 1, message.child_method_name, 0)
 memory.restart_method_version := if(memory.should_restart = 1, message.child_method_version, "")
 memory.restart_spawn_result := spawn(memory.restart_method, memory.restart_method_version, context)
 memory.restarted_child := if(memory.restart_spawn_result > 0, memory.should_restart, 0)
 memory.restart_id_append_buffer := if(memory.restarted_child = 1, memory.child_agent_ids, "")
-memory.restart_id_append_ok := append(memory.restart_id_append_buffer, memory.restart_spawn_result)
-memory.child_agent_ids := if(memory.restart_id_append_ok = 1, memory.restart_id_append_buffer, memory.child_agent_ids)
+memory.restart_id_append_result := append(memory.restart_id_append_buffer, memory.restart_spawn_result)
+memory.restart_id_append_ok := if(memory.restart_id_append_result = 0, 0, 1)
+memory.child_agent_ids := if(memory.restart_id_append_ok = 1, memory.restart_id_append_result, memory.child_agent_ids)
 memory.restart_record := {
   agent_id: memory.restart_spawn_result
   replaced_agent_id: message.child_agent_id
@@ -213,8 +217,9 @@ memory.restart_record := {
   child_status: "running"
 }
 memory.restart_record_append_buffer := if(memory.restarted_child = 1, memory.child_records, "")
-memory.restart_record_append_ok := append(memory.restart_record_append_buffer, memory.restart_record)
-memory.child_records := if(memory.restart_record_append_ok = 1, memory.restart_record_append_buffer, memory.child_records)
+memory.restart_record_append_result := append(memory.restart_record_append_buffer, memory.restart_record)
+memory.restart_record_append_ok := if(memory.restart_record_append_result = 0, 0, 1)
+memory.child_records := if(memory.restart_record_append_ok = 1, memory.restart_record_append_result, memory.child_records)
 memory.child_count := memory.child_count + memory.restart_record_append_ok
 memory.restart_count := memory.restart_count + memory.restart_record_append_ok
 memory.child_agent_id := if(memory.restarted_child = 1, memory.restart_spawn_result, message.child_agent_id)
@@ -271,8 +276,9 @@ memory.stop_exit_failed := 1 - memory.stop_result
 memory.stop_failed := memory.stop_match * memory.stop_exit_failed
 memory.child_agent_id := if(memory.stop_done = 1, message.child_agent_id, memory.child_agent_id)
 memory.stop_handled_append_buffer := if(memory.stop_succeeded = 1, memory.handled_lifecycle_child_agent_ids, "")
-memory.stop_handled_append_ok := append(memory.stop_handled_append_buffer, message.child_agent_id)
-memory.handled_lifecycle_child_agent_ids := if(memory.stop_handled_append_ok = 1, memory.stop_handled_append_buffer, memory.handled_lifecycle_child_agent_ids)
+memory.stop_handled_append_result := append(memory.stop_handled_append_buffer, message.child_agent_id)
+memory.stop_handled_append_ok := if(memory.stop_handled_append_result = 0, 0, 1)
+memory.handled_lifecycle_child_agent_ids := if(memory.stop_handled_append_ok = 1, memory.stop_handled_append_result, memory.handled_lifecycle_child_agent_ids)
 memory.status := if(memory.stop_succeeded = 1, "stopped", memory.status)
 
 # Derive supervision result

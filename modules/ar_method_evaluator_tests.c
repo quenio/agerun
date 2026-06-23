@@ -339,6 +339,7 @@ static void test_method_evaluator__evaluate_with_failing_instruction(void) {
 static void test_method_evaluator__evaluates_parsed_append_instruction(void) {
     printf("Testing method evaluator with parsed append instruction...\n");
 
+    // Given a method evaluator with agency dependencies
     ar_system_t *own_system = ar_system__create();
     assert(own_system != NULL);
     ar_agency_t *ref_agency = ar_system__get_agency(own_system);
@@ -346,6 +347,7 @@ static void test_method_evaluator__evaluates_parsed_append_instruction(void) {
     assert(ref_agency != NULL);
     assert(ref_delegation != NULL);
 
+    // Given method parser and evaluator facades
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
     ar_method_parser_t *own_parser = ar_method_parser__create(own_log);
@@ -357,13 +359,15 @@ static void test_method_evaluator__evaluates_parsed_append_instruction(void) {
     );
     assert(own_evaluator != NULL);
 
+    // Given a method with standalone compatibility append
     const char *ref_source =
         "memory.results := []\n"
-        "memory.append_ok := append(memory.results, message.value)\n";
+        "append(memory.results, message.value)\n";
     ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
     assert(own_ast != NULL);
     assert(ar_method_ast__get_instruction_count(own_ast) == 2);
 
+    // Given a frame with a message value to append
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
     ar_data_t *own_message = ar_data__create_map();
@@ -374,8 +378,10 @@ static void test_method_evaluator__evaluates_parsed_append_instruction(void) {
     ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
     assert(own_frame != NULL);
 
+    // When evaluating the parsed method
     bool result = ar_method_evaluator__evaluate(own_evaluator, own_frame, own_ast);
 
+    // Then standalone append should mutate the memory-owned list
     assert(result == true);
     ar_data_t *ref_results = ar_data__get_map_data(own_memory, "results");
     assert(ref_results != NULL);
@@ -384,8 +390,8 @@ static void test_method_evaluator__evaluates_parsed_append_instruction(void) {
     ar_data_t *ref_appended = ar_data__list_first(ref_results);
     assert(ref_appended != NULL);
     assert(strcmp(ar_data__get_string(ref_appended), "from method") == 0);
-    assert(ar_data__get_map_integer(own_memory, "append_ok") == 1);
 
+    // Cleanup
     ar_frame__destroy(own_frame);
     ar_data__destroy(own_message);
     ar_data__destroy(own_context);

@@ -7,7 +7,7 @@ In the AgeRun system, a module is a self-contained unit of functionality that pr
 **Module Types**:
 
 1. **C Modules**: Traditional modules with an implementation file (`.c`) and header file (`.h`)
-2. **C-ABI Compatible Zig Modules**: Zig implementations (`.zig`) that maintain full C API compatibility with matching header files (`.h`). Currently implemented in Zig: `ar_assert`, `ar_append_instruction_evaluator`, `ar_build`, `ar_complete_instruction_evaluator`, `ar_complete_instruction_parser`, `ar_condition`, `ar_expression_ast`, `ar_expression_evaluator`, `ar_function_call_parser`, `ar_head`, `ar_head_instruction_evaluator`, `ar_heap`, `ar_instruction_ast`, `ar_method_ast`, `ar_method_evaluator`, `ar_parse`, `ar_semver`, `ar_string`, `ar_tail`, and `ar_tail_instruction_evaluator`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements. `ar_local_completion` is a user-approved C exception for direct `llama.cpp` / `libllama` interop behind a stable AgeRun header.
+2. **C-ABI Compatible Zig Modules**: Zig implementations (`.zig`) that maintain full C API compatibility with matching header files (`.h`). Currently implemented in Zig: `ar_assert`, `ar_append`, `ar_append_instruction_evaluator`, `ar_build`, `ar_complete_instruction_evaluator`, `ar_complete_instruction_parser`, `ar_condition`, `ar_expression_ast`, `ar_expression_evaluator`, `ar_function_call_parser`, `ar_head`, `ar_head_instruction_evaluator`, `ar_heap`, `ar_instruction_ast`, `ar_method_ast`, `ar_method_evaluator`, `ar_parse`, `ar_semver`, `ar_string`, `ar_tail`, and `ar_tail_instruction_evaluator`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements. `ar_local_completion` is a user-approved C exception for direct `llama.cpp` / `libllama` interop behind a stable AgeRun header.
 3. **Zig Struct Modules**: Pure Zig modules using TitleCase naming (e.g., `DataStore.zig`) for internal components that don't require C interop. These modules use Zig's idiomatic patterns while maintaining AgeRun's ownership conventions.
 
 Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `ar_` to `ar_` prefix gradually as files are modified for other reasons.
@@ -1135,7 +1135,7 @@ The [expression parser module](ar_expression_parser.md) provides a recursive des
 - **Error Reporting**: Provides detailed error messages with position information
 - **Complete Coverage**: Supports all AgeRun expression types (literals, memory access, binary ops)
 - **Pure Calls**: Parses registered pure calls including `parse(...)`, `build(...)`, `if(...)`,
-  `head(...)`, and `tail(...)` into generic call AST nodes
+  `append(...)`, `head(...)`, and `tail(...)` into generic call AST nodes
 - **Proper Precedence**: Implements correct operator precedence and associativity
 - **Memory Safety**: Zero memory leaks with proper cleanup of temporary structures
 - **Depends on AST**: Uses expression_ast module for building parse trees
@@ -1164,7 +1164,8 @@ The expression evaluator module provides evaluation of expression ASTs against m
 - **Type-Specific Functions**: Separate evaluation functions for each AST node type
 - **Memory Access**: Evaluates memory.x and context.x paths with nested navigation
 - **Binary Operations**: Supports all arithmetic and comparison operators
-- **Pure Function Calls**: Evaluates `parse(...)`, `build(...)`, `if(...)`, `head(...)`, and `tail(...)`
+- **Pure Function Calls**: Evaluates `parse(...)`, `build(...)`, `if(...)`, `append(...)`,
+  `head(...)`, and `tail(...)`
 - **Type Conversions**: Handles automatic promotion between integers and doubles
 - **String Operations**: Implements string concatenation and comparison
 - **Ownership Semantics**: Returns references for memory access, owned values for operations
@@ -1251,9 +1252,18 @@ The [complete instruction evaluator module](ar_complete_instruction_evaluator.md
 - **Handled Failure Semantics**: Records actionable errors, preserves prior memory, and writes boolean status results
 - **Backend Separation**: Delegates model/runtime lifecycle and placeholder generation to `ar_local_completion`
 
+#### Append Module (`ar_append`)
+
+The [append module](ar_append.md) provides pure value-level list construction:
+- **Pure Operation**: Returns a new LIST without mutating the source list or appended value
+- **Deep-Copy Semantics**: Copies every source item and the appended value into the result
+- **Fallback Semantics**: Returns integer `0` for missing, non-LIST, or not-copyable inputs
+- **Expression Semantics**: Used by expression `append(...)` evaluation
+
 #### Append Instruction Evaluator Module (`ar_append_instruction_evaluator`)
 
-The [append instruction evaluator module](ar_append_instruction_evaluator.md) handles `append(...)` execution:
+The [append instruction evaluator module](ar_append_instruction_evaluator.md) handles standalone
+compatibility `append(...)` execution:
 - **Memory-Owned Lists**: Mutates only existing LIST values owned by frame memory
 - **No-op Semantics**: Stores integer `0` for invalid targets or append failures when assigned
 - **Atomic Result Writes**: Avoids partial mutation when result assignment cannot be stored
@@ -1422,8 +1432,9 @@ The [complete instruction parser module](ar_complete_instruction_parser.md) hand
 
 #### Append Instruction Parser Module (`ar_append_instruction_parser`)
 
-The [append instruction parser module](ar_append_instruction_parser.md) handles parsing of `append(...)` calls:
-- **Append Function Syntax**: Parses `append(target, value)` format
+The [append instruction parser module](ar_append_instruction_parser.md) handles parsing of
+standalone compatibility `append(...)` calls:
+- **Append Function Syntax**: Parses standalone `append(target, value)` format
 - **Expression Arguments**: Parses both arguments as normal expressions
 - **AST Wiring**: Produces `AR_INSTRUCTION_AST_TYPE__APPEND` nodes with parsed argument ASTs
 

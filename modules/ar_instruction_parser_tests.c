@@ -133,6 +133,42 @@ static void test_instruction_parser__parse_send_with_assignment(void) {
     ar_instruction_parser__destroy(own_parser);
 }
 
+static void test_instruction_parser__parse_send_with_append_argument(void) {
+    printf("Testing unified parse method for send with append expression argument...\n");
+
+    // Given a send instruction whose message argument is a pure append() expression
+    const char *instruction = "send(0, append([1], 2))";
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    AR_ASSERT(own_parser != NULL, "Instruction parser creation should succeed");
+
+    // When parsing the instruction
+    ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+
+    // Then it should parse as a send instruction with append() in the argument AST
+    AR_ASSERT(own_ast != NULL, "Send with append argument should parse");
+    AR_ASSERT(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__SEND,
+              "Outer instruction should be send");
+
+    // Then the parsed send argument AST should preserve append() as a pure call
+    const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
+    AR_ASSERT(ref_arg_asts != NULL, "Send should store parsed argument ASTs");
+    AR_ASSERT(ar_list__count(ref_arg_asts) == 2, "Send should preserve two argument ASTs");
+    void **own_items = ar_list__items(ref_arg_asts);
+    AR_ASSERT(own_items != NULL, "Argument AST items should be available");
+    const ar_expression_ast_t *ref_message_arg = (const ar_expression_ast_t*)own_items[1];
+    AR_ASSERT(ar_expression_ast__get_type(ref_message_arg) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Send message argument should parse as a pure call expression");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(ref_message_arg), "append") == 0,
+              "Send message argument call should be append");
+    AR_ASSERT(ar_expression_ast__get_function_arg_count(ref_message_arg) == 2,
+              "Append argument should preserve both arguments");
+    AR__HEAP__FREE(own_items);
+
+    // Cleanup
+    ar_instruction_ast__destroy(own_ast);
+    ar_instruction_parser__destroy(own_parser);
+}
+
 static void test_instruction_parser__parse_if(void) {
     printf("Testing unified parse method for if instruction...\n");
     
@@ -238,17 +274,36 @@ static void test_instruction_parser__parse_append(void) {
 static void test_instruction_parser__parse_append_with_assignment(void) {
     printf("Testing unified parse method for append with assignment...\n");
 
+    // Given an assigned append() expression
     const char *instruction = "memory.append_ok := append(memory.results, 42)";
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
-    assert(own_parser != NULL);
+    AR_ASSERT(own_parser != NULL, "Instruction parser creation should succeed");
 
+    // When parsing it through the unified parser
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
 
-    assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__APPEND);
-    assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
-    assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.append_ok") == 0);
+    // Then it should use ordinary pure expression assignment, not append result storage
+    AR_ASSERT(own_ast != NULL, "Assigned append expression should parse");
+    AR_ASSERT(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT,
+              "Assigned append should parse as an assignment instruction");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.append_ok") == 0,
+              "Assigned append should preserve assignment target");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_assignment_expression(own_ast),
+                     "append(memory.results, 42)") == 0,
+              "Assigned append should preserve RHS expression text");
 
+    // Then the RHS expression AST should be a pure append() call
+    const ar_expression_ast_t *ref_expression_ast =
+        ar_instruction_ast__get_assignment_expression_ast(own_ast);
+    AR_ASSERT(ref_expression_ast != NULL, "Assigned append should have a parsed expression AST");
+    AR_ASSERT(ar_expression_ast__get_type(ref_expression_ast) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Assigned append RHS should parse as a pure call expression");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(ref_expression_ast), "append") == 0,
+              "Assigned append call should preserve the function name");
+    AR_ASSERT(ar_expression_ast__get_function_arg_count(ref_expression_ast) == 2,
+              "Assigned append call should preserve both arguments");
+
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
 }
@@ -1089,6 +1144,7 @@ int main(void) {
     test_instruction_parser__parse_assignment();
     test_instruction_parser__parse_send();
     test_instruction_parser__parse_send_with_assignment();
+    test_instruction_parser__parse_send_with_append_argument();
     test_instruction_parser__parse_if();
     test_instruction_parser__parse_parse();
     test_instruction_parser__parse_build();

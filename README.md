@@ -304,7 +304,10 @@ Agents use a simple expression and instruction language for their methods:
 - Write: `memory.key := value` or nested paths like `memory.user.settings.theme := "dark"`
 - Literal containers: one-line lists and maps such as `[1, 2]` and `{name: "Ada"}` can be assigned or passed as function arguments
 - Multi-line lists and maps are assignment-only, with one item per line and consistent item indentation
-- List processing: `append(memory.items, value)` mutates an existing memory-owned list, while `head(list)` and `tail(list)` return deep-copied list parts for recursive self-message processing without loops or indexed access
+- List processing: `append(list, value)` returns a new deep-copied list in expression contexts,
+  standalone `append(memory.items, value)` mutates an existing memory-owned list for compatibility,
+  and `head(list)` / `tail(list)` return deep-copied list parts for recursive self-message
+  processing without loops or indexed access
 
 ### Arithmetic Operations
 

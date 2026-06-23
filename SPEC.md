@@ -166,15 +166,16 @@ The current language partially satisfies those principles:
   boundary rules, but ordinary assignment and function-result assignment still use separate
   AST/evaluator paths, and some instruction-specific exceptions remain documented outside one
   consolidated semantics section.
-- **Syntax-Directed Semantics**: Memory assignment, function-result assignment, mutation targets
-  such as `append(memory.items, value)`, and sentinel uses of integer `0` still have documented
-  special cases.
+- **Syntax-Directed Semantics**: Memory assignment, function-result assignment, standalone
+  compatibility mutation such as `append(memory.items, value)`, and sentinel uses of integer `0`
+  still have documented special cases.
 - **Explicit Exceptions**: Current exceptions include assignment-only multi-line literals,
   memory-only mutation targets, protected `memory.self` paths, no-op `send(0, ...)` and
   `spawn(0, ...)` behavior, and raw string values with boundary-only quote/backslash parsing.
 - **Composability**: Literals, accessors, operators, registered pure calls such as `parse(...)`,
-  `build(...)`, `if(...)`, `head(...)`, and `tail(...)`, and one-line list/map literals compose as
-  expressions. Effectful built-in calls are not expressions and remain sequenced instructions.
+  `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)`, and one-line list/map
+  literals compose as expressions. Effectful built-in calls are not expressions and remain
+  sequenced instructions.
   Multi-line literals are assignment-only.
 - **Orthogonality**: Current documented exceptions include memory-only mutation targets, integer `0`
   as several absence/no-op/failure sentinels, and boundary-level quote handling that does not define
@@ -214,6 +215,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <pure-function-call> ::= <parse-function>
                        | <build-function>
                        | <if-function>
+                       | <append-function>
                        | <head-function>
                        | <tail-function>
 
@@ -247,7 +249,8 @@ Instructions in an agent method can be of two types:
   - `send` - Send a message to an agent or delegate
   - `build` - Construct a string using a template and values
   - `complete` - Complete template placeholders with local LLM-generated values and return a map
-  - `append` - Append a value to an existing memory list
+  - `append` - Construct a new list in expression form, or mutate an existing memory list when used
+    as a standalone compatibility instruction
   - `head` - Return the first item from a list
   - `tail` - Return a new list containing all but the first item
   - `compile` - Define a new agent method
@@ -257,20 +260,23 @@ Instructions in an agent method can be of two types:
   - `if` - Evaluates a condition and returns one of two values based on the result
 
 Pure function calls are expressions. Registered pure calls such as `parse(...)`, `build(...)`,
-`if(...)`, `head(...)`, and `tail(...)` can appear anywhere an expression is accepted, including assignment
-right-hand sides, function-call arguments, list items, map values, nested pure calls, and selected
-`if(...)` branch values. Expression-level `if(...)` is lazy and evaluates only the selected branch.
-Standalone pure calls remain accepted for compatibility; `parse(...)` discards its returned map,
-`build(...)` uses the existing top-level build instruction behavior, standalone `if(...)` uses the
-existing condition instruction behavior, and standalone `head(...)` / `tail(...)` calls compute and
+`if(...)`, `append(...)`, `head(...)`, and `tail(...)` can appear anywhere an expression is accepted,
+including assignment right-hand sides, function-call arguments, list items, map values, nested pure
+calls, and selected `if(...)` branch values. Expression-level `if(...)` is lazy and evaluates only
+the selected branch. Standalone pure-call names remain accepted for compatibility; `parse(...)`
+discards its returned map, `build(...)` uses the existing top-level build instruction behavior,
+standalone `if(...)` uses the existing condition instruction behavior, standalone `append(...)`
+mutates an existing memory-owned list, and standalone `head(...)` / `tail(...)` calls compute and
 discard their values.
 
 Function call instructions can optionally assign their result to a variable. For example:
 - `send(agent_id, message)` - Call the function without storing the result
 - `success := send(agent_id, message)` - Store the result in a memory variable
 - `memory.result := complete("The capital of {country} is {city}.", memory.values)` - Return a new map containing values from `memory.values` plus generated values for missing placeholders
-- `append(memory.results, message.value)` - Append a value to the existing `memory.results` list
-- `memory.append_ok := append(memory.results, message.value)` - Append a value and store `1` on success or `0` on failure
+- `append(memory.results, message.value)` - Standalone compatibility append: mutate the existing
+  `memory.results` list
+- `memory.results := append(memory.results, message.value)` - Pure append expression: store a new
+  list containing copied source items plus the copied message value
 - `exit(agent_id)` - Exit an agent without storing the result
 - `success := exit(agent_id)` - Exit an agent and store the result
 - `deprecate(method_name, method_version)` - Deprecate a method without storing the result
@@ -382,9 +388,23 @@ The expression evaluator follows these rules:
 
 ### 2. List Operations
 
-- `append(target: expression, value: data) → boolean`: Evaluates the target expression and mutates it only when it resolves to an existing LIST directly or indirectly owned by the frame memory map, such as `memory.results` or `memory.wrapper.results`. Targets under `message` or `context`, fresh literal/list expression results, missing targets, non-LIST targets, and protected `memory.self` targets are no-ops.
-- The value argument may be any expression. Fresh literal values are transferred directly into the list. Borrowed values from `memory`, `message`, or `context` are claimed when possible or deep-copied before append, preserving nested list/map structure.
-- Without result assignment, target no-ops and append failures complete without mutating memory further. With result assignment, `memory.some_flag := append(...)` stores integer `1` for successful append or `0` for no-op/failure, and the instruction itself completes when the result can be stored. Invalid result assignment paths fail before append mutation. If storing the success result fails after a list append, the appended item is removed before the instruction fails.
+- `append(list: expression, value: expression) → list | integer`: Pure expression call that
+  evaluates both arguments without mutating either source value. When the first argument is a LIST,
+  `append(...)` returns a new LIST containing deep copies of every source item followed by a deep
+  copy of the value. Empty LIST input returns a new one-item LIST. Missing, non-LIST, invalid, or
+  not-copyable inputs return integer `0`. Argument handling is path-neutral: `memory.self`, `self`,
+  and nested paths are ordinary values, while protected identity behavior is enforced only by
+  assignment and result-storage rules.
+- Standalone compatibility `append(target, value)` instructions keep the existing mutating behavior:
+  they mutate only when the target expression resolves to an existing LIST directly or indirectly
+  owned by the frame memory map, such as `memory.results` or `memory.wrapper.results`. Targets under
+  `message` or `context`, fresh literal/list expression results, missing targets, non-LIST targets,
+  and protected `memory.self` targets are no-ops. Assigned and nested `append(...)` calls use the
+  pure expression behavior above, not instruction result storage.
+- For standalone compatibility mutation, fresh literal values are transferred directly into the
+  target list. Borrowed values from `memory`, `message`, or `context` are claimed when possible or
+  deep-copied before append, preserving nested list/map structure. Target no-ops and append failures
+  complete without mutating memory further.
 
 - `head(list: expression) → data | integer`: Pure expression call that evaluates the list expression and never mutates the source list. When the value is a LIST with at least one item, `head(...)` returns a deep copy of the first item. Empty lists, missing values, non-LIST values, and values that cannot be safely copied return integer `0`. Standalone compatibility `head(...)` instructions discard the computed value when no result assignment is present.
 - `tail(list: expression) → list | integer`: Pure expression call that evaluates the list expression and never mutates the source list. When the value is a LIST, `tail(...)` returns a new LIST containing deep copies of every item after the first. Empty lists and single-item lists return a new empty LIST. Missing values, non-LIST values, and values that cannot be safely copied return integer `0`, allowing callers to distinguish invalid input from the valid tail of a single-item list. Standalone compatibility `tail(...)` instructions discard the computed value when no result assignment is present.

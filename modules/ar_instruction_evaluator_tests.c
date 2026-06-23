@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include "ar_instruction_evaluator.h"
 #include "ar_instruction_ast.h"
+#include "ar_instruction_parser.h"
 #include "ar_expression_ast.h"
 #include "ar_data.h"
 #include "ar_methodology.h"
@@ -18,6 +19,7 @@
 #include "ar_event.h"
 #include "ar_frame.h"
 #include "ar_list.h"
+#include "ar_heap.h"
 
 static char g_complete_runner_path[128] = {0};
 static char g_complete_model_path[128] = {0};
@@ -55,9 +57,11 @@ static void cleanup_fake_complete_runner(void) {
 
 static void test_instruction_evaluator__create_destroy(void) {
     // Given a log and system for agency
+    // Given the shared evaluator dependencies are available
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
+    // Given an AgeRun system provides agency and delegation dependencies
     ar_system_t *sys = ar_system__create();
     assert(sys != NULL);
     ar_agency_t *agency = ar_system__get_agency(sys);
@@ -1056,6 +1060,77 @@ static void test_instruction_evaluator__unified_evaluate_assignment(void) {
     ar_log__destroy(log);
 }
 
+static void test_instruction_evaluator__assigned_append_uses_pure_expression(void) {
+    // Given an evaluator and memory list used by an assigned append() expression
+    ar_data_t *memory = ar_data__create_map();
+    assert(memory != NULL);
+    ar_data_t *own_items = ar_data__create_list();
+    assert(own_items != NULL);
+    assert(ar_data__list_add_last_integer(own_items, 1));
+    assert(ar_data__list_add_last_integer(own_items, 2));
+    assert(ar_data__set_map_data(memory, "items", own_items));
+    own_items = NULL;
+
+    // Given the shared evaluator log is available
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+
+    // Given an AgeRun system provides agency and delegation dependencies
+    ar_system_t *sys = ar_system__create();
+    assert(sys != NULL);
+    ar_agency_t *agency = ar_system__get_agency(sys);
+    ar_delegation_t *delegation = ar_system__get_delegation(sys);
+
+    // Given parser and evaluator facades are available
+    ar_instruction_parser_t *parser = ar_instruction_parser__create(log);
+    assert(parser != NULL);
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency, delegation);
+    assert(evaluator != NULL);
+
+    // When parsing and evaluating assigned append()
+    ar_instruction_ast_t *ast =
+        ar_instruction_parser__parse(parser, "memory.result := append(memory.items, 3)");
+    assert(ast != NULL);
+    assert(ar_instruction_ast__get_type(ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
+
+    // When evaluating the parsed assignment instruction
+    ar_data_t *ctx = ar_data__create_map();
+    ar_data_t *msg = ar_data__create_string("");
+    ar_frame_t *fr = ar_frame__create(memory, ctx, msg);
+    bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
+
+    // Cleanup evaluation frame values
+    ar_frame__destroy(fr);
+    ar_data__destroy(ctx);
+    ar_data__destroy(msg);
+
+    // Then assignment should store the new pure append list and leave source unchanged
+    assert(result == true);
+    ar_data_t *ref_source = ar_data__get_map_data(memory, "items");
+    ar_data_t *ref_result = ar_data__get_map_data(memory, "result");
+    assert(ref_source != NULL);
+    assert(ref_result != NULL);
+    assert(ar_data__get_type(ref_result) == AR_DATA_TYPE__LIST);
+    assert(ar_data__list_count(ref_source) == 2);
+    assert(ar_data__list_count(ref_result) == 3);
+
+    // Then the assigned result should contain copied items plus the appended value
+    ar_data_t **own_result_items = ar_data__list_items(ref_result);
+    assert(own_result_items != NULL);
+    assert(ar_data__get_integer(own_result_items[0]) == 1);
+    assert(ar_data__get_integer(own_result_items[1]) == 2);
+    assert(ar_data__get_integer(own_result_items[2]) == 3);
+    AR__HEAP__FREE(own_result_items);
+
+    // Cleanup
+    ar_instruction_ast__destroy(ast);
+    ar_instruction_evaluator__destroy(evaluator);
+    ar_instruction_parser__destroy(parser);
+    ar_system__destroy(sys);
+    ar_data__destroy(memory);
+    ar_log__destroy(log);
+}
+
 static void test_instruction_evaluator__rejects_protected_self_result_paths(void) {
     // Given an instruction evaluator with agency-managed memory.self
     ar_data_t *memory = ar_data__create_map();
@@ -1146,6 +1221,9 @@ int main(void) {
     
     test_instruction_evaluator__unified_evaluate_assignment();
     printf("test_instruction_evaluator__unified_evaluate_assignment passed!\n");
+
+    test_instruction_evaluator__assigned_append_uses_pure_expression();
+    printf("test_instruction_evaluator__assigned_append_uses_pure_expression passed!\n");
     
     test_instruction_evaluator__unified_evaluate_all_types();
     printf("test_instruction_evaluator__unified_evaluate_all_types passed!\n");

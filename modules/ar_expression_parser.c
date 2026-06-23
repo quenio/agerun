@@ -206,7 +206,8 @@ static const ar_pure_function_spec_t PURE_FUNCTIONS[] = {
     {"build", 2},
     {"if", 3},
     {"head", 1},
-    {"tail", 1}
+    {"tail", 1},
+    {"append", 2}
 };
 
 static bool _is_identifier_start(char c) {

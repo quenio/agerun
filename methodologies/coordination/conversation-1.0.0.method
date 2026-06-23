@@ -143,8 +143,9 @@ memory.participant_is_sender := memory.participant_is_sender * memory.has_scan_p
 memory.include_participant := memory.has_scan_participant - memory.participant_is_sender
 memory.recipient_value := memory.current_participant * memory.include_participant
 memory.recipients_buffer := if(memory.has_scan_participant = 1, memory.scan_recipients, "")
-memory.recipient_append_ok := append(memory.recipients_buffer, memory.recipient_value)
-memory.next_recipients := if(memory.recipient_append_ok = 1, memory.recipients_buffer, memory.scan_recipients)
+memory.recipient_append_result := append(memory.recipients_buffer, memory.recipient_value)
+memory.recipient_append_ok := if(memory.recipient_append_result = 0, 0, 1)
+memory.next_recipients := if(memory.recipient_append_ok = 1, memory.recipient_append_result, memory.scan_recipients)
 memory.next_found_sender := message.found_sender + memory.participant_is_sender
 memory.next_found_sender := if(memory.next_found_sender > 0, 1, 0)
 memory.next_recipient_count := message.recipient_count + memory.include_participant
@@ -254,10 +255,11 @@ memory.broadcast_success := memory.broadcast_result_active * memory.broadcast_st
 memory.relay_success_event := memory.broadcast_success + memory.no_recipients
 memory.relay_success_event := if(memory.relay_success_event > 0, 1, 0)
 memory.history_buffer := if(memory.relay_success_event = 1, memory.history, "")
-memory.append_ok := append(memory.history_buffer, memory.pending_turn_message)
+memory.append_result := append(memory.history_buffer, memory.pending_turn_message)
+memory.append_ok := if(memory.append_result = 0, 0, 1)
 memory.relay_succeeded := if(memory.broadcast_success = 1, 1, 0)
 memory.relay_succeeded := if(memory.no_recipients = 1, memory.append_ok, memory.relay_succeeded)
-memory.history := if(memory.append_ok = 1, memory.history_buffer, memory.history)
+memory.history := if(memory.append_ok = 1, memory.append_result, memory.history)
 memory.turn_count := if(memory.relay_succeeded = 1, memory.pending_turn_count, memory.turn_count)
 memory.last_sender := if(memory.relay_succeeded = 1, memory.pending_sender, memory.last_sender)
 memory.last_payload := if(memory.relay_succeeded = 1, memory.pending_payload, memory.last_payload)

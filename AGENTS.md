@@ -449,7 +449,7 @@ interleave with already queued messages but are not re-entrant
 **Method Language Rules**:
 - Expressions: literals, memory/message/context access, one-line containers, arithmetic, pure calls
 - Instructions: assignments, effectful function calls
-- Pure function calls such as `parse(...)` can be nested
+- Pure function calls such as `parse(...)`, `if(...)`, and `append(...)` can be nested
 - Effectful function calls cannot be nested
 - `send(0, message)` is a no-op returning true ([details](kb/no-op-semantics-pattern.md))
 
@@ -682,7 +682,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - Always process messages after sending to prevent memory leaks
 - Message processing loop required for complete execution ([details](kb/message-processing-loop-pattern.md))
 - All messages flow through system layer ([details](kb/system-message-flow-architecture.md))
-- **Pure function calls are expressions** - registered pure calls such as `parse(...)` can nest; effectful calls remain instructions ([details](kb/agerun-method-language-nesting-constraint.md))
+- **Pure function calls are expressions** - registered pure calls such as `parse(...)`, `if(...)`, and `append(...)` can nest; effectful calls remain instructions ([details](kb/agerun-method-language-nesting-constraint.md))
 - **Send with memory references not supported** - send() needs ownership of message
 - **Message accessor** - `message.field` returns references like memory/context ([details](kb/expression-evaluator-accessor-extension.md))
 - **Language constraints** - No type checking, if() returns values ([details](kb/agerun-language-constraint-workarounds.md))
