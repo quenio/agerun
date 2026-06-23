@@ -319,8 +319,9 @@ inside instruction evaluators, so that duplicate path has not been eliminated ye
 evaluator that can store a result must still repeat or delegate result-path validation, ownership
 transfer, and protected `memory.self` handling.
 
-Recommended follow-up: define pure-call metadata once and centralize any remaining statement-level
-result binding. Pure-expression storage should remain ordinary assignment:
+Recommended follow-up: first define pure-call metadata once. After that, consolidate pure-call
+evaluator dispatch and only then centralize any remaining statement-level result binding.
+Pure-expression storage should remain ordinary assignment:
 
 - pure-expression model: `memory.value := append(memory.items, value)` evaluates a pure call
   expression and stores the new list
@@ -388,13 +389,19 @@ instruction argument or result position. In ordinary expression evaluation and o
 
 ## Remaining Recommended Follow-Up Order
 
-1. **Pure-call metadata and result-binding consolidation**: define pure-call metadata once, reduce
-   parser/evaluator duplication, make `memory.path := <expression>` the only pure-expression storage
-   mechanism, and centralize any statement-level result binding still needed by effectful or
-   compatibility instructions.
-2. **Multiline expression plan**: choose between documenting assignment-only multiline literals as
+1. **Pure-call metadata consolidation**: define pure-call function metadata once so parser,
+   evaluator, docs, and tests can share function names, arities, and purity classification without
+   duplicating them.
+2. **Pure-call evaluator dispatch consolidation**: reduce evaluator-side pure-call dispatch
+   duplication now that `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and
+   `tail(...)` all use the expression-call path.
+3. **Effectful result-binding consolidation**: centralize statement-level result binding for
+   assigned effectful instructions such as `send(...)`, `complete(...)`, `compile(...)`,
+   `spawn(...)`, `deprecate(...)`, and `exit(...)`, while keeping `memory.path := <expression>` the
+   only pure-expression storage mechanism.
+4. **Multiline expression plan**: choose between documenting assignment-only multiline literals as
    an explicit exception or promoting them into the expression parser.
-3. **Sentinel semantics plan**: evaluate whether integer `0` remains the language-wide absent value
+5. **Sentinel semantics plan**: evaluate whether integer `0` remains the language-wide absent value
    or whether the data model needs an explicit absence representation.
 
 ## Current Baseline Now Satisfied
@@ -585,8 +592,8 @@ next recommended follow-up:
 
 After pure `append(...)` expressions landed, this report was revised to mark value-level list
 construction and standalone compatibility boundaries as satisfied, to record path-neutral argument
-handling and non-mutating deep-copy semantics, and to make pure-call metadata/result-binding
-consolidation the next recommended follow-up:
+handling and non-mutating deep-copy semantics, and to make pure-call metadata consolidation the next
+recommended follow-up:
 
 - focused append/parser/evaluator/instruction/coordination tests: passed.
 - `make check-docs 2>&1`: passed; 761 documentation files checked.
