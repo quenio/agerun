@@ -1,5 +1,27 @@
 # AgeRun CHANGELOG
 
+## 2026-06-24 (Consolidate pure-call metadata)
+
+- **Added shared pure-call metadata**
+
+  The method language now has a single `ar_pure_call` metadata module for registered pure-call
+  names, arities, and type classification. Parser and evaluator code consume the same registry for
+  `parse`, `build`, `if`, `head`, `tail`, and `append` instead of maintaining duplicate call lists.
+
+  **Implementation**: Added `modules/ar_pure_call.{h,c,md}` and focused metadata tests, refactored
+  `modules/ar_expression_parser.c` to use shared arity metadata, and updated
+  `modules/ar_expression_evaluator.zig` to recognize pure calls through the shared registry while
+  preserving existing per-call dispatch behavior.
+
+  **Verification**: `make ar_pure_call_tests`, `make ar_expression_parser_tests`,
+  `make ar_expression_evaluator_tests`, `make check-test-structure 2>&1`,
+  `make check-docs 2>&1`, `make build 2>&1`, `make check-logs`, `make sanitize-tests 2>&1`,
+  and `make check-all 2>&1` passed.
+
+  **Impact**: Pure-call metadata now has one production source of truth for parser, evaluator,
+  documentation, and tests without changing `parse`, `build`, `if`, `head`, `tail`, or `append`
+  semantics.
+
 ## 2026-06-22 (Promote append to pure expression)
 
 - **Added pure `append(list, value)` expression support**

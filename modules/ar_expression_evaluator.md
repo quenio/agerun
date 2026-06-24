@@ -25,6 +25,7 @@ The expression evaluator module provides functionality for evaluating expression
 The module is designed with clean separation of concerns:
 - Depends on ar_expression_ast for node inspection
 - Depends on data module for value creation and manipulation  
+- Depends on ar_pure_call for registered pure-call classification
 - Depends on ar_log for centralized error reporting
 - Depends on ar_frame for accessing memory, context, and message
 - No dependency on expression or instruction modules
@@ -69,7 +70,8 @@ Supports evaluation of all AgeRun data types:
 
 ## Pure Function Calls
 
-The evaluator supports registered pure function calls through generic `CALL` AST nodes. Pure calls
+The evaluator supports registered pure function calls through generic `CALL` AST nodes. Each call is
+first classified through `ar_pure_call`, then evaluated by the matching pure operation. Pure calls
 evaluate their arguments using ordinary expression semantics and pass the resulting values to shared
 pure operations.
 

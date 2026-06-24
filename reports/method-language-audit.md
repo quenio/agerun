@@ -240,8 +240,8 @@ slots. The audit regex found 1,023 assigned built-in call lines and no nested bu
 `.method` sources at the initial audit base. That is strong evidence that the grammar shape controls
 method style.
 
-Current classification: keep the pure-call AST/evaluator path only for calls classified as pure.
-The classification should remain explicit:
+Current classification: keep the pure-call AST/evaluator path only for calls classified as pure by
+`ar_pure_call`. The classification should remain explicit:
 
 | Built-in | Recommendation | Rationale |
 |----------|----------------|-----------|
@@ -319,9 +319,9 @@ inside instruction evaluators, so that duplicate path has not been eliminated ye
 evaluator that can store a result must still repeat or delegate result-path validation, ownership
 transfer, and protected `memory.self` handling.
 
-Recommended follow-up: first define pure-call metadata once. After that, consolidate pure-call
-evaluator dispatch and only then centralize any remaining statement-level result binding.
-Pure-expression storage should remain ordinary assignment:
+Recommended follow-up: consolidate the remaining pure-call evaluator dispatch shape, and only then
+centralize any remaining statement-level result binding. Pure-expression storage should remain
+ordinary assignment:
 
 - pure-expression model: `memory.value := append(memory.items, value)` evaluates a pure call
   expression and stores the new list
@@ -389,19 +389,16 @@ instruction argument or result position. In ordinary expression evaluation and o
 
 ## Remaining Recommended Follow-Up Order
 
-1. **Pure-call metadata consolidation**: define pure-call function metadata once so parser,
-   evaluator, docs, and tests can share function names, arities, and purity classification without
-   duplicating them.
-2. **Pure-call evaluator dispatch consolidation**: reduce evaluator-side pure-call dispatch
+1. **Pure-call evaluator dispatch consolidation**: reduce evaluator-side pure-call dispatch
    duplication now that `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and
    `tail(...)` all use the expression-call path.
-3. **Effectful result-binding consolidation**: centralize statement-level result binding for
+2. **Effectful result-binding consolidation**: centralize statement-level result binding for
    assigned effectful instructions such as `send(...)`, `complete(...)`, `compile(...)`,
    `spawn(...)`, `deprecate(...)`, and `exit(...)`, while keeping `memory.path := <expression>` the
    only pure-expression storage mechanism.
-4. **Multiline expression plan**: choose between documenting assignment-only multiline literals as
+3. **Multiline expression plan**: choose between documenting assignment-only multiline literals as
    an explicit exception or promoting them into the expression parser.
-5. **Sentinel semantics plan**: evaluate whether integer `0` remains the language-wide absent value
+4. **Sentinel semantics plan**: evaluate whether integer `0` remains the language-wide absent value
    or whether the data model needs an explicit absence representation.
 
 ## Current Baseline Now Satisfied
@@ -602,3 +599,7 @@ recommended follow-up:
 - `make check-logs 2>&1`: passed; no unexpected errors, warnings, leaks, or suspicious patterns
   found.
 - `make sanitize-tests 2>&1`: passed.
+
+After pure-call metadata consolidation, this report was revised to mark shared `ar_pure_call`
+metadata as the source of truth for registered pure-call names, arities, and classification, and to
+make pure-call evaluator dispatch consolidation the next recommended follow-up.
