@@ -3,6 +3,7 @@
 #include "ar_heap.h"
 #include "ar_string.h"
 #include "ar_list.h"
+#include "ar_pure_call.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -196,41 +197,12 @@ static void _cleanup_string_list(ar_list_t *own_list) {
     ar_list__destroy(own_list);
 }
 
-typedef struct {
-    const char *name;
-    size_t arg_count;
-} ar_pure_function_spec_t;
-
-static const ar_pure_function_spec_t PURE_FUNCTIONS[] = {
-    {"parse", 2},
-    {"build", 2},
-    {"if", 3},
-    {"head", 1},
-    {"tail", 1},
-    {"append", 2}
-};
-
 static bool _is_identifier_start(char c) {
     return isalpha((unsigned char)c) || c == '_';
 }
 
 static bool _is_identifier_part(char c) {
     return isalnum((unsigned char)c) || c == '_';
-}
-
-static bool _get_pure_function_arg_count(const char *ref_function_name, size_t *out_arg_count) {
-    if (!ref_function_name || !out_arg_count) {
-        return false;
-    }
-
-    for (size_t i = 0; i < sizeof(PURE_FUNCTIONS) / sizeof(PURE_FUNCTIONS[0]); i++) {
-        if (strcmp(ref_function_name, PURE_FUNCTIONS[i].name) == 0) {
-            *out_arg_count = PURE_FUNCTIONS[i].arg_count;
-            return true;
-        }
-    }
-
-    return false;
 }
 
 static bool _looks_like_function_call(const ar_expression_parser_t *ref_parser) {
@@ -720,13 +692,14 @@ static ar_expression_ast_t* _parse_function_call(ar_expression_parser_t *mut_par
         return NULL;
     }
 
-    size_t expected_arg_count = 0;
-    if (!_get_pure_function_arg_count(own_function_name, &expected_arg_count)) {
+    const ar_pure_call_t *ref_call = ar_pure_call__find(own_function_name);
+    if (!ref_call) {
         AR__HEAP__FREE(own_function_name);
         mut_parser->position = call_start;
         _set_error(mut_parser, "Function call is not a pure expression");
         return NULL;
     }
+    size_t expected_arg_count = ar_pure_call__get_arity(ref_call);
 
     char **own_args = NULL;
     size_t arg_count = 0;

@@ -6,6 +6,7 @@ const c = @cImport({
     @cInclude("ar_head.h");
     @cInclude("ar_tail.h");
     @cInclude("ar_append.h");
+    @cInclude("ar_pure_call.h");
     @cInclude("ar_condition.h");
     @cInclude("ar_data.h");
     @cInclude("ar_log.h");
@@ -608,32 +609,23 @@ fn _evaluate_function_call(
         return null;
     };
 
-    if (c.strcmp(function_name, "parse") == 0) {
-        return _evaluate_parse_call(ref_log, ref_frame, ref_node);
-    }
+    const ref_call = c.ar_pure_call__find(function_name) orelse {
+        c.ar_log__error(ref_log, "evaluate_function_call: Unknown pure function");
+        return null;
+    };
 
-    if (c.strcmp(function_name, "build") == 0) {
-        return _evaluate_build_call(ref_log, ref_frame, ref_node);
-    }
-
-    if (c.strcmp(function_name, "if") == 0) {
-        return _evaluate_if_call(ref_log, ref_frame, ref_node);
-    }
-
-    if (c.strcmp(function_name, "head") == 0) {
-        return _evaluate_head_call(ref_log, ref_frame, ref_node);
-    }
-
-    if (c.strcmp(function_name, "tail") == 0) {
-        return _evaluate_tail_call(ref_log, ref_frame, ref_node);
-    }
-
-    if (c.strcmp(function_name, "append") == 0) {
-        return _evaluate_append_call(ref_log, ref_frame, ref_node);
-    }
-
-    c.ar_log__error(ref_log, "evaluate_function_call: Unknown pure function");
-    return null;
+    return switch (c.ar_pure_call__get_type(ref_call)) {
+        c.AR_PURE_CALL_TYPE__PARSE => _evaluate_parse_call(ref_log, ref_frame, ref_node),
+        c.AR_PURE_CALL_TYPE__BUILD => _evaluate_build_call(ref_log, ref_frame, ref_node),
+        c.AR_PURE_CALL_TYPE__IF => _evaluate_if_call(ref_log, ref_frame, ref_node),
+        c.AR_PURE_CALL_TYPE__HEAD => _evaluate_head_call(ref_log, ref_frame, ref_node),
+        c.AR_PURE_CALL_TYPE__TAIL => _evaluate_tail_call(ref_log, ref_frame, ref_node),
+        c.AR_PURE_CALL_TYPE__APPEND => _evaluate_append_call(ref_log, ref_frame, ref_node),
+        else => {
+            c.ar_log__error(ref_log, "evaluate_function_call: Unknown pure function");
+            return null;
+        },
+    };
 }
 
 

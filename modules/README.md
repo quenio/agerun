@@ -1140,6 +1140,20 @@ The [expression parser module](ar_expression_parser.md) provides a recursive des
 - **Memory Safety**: Zero memory leaks with proper cleanup of temporary structures
 - **Depends on AST**: Uses expression_ast module for building parse trees
 - **Depends on List**: Uses list module for managing path components during parsing
+- **Depends on Pure Call**: Uses pure-call metadata for registered names and arities
+
+### Pure Call Module (`ar_pure_call`)
+
+The [pure call module](ar_pure_call.md) provides shared metadata for registered pure expression
+calls:
+
+- **Registered Names**: Owns the exact pure-call names accepted in expression position
+- **Arity Metadata**: Provides expected argument counts for parser validation
+- **Pure Classification**: Distinguishes pure expression calls from effectful instruction calls
+- **Call Identity**: Exposes `ar_pure_call_type_t` so evaluators can dispatch without duplicating
+  string-name lists
+- **Enumeration**: Supports count and indexed access for tests and documentation checks
+- **No Allocation**: Returns borrowed static metadata entries
 
 ### Frame Module (`ar_frame`)
 
@@ -1172,6 +1186,7 @@ The expression evaluator module provides evaluation of expression ASTs against m
 - **Recursive Evaluation**: Properly evaluates nested expressions
 - **Depends on AST**: Uses expression_ast module for node inspection
 - **Depends on Data**: Uses data module for value creation and manipulation
+- **Depends on Pure Call**: Uses pure-call metadata for registered call classification
 
 
 ### Instruction Evaluator Module (`ar_instruction_evaluator`)

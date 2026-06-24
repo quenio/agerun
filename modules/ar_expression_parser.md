@@ -106,7 +106,8 @@ Map literal keys are identifiers only. Quoted keys such as `{"name": "Ada"}` are
 Pure function calls can appear anywhere expressions are accepted, including list items, map values,
 assignment right-hand sides, and other function-call arguments. Expression-level `if(...)` still
 parses all three arguments as expressions, but evaluation remains lazy. Effectful instruction calls
-such as `send(...)` are rejected in expression position.
+such as `send(...)` are rejected in expression position. Registered pure-call names and arities are
+provided by `ar_pure_call`.
 
 ## Error Handling
 
@@ -170,6 +171,7 @@ ar_expression_parser__destroy(own_parser);
 - **ar_expression_ast** - For AST node structures and creation
 - **ar_heap** - For memory allocation and tracking
 - **ar_list** - For managing path components during parsing
+- **ar_pure_call** - For registered pure-call names and arities
 - **ar_string** - For string manipulation utilities
 
 ## Testing
