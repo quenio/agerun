@@ -325,6 +325,8 @@ ignored_errors:
     comment: "Testing NULL instruction parameter error logging"
   # ar_expression_evaluator_tests
   - context: "ar_expression_evaluator_tests"
+    message: "ERROR: evaluate_function_call: Unknown pure function"
+    comment: "Intentional negative dispatch test for an unregistered direct CALL AST"
   # ar_expression_parser_tests
   - context: "ar_expression_parser_tests"
     message: "ERROR: NULL expression provided to expression parser"

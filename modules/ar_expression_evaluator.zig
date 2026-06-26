@@ -405,145 +405,6 @@ fn _evaluate_read_only_expression(
     return _evaluate_expression(ref_log, ref_frame, ref_node);
 }
 
-fn _evaluate_parse_call(
-    ref_log: ?*c.ar_log_t,
-    ref_frame: ?*const c.ar_frame_t,
-    ref_node: ?*const c.ar_expression_ast_t
-) ?*c.ar_data_t {
-    if (c.ar_expression_ast__get_function_arg_count(ref_node) != 2) {
-        return c.ar_data__create_map();
-    }
-
-    const ref_template_ast = c.ar_expression_ast__get_function_arg(ref_node, 0);
-    const ref_input_ast = c.ar_expression_ast__get_function_arg(ref_node, 1);
-
-    const template_result = if (ref_template_ast != null)
-        _evaluate_expression(ref_log, ref_frame, ref_template_ast)
-    else
-        null;
-    defer if (template_result != null) c.ar_data__destroy_if_owned(template_result, ref_frame);
-
-    const input_result = if (ref_input_ast != null)
-        _evaluate_expression(ref_log, ref_frame, ref_input_ast)
-    else
-        null;
-    defer if (input_result != null) c.ar_data__destroy_if_owned(input_result, ref_frame);
-
-    const own_result = c.ar_parse__create_result(template_result, input_result);
-    if (own_result == null) {
-        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create parse result");
-    }
-    return own_result;
-}
-
-fn _evaluate_build_call(
-    ref_log: ?*c.ar_log_t,
-    ref_frame: ?*const c.ar_frame_t,
-    ref_node: ?*const c.ar_expression_ast_t
-) ?*c.ar_data_t {
-    if (c.ar_expression_ast__get_function_arg_count(ref_node) != 2) {
-        return c.ar_data__create_string("");
-    }
-
-    const ref_template_ast = c.ar_expression_ast__get_function_arg(ref_node, 0);
-    const ref_values_ast = c.ar_expression_ast__get_function_arg(ref_node, 1);
-
-    const template_result = if (ref_template_ast != null)
-        _evaluate_read_only_expression(ref_log, ref_frame, ref_template_ast)
-    else
-        null;
-    defer if (template_result != null) _destroy_temporary_result(template_result, ref_frame);
-
-    const values_result = if (ref_values_ast != null)
-        _evaluate_read_only_expression(ref_log, ref_frame, ref_values_ast)
-    else
-        null;
-    defer if (values_result != null) _destroy_temporary_result(values_result, ref_frame);
-
-    const own_result = c.ar_build__create_result(template_result, values_result);
-    if (own_result == null) {
-        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create build result");
-    }
-    return own_result;
-}
-
-fn _evaluate_head_call(
-    ref_log: ?*c.ar_log_t,
-    ref_frame: ?*const c.ar_frame_t,
-    ref_node: ?*const c.ar_expression_ast_t
-) ?*c.ar_data_t {
-    if (c.ar_expression_ast__get_function_arg_count(ref_node) != 1) {
-        return c.ar_head__create_result(null);
-    }
-
-    const ref_list_ast = c.ar_expression_ast__get_function_arg(ref_node, 0);
-    const list_result = if (ref_list_ast != null)
-        _evaluate_read_only_expression(ref_log, ref_frame, ref_list_ast)
-    else
-        null;
-    defer if (list_result != null) _destroy_temporary_result(list_result, ref_frame);
-
-    const own_result = c.ar_head__create_result(list_result);
-    if (own_result == null) {
-        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create head result");
-    }
-    return own_result;
-}
-
-fn _evaluate_tail_call(
-    ref_log: ?*c.ar_log_t,
-    ref_frame: ?*const c.ar_frame_t,
-    ref_node: ?*const c.ar_expression_ast_t
-) ?*c.ar_data_t {
-    if (c.ar_expression_ast__get_function_arg_count(ref_node) != 1) {
-        return c.ar_tail__create_result(null);
-    }
-
-    const ref_list_ast = c.ar_expression_ast__get_function_arg(ref_node, 0);
-    const list_result = if (ref_list_ast != null)
-        _evaluate_read_only_expression(ref_log, ref_frame, ref_list_ast)
-    else
-        null;
-    defer if (list_result != null) _destroy_temporary_result(list_result, ref_frame);
-
-    const own_result = c.ar_tail__create_result(list_result);
-    if (own_result == null) {
-        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create tail result");
-    }
-    return own_result;
-}
-
-fn _evaluate_append_call(
-    ref_log: ?*c.ar_log_t,
-    ref_frame: ?*const c.ar_frame_t,
-    ref_node: ?*const c.ar_expression_ast_t
-) ?*c.ar_data_t {
-    if (c.ar_expression_ast__get_function_arg_count(ref_node) != 2) {
-        return c.ar_append__create_result(null, null);
-    }
-
-    const ref_list_ast = c.ar_expression_ast__get_function_arg(ref_node, 0);
-    const ref_value_ast = c.ar_expression_ast__get_function_arg(ref_node, 1);
-
-    const list_result = if (ref_list_ast != null)
-        _evaluate_read_only_expression(ref_log, ref_frame, ref_list_ast)
-    else
-        null;
-    defer if (list_result != null) _destroy_temporary_result(list_result, ref_frame);
-
-    const value_result = if (ref_value_ast != null)
-        _evaluate_read_only_expression(ref_log, ref_frame, ref_value_ast)
-    else
-        null;
-    defer if (value_result != null) _destroy_temporary_result(value_result, ref_frame);
-
-    const own_result = c.ar_append__create_result(list_result, value_result);
-    if (own_result == null) {
-        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create append result");
-    }
-    return own_result;
-}
-
 fn _create_zero_result(
     ref_log: ?*c.ar_log_t
 ) ?*c.ar_data_t {
@@ -554,15 +415,234 @@ fn _create_zero_result(
     return own_result;
 }
 
+const EAGER_PURE_CALL_ARG_LIMIT: usize = 2;
+
+const pure_call_evaluation_kind_t = enum {
+    eager,
+    lazy_if,
+};
+
+const pure_call_arg_mode_t = enum {
+    owned_result,
+    read_only_result,
+};
+
+const PureCallResultFactory =
+    *const fn (?*c.ar_log_t, *const [EAGER_PURE_CALL_ARG_LIMIT]?*c.ar_data_t) ?*c.ar_data_t;
+const PureCallFallbackFactory = *const fn (?*c.ar_log_t) ?*c.ar_data_t;
+
+const pure_call_dispatch_entry_t = struct {
+    call_type: c.ar_pure_call_type_t,
+    evaluation_kind: pure_call_evaluation_kind_t,
+    arg_mode: pure_call_arg_mode_t,
+    create_result: ?PureCallResultFactory,
+    create_arity_fallback: PureCallFallbackFactory,
+};
+
+fn _create_empty_map_result(_: ?*c.ar_log_t) ?*c.ar_data_t {
+    return c.ar_data__create_map();
+}
+
+fn _create_empty_string_result(_: ?*c.ar_log_t) ?*c.ar_data_t {
+    return c.ar_data__create_string("");
+}
+
+fn _create_head_fallback_result(_: ?*c.ar_log_t) ?*c.ar_data_t {
+    return c.ar_head__create_result(null);
+}
+
+fn _create_tail_fallback_result(_: ?*c.ar_log_t) ?*c.ar_data_t {
+    return c.ar_tail__create_result(null);
+}
+
+fn _create_append_fallback_result(_: ?*c.ar_log_t) ?*c.ar_data_t {
+    return c.ar_append__create_result(null, null);
+}
+
+fn _create_parse_call_result(
+    ref_log: ?*c.ar_log_t,
+    ref_args: *const [EAGER_PURE_CALL_ARG_LIMIT]?*c.ar_data_t
+) ?*c.ar_data_t {
+    const own_result = c.ar_parse__create_result(ref_args.*[0], ref_args.*[1]);
+    if (own_result == null) {
+        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create parse result");
+    }
+    return own_result;
+}
+
+fn _create_build_call_result(
+    ref_log: ?*c.ar_log_t,
+    ref_args: *const [EAGER_PURE_CALL_ARG_LIMIT]?*c.ar_data_t
+) ?*c.ar_data_t {
+    const own_result = c.ar_build__create_result(ref_args.*[0], ref_args.*[1]);
+    if (own_result == null) {
+        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create build result");
+    }
+    return own_result;
+}
+
+fn _create_head_call_result(
+    ref_log: ?*c.ar_log_t,
+    ref_args: *const [EAGER_PURE_CALL_ARG_LIMIT]?*c.ar_data_t
+) ?*c.ar_data_t {
+    const own_result = c.ar_head__create_result(ref_args.*[0]);
+    if (own_result == null) {
+        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create head result");
+    }
+    return own_result;
+}
+
+fn _create_tail_call_result(
+    ref_log: ?*c.ar_log_t,
+    ref_args: *const [EAGER_PURE_CALL_ARG_LIMIT]?*c.ar_data_t
+) ?*c.ar_data_t {
+    const own_result = c.ar_tail__create_result(ref_args.*[0]);
+    if (own_result == null) {
+        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create tail result");
+    }
+    return own_result;
+}
+
+fn _create_append_call_result(
+    ref_log: ?*c.ar_log_t,
+    ref_args: *const [EAGER_PURE_CALL_ARG_LIMIT]?*c.ar_data_t
+) ?*c.ar_data_t {
+    const own_result = c.ar_append__create_result(ref_args.*[0], ref_args.*[1]);
+    if (own_result == null) {
+        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create append result");
+    }
+    return own_result;
+}
+
+const PURE_CALL_DISPATCH = [_]pure_call_dispatch_entry_t{
+    .{
+        .call_type = c.AR_PURE_CALL_TYPE__PARSE,
+        .evaluation_kind = .eager,
+        .arg_mode = .owned_result,
+        .create_result = _create_parse_call_result,
+        .create_arity_fallback = _create_empty_map_result,
+    },
+    .{
+        .call_type = c.AR_PURE_CALL_TYPE__BUILD,
+        .evaluation_kind = .eager,
+        .arg_mode = .read_only_result,
+        .create_result = _create_build_call_result,
+        .create_arity_fallback = _create_empty_string_result,
+    },
+    .{
+        .call_type = c.AR_PURE_CALL_TYPE__IF,
+        .evaluation_kind = .lazy_if,
+        .arg_mode = .read_only_result,
+        .create_result = null,
+        .create_arity_fallback = _create_zero_result,
+    },
+    .{
+        .call_type = c.AR_PURE_CALL_TYPE__HEAD,
+        .evaluation_kind = .eager,
+        .arg_mode = .read_only_result,
+        .create_result = _create_head_call_result,
+        .create_arity_fallback = _create_head_fallback_result,
+    },
+    .{
+        .call_type = c.AR_PURE_CALL_TYPE__TAIL,
+        .evaluation_kind = .eager,
+        .arg_mode = .read_only_result,
+        .create_result = _create_tail_call_result,
+        .create_arity_fallback = _create_tail_fallback_result,
+    },
+    .{
+        .call_type = c.AR_PURE_CALL_TYPE__APPEND,
+        .evaluation_kind = .eager,
+        .arg_mode = .read_only_result,
+        .create_result = _create_append_call_result,
+        .create_arity_fallback = _create_append_fallback_result,
+    },
+};
+
+fn _find_pure_call_dispatch(
+    call_type: c.ar_pure_call_type_t
+) ?*const pure_call_dispatch_entry_t {
+    for (&PURE_CALL_DISPATCH) |*ref_entry| {
+        if (ref_entry.call_type == call_type) {
+            return ref_entry;
+        }
+    }
+
+    return null;
+}
+
+fn _evaluate_eager_call_arguments(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t,
+    arg_count: usize,
+    arg_mode: pure_call_arg_mode_t,
+    mut_args: *[EAGER_PURE_CALL_ARG_LIMIT]?*c.ar_data_t
+) void {
+    var i: usize = 0;
+    while (i < arg_count and i < EAGER_PURE_CALL_ARG_LIMIT) : (i += 1) {
+        const ref_arg_ast = c.ar_expression_ast__get_function_arg(ref_node, i);
+        mut_args.*[i] = if (ref_arg_ast != null)
+            switch (arg_mode) {
+                .owned_result => _evaluate_expression(ref_log, ref_frame, ref_arg_ast),
+                .read_only_result => _evaluate_read_only_expression(ref_log, ref_frame, ref_arg_ast),
+            }
+        else
+            null;
+    }
+}
+
+fn _destroy_eager_call_arguments(
+    mut_args: *[EAGER_PURE_CALL_ARG_LIMIT]?*c.ar_data_t,
+    arg_count: usize,
+    arg_mode: pure_call_arg_mode_t,
+    ref_frame: ?*const c.ar_frame_t
+) void {
+    var i = @min(arg_count, EAGER_PURE_CALL_ARG_LIMIT);
+    while (i > 0) {
+        i -= 1;
+        const ref_arg = mut_args.*[i];
+        if (ref_arg == null) {
+            continue;
+        }
+
+        switch (arg_mode) {
+            .owned_result => c.ar_data__destroy_if_owned(ref_arg, ref_frame),
+            .read_only_result => _destroy_temporary_result(ref_arg, ref_frame),
+        }
+        mut_args.*[i] = null;
+    }
+}
+
+fn _evaluate_eager_pure_call(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t,
+    ref_dispatch: *const pure_call_dispatch_entry_t,
+    arg_count: usize
+) ?*c.ar_data_t {
+    if (arg_count > EAGER_PURE_CALL_ARG_LIMIT) {
+        c.ar_log__error(ref_log, "evaluate_function_call: Unsupported pure-call arity");
+        return null;
+    }
+
+    const create_result = ref_dispatch.create_result orelse {
+        c.ar_log__error(ref_log, "evaluate_function_call: Missing pure-call result factory");
+        return null;
+    };
+
+    var args = [_]?*c.ar_data_t{null} ** EAGER_PURE_CALL_ARG_LIMIT;
+    _evaluate_eager_call_arguments(ref_log, ref_frame, ref_node, arg_count, ref_dispatch.arg_mode, &args);
+    defer _destroy_eager_call_arguments(&args, arg_count, ref_dispatch.arg_mode, ref_frame);
+
+    return create_result(ref_log, &args);
+}
+
 fn _evaluate_if_call(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
     ref_node: ?*const c.ar_expression_ast_t
 ) ?*c.ar_data_t {
-    if (c.ar_expression_ast__get_function_arg_count(ref_node) != 3) {
-        return _create_zero_result(ref_log);
-    }
-
     const ref_condition_ast = c.ar_expression_ast__get_function_arg(ref_node, 0);
     const ref_true_ast = c.ar_expression_ast__get_function_arg(ref_node, 1);
     const ref_false_ast = c.ar_expression_ast__get_function_arg(ref_node, 2);
@@ -590,6 +670,35 @@ fn _evaluate_if_call(
     return own_result;
 }
 
+fn _evaluate_registered_pure_call(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t,
+    ref_call: *const c.ar_pure_call_t
+) ?*c.ar_data_t {
+    const ref_dispatch = _find_pure_call_dispatch(c.ar_pure_call__get_type(ref_call)) orelse {
+        c.ar_log__error(ref_log, "evaluate_function_call: Unknown pure function");
+        return null;
+    };
+
+    const expected_arg_count = c.ar_pure_call__get_arity(ref_call);
+    const actual_arg_count = c.ar_expression_ast__get_function_arg_count(ref_node);
+    if (actual_arg_count != expected_arg_count) {
+        return ref_dispatch.create_arity_fallback(ref_log);
+    }
+
+    return switch (ref_dispatch.evaluation_kind) {
+        .eager => _evaluate_eager_pure_call(
+            ref_log,
+            ref_frame,
+            ref_node,
+            ref_dispatch,
+            expected_arg_count
+        ),
+        .lazy_if => _evaluate_if_call(ref_log, ref_frame, ref_node),
+    };
+}
+
 fn _evaluate_function_call(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
@@ -614,18 +723,7 @@ fn _evaluate_function_call(
         return null;
     };
 
-    return switch (c.ar_pure_call__get_type(ref_call)) {
-        c.AR_PURE_CALL_TYPE__PARSE => _evaluate_parse_call(ref_log, ref_frame, ref_node),
-        c.AR_PURE_CALL_TYPE__BUILD => _evaluate_build_call(ref_log, ref_frame, ref_node),
-        c.AR_PURE_CALL_TYPE__IF => _evaluate_if_call(ref_log, ref_frame, ref_node),
-        c.AR_PURE_CALL_TYPE__HEAD => _evaluate_head_call(ref_log, ref_frame, ref_node),
-        c.AR_PURE_CALL_TYPE__TAIL => _evaluate_tail_call(ref_log, ref_frame, ref_node),
-        c.AR_PURE_CALL_TYPE__APPEND => _evaluate_append_call(ref_log, ref_frame, ref_node),
-        else => {
-            c.ar_log__error(ref_log, "evaluate_function_call: Unknown pure function");
-            return null;
-        },
-    };
+    return _evaluate_registered_pure_call(ref_log, ref_frame, ref_node, ref_call);
 }
 
 

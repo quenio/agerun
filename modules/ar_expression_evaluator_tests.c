@@ -9,6 +9,7 @@
 #include "ar_expression_evaluator.h"
 #include "ar_expression_ast.h"
 #include "ar_expression_parser.h"
+#include "ar_pure_call.h"
 #include "ar_data.h"
 #include "ar_heap.h"
 #include "ar_log.h"
@@ -1086,6 +1087,291 @@ static void _assert_empty_list(ar_data_t *ref_data) {
               "Result should be a list");
     AR_ASSERT(ar_data__list_count(ref_data) == 0,
               "List result should be empty");
+}
+
+static ar_expression_ast_t *_create_integer_list_ast(int first, int second, size_t item_count) {
+    ar_expression_ast_t *own_items[2] = {NULL, NULL};
+
+    if (item_count > 0) {
+        own_items[0] = ar_expression_ast__create_literal_int(first);
+        AR_ASSERT(own_items[0] != NULL, "First list item AST should be created");
+    }
+    if (item_count > 1) {
+        own_items[1] = ar_expression_ast__create_literal_int(second);
+        AR_ASSERT(own_items[1] != NULL, "Second list item AST should be created");
+    }
+
+    ar_expression_ast_t *own_list =
+        ar_expression_ast__create_literal_list(own_items, item_count);
+    AR_ASSERT(own_list != NULL, "List AST should be created");
+
+    // Ownership transferred to caller
+    return own_list;
+}
+
+static ar_expression_ast_t *_create_name_map_ast(void) {
+    const char *ref_keys[] = {"name"};
+    ar_expression_ast_t *own_values[1] = {
+        ar_expression_ast__create_literal_string("Ada")
+    };
+    AR_ASSERT(own_values[0] != NULL, "Map value AST should be created");
+
+    ar_expression_ast_t *own_map =
+        ar_expression_ast__create_literal_map(ref_keys, own_values, 1);
+    AR_ASSERT(own_map != NULL, "Map AST should be created");
+
+    // Ownership transferred to caller
+    return own_map;
+}
+
+static ar_expression_ast_t *_create_dispatch_call_ast(const ar_pure_call_t *ref_call) {
+    AR_ASSERT(ref_call != NULL, "Pure-call metadata should be provided");
+
+    ar_expression_ast_t *own_args[3] = {NULL, NULL, NULL};
+
+    switch (ar_pure_call__get_type(ref_call)) {
+        case AR_PURE_CALL_TYPE__PARSE:
+            own_args[0] = ar_expression_ast__create_literal_string("name={name}");
+            own_args[1] = ar_expression_ast__create_literal_string("name=Ada");
+            break;
+        case AR_PURE_CALL_TYPE__BUILD:
+            own_args[0] = ar_expression_ast__create_literal_string("Hello {name}!");
+            own_args[1] = _create_name_map_ast();
+            break;
+        case AR_PURE_CALL_TYPE__IF:
+            own_args[0] = ar_expression_ast__create_literal_int(1);
+            own_args[1] = ar_expression_ast__create_literal_string("selected");
+            own_args[2] = ar_expression_ast__create_literal_string("not selected");
+            break;
+        case AR_PURE_CALL_TYPE__HEAD:
+            own_args[0] = _create_integer_list_ast(10, 20, 2);
+            break;
+        case AR_PURE_CALL_TYPE__TAIL:
+            own_args[0] = _create_integer_list_ast(10, 20, 2);
+            break;
+        case AR_PURE_CALL_TYPE__APPEND:
+            own_args[0] = _create_integer_list_ast(10, 0, 1);
+            own_args[1] = ar_expression_ast__create_literal_int(20);
+            break;
+        default:
+            AR_ASSERT(false, "Registered pure-call metadata should have a dispatch type");
+            return NULL;
+    }
+
+    size_t arg_count = ar_pure_call__get_arity(ref_call);
+    size_t arg_capacity = sizeof(own_args) / sizeof(own_args[0]);
+    if (arg_count > arg_capacity) {
+        AR_ASSERT(false, "Dispatch call argument count should fit test helper capacity");
+        return NULL;
+    }
+
+    for (size_t i = 0; i < arg_count; i++) {
+        AR_ASSERT(own_args[i] != NULL, "Dispatch call argument AST should be created");
+    }
+
+    ar_expression_ast_t *own_call =
+        ar_expression_ast__create_function_call(ar_pure_call__get_name(ref_call),
+                                                own_args,
+                                                arg_count);
+    AR_ASSERT(own_call != NULL, "Function call AST should be created");
+
+    // Ownership transferred to caller
+    return own_call;
+}
+
+static ar_data_t *_evaluate_direct_ast(
+    ar_evaluator_fixture_t *own_fixture,
+    ar_expression_ast_t *ref_ast
+) {
+    ar_expression_evaluator_t *ref_evaluator =
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+
+    ar_data_t *own_result =
+        ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, ref_ast);
+
+    // Ownership transferred to caller
+    return own_result;
+}
+
+static void _assert_dispatch_result_for_call(
+    const ar_pure_call_t *ref_call,
+    ar_data_t *ref_result
+) {
+    AR_ASSERT(ref_result != NULL, "Dispatch result should not be NULL");
+
+    switch (ar_pure_call__get_type(ref_call)) {
+        case AR_PURE_CALL_TYPE__PARSE:
+            AR_ASSERT(ar_data__get_type(ref_result) == AR_DATA_TYPE__MAP,
+                      "parse() dispatch should return a map");
+            AR_ASSERT(strcmp(ar_data__get_map_string(ref_result, "name"), "Ada") == 0,
+                      "parse() dispatch should parse the field value");
+            break;
+        case AR_PURE_CALL_TYPE__BUILD:
+            _assert_string_value(ref_result, "Hello Ada!");
+            break;
+        case AR_PURE_CALL_TYPE__IF:
+            _assert_string_value(ref_result, "selected");
+            break;
+        case AR_PURE_CALL_TYPE__HEAD:
+            _assert_integer_value(ref_result, 10);
+            break;
+        case AR_PURE_CALL_TYPE__TAIL: {
+            AR_ASSERT(ar_data__get_type(ref_result) == AR_DATA_TYPE__LIST,
+                      "tail() dispatch should return a list");
+            AR_ASSERT(ar_data__list_count(ref_result) == 1,
+                      "tail() dispatch should return remaining items");
+            ar_data_t **own_items = ar_data__list_items(ref_result);
+            AR_ASSERT(own_items != NULL, "tail() result items should be available");
+            _assert_integer_value(own_items[0], 20);
+            AR__HEAP__FREE(own_items);
+            break;
+        }
+        case AR_PURE_CALL_TYPE__APPEND: {
+            AR_ASSERT(ar_data__get_type(ref_result) == AR_DATA_TYPE__LIST,
+                      "append() dispatch should return a list");
+            AR_ASSERT(ar_data__list_count(ref_result) == 2,
+                      "append() dispatch should return source plus appended value");
+            ar_data_t **own_items = ar_data__list_items(ref_result);
+            AR_ASSERT(own_items != NULL, "append() result items should be available");
+            _assert_integer_value(own_items[0], 10);
+            _assert_integer_value(own_items[1], 20);
+            AR__HEAP__FREE(own_items);
+            break;
+        }
+        default:
+            AR_ASSERT(false, "Dispatch result should correspond to a registered pure call");
+            break;
+    }
+}
+
+static void _assert_wrong_arity_fallback_for_call(
+    const ar_pure_call_t *ref_call,
+    ar_data_t *ref_result
+) {
+    AR_ASSERT(ref_result != NULL, "Wrong-arity call should return a fallback result");
+
+    switch (ar_pure_call__get_type(ref_call)) {
+        case AR_PURE_CALL_TYPE__PARSE:
+            AR_ASSERT(ar_data__get_type(ref_result) == AR_DATA_TYPE__MAP,
+                      "wrong-arity parse() should return a map fallback");
+            AR_ASSERT(_map_key_count(ref_result) == 0,
+                      "wrong-arity parse() fallback should be empty");
+            break;
+        case AR_PURE_CALL_TYPE__BUILD:
+            _assert_string_value(ref_result, "");
+            break;
+        case AR_PURE_CALL_TYPE__IF:
+        case AR_PURE_CALL_TYPE__HEAD:
+        case AR_PURE_CALL_TYPE__TAIL:
+        case AR_PURE_CALL_TYPE__APPEND:
+            _assert_integer_value(ref_result, 0);
+            break;
+        default:
+            AR_ASSERT(false, "Fallback should correspond to a registered pure call");
+            break;
+    }
+}
+
+static void test_evaluate_dispatch_covers_registered_pure_calls(void) {
+    printf("Testing expression evaluator dispatch covers registered pure calls...\n");
+
+    // Given the pure-call registry and an evaluator fixture
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_dispatch_covers_registered_pure_calls");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    // When evaluating one direct CALL AST for each registered pure call
+    size_t registered_count = ar_pure_call__count();
+    AR_ASSERT(registered_count > 0, "Pure-call registry should not be empty");
+    for (size_t i = 0; i < registered_count; i++) {
+        const ar_pure_call_t *ref_call = ar_pure_call__get_at(i);
+        AR_ASSERT(ref_call != NULL, "Pure-call registry entry should exist");
+
+        // When creating and evaluating the registered call
+        ar_expression_ast_t *own_ast = _create_dispatch_call_ast(ref_call);
+        ar_data_t *own_result = _evaluate_direct_ast(own_fixture, own_ast);
+
+        // Then each registered call should reach its evaluator handler
+        _assert_dispatch_result_for_call(ref_call, own_result);
+
+        // Cleanup
+        ar_data__destroy(own_result);
+        ar_expression_ast__destroy(own_ast);
+    }
+
+    // Cleanup
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_dispatch_uses_registered_arity_fallbacks(void) {
+    printf("Testing expression evaluator dispatch uses registered arity fallbacks...\n");
+
+    // Given the pure-call registry and an evaluator fixture
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_dispatch_uses_registered_arity_fallbacks");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    // When evaluating each registered pure call with no arguments
+    size_t registered_count = ar_pure_call__count();
+    for (size_t i = 0; i < registered_count; i++) {
+        const ar_pure_call_t *ref_call = ar_pure_call__get_at(i);
+        AR_ASSERT(ref_call != NULL, "Pure-call registry entry should exist");
+        AR_ASSERT(ar_pure_call__get_arity(ref_call) > 0,
+                  "Current pure calls should require at least one argument");
+
+        // When creating and evaluating a wrong-arity direct call
+        ar_expression_ast_t *own_ast =
+            ar_expression_ast__create_function_call(ar_pure_call__get_name(ref_call), NULL, 0);
+        AR_ASSERT(own_ast != NULL, "Wrong-arity function call AST should be created");
+        ar_data_t *own_result = _evaluate_direct_ast(own_fixture, own_ast);
+
+        // Then the evaluator should use the call's registered fallback behavior
+        _assert_wrong_arity_fallback_for_call(ref_call, own_result);
+
+        // Cleanup
+        ar_data__destroy(own_result);
+        ar_expression_ast__destroy(own_ast);
+    }
+
+    // Cleanup
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_dispatch_rejects_unknown_function_call(void) {
+    printf("Testing expression evaluator dispatch rejects unknown function call...\n");
+
+    // Given a direct CALL AST whose name is not registered as a pure call
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_dispatch_rejects_unknown_function_call");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_log__error(ref_log, NULL);
+
+    // When creating a direct call with an unregistered name
+    ar_expression_ast_t *own_args[2] = {
+        ar_expression_ast__create_literal_int(0),
+        ar_expression_ast__create_literal_string("ignored")
+    };
+    AR_ASSERT(own_args[0] != NULL, "First unknown-call argument should be created");
+    AR_ASSERT(own_args[1] != NULL, "Second unknown-call argument should be created");
+    ar_expression_ast_t *own_ast =
+        ar_expression_ast__create_function_call("send", own_args, 2);
+    AR_ASSERT(own_ast != NULL, "Unknown function call AST should be created");
+
+    // When evaluating the unregistered call
+    ar_data_t *own_result = _evaluate_direct_ast(own_fixture, own_ast);
+
+    // Then it should fail safely without a result
+    AR_ASSERT(own_result == NULL, "Unknown function call should not produce a result");
+    const char *ref_error = ar_log__get_last_error_message(ref_log);
+    AR_ASSERT(ref_error != NULL, "Unknown function call should log an error");
+    AR_ASSERT(strstr(ref_error, "Unknown pure function") != NULL,
+              "Unknown function call should log the pure-call dispatch error");
+
+    // Cleanup
+    ar_expression_ast__destroy(own_ast);
+    ar_evaluator_fixture__destroy(own_fixture);
 }
 
 static void test_evaluate_append_function_call_preserves_source(void) {
@@ -2208,6 +2494,9 @@ int main(void) {
     test_evaluate_type_mismatch_error_message();
     test_evaluate_list_literal();
     test_evaluate_map_literal();
+    test_evaluate_dispatch_covers_registered_pure_calls();
+    test_evaluate_dispatch_uses_registered_arity_fallbacks();
+    test_evaluate_dispatch_rejects_unknown_function_call();
     test_evaluate_parse_function_call();
     test_evaluate_parse_function_call_in_literals();
     test_evaluate_parse_returns_empty_map_for_bad_inputs();
