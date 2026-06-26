@@ -53,12 +53,14 @@ Evaluates a compile instruction using the stored dependencies. Takes a frame con
 
 The module evaluates compile instructions of the form:
 - `compile(name, instructions, version)`
+- `memory.result := compile(name, instructions, version)`
 
 Key features:
 1. **Method Creation**: Creates new method objects with name, code, and version
 2. **Version Validation**: Ensures version follows semantic versioning format
 3. **Method Registration**: Registers the method in the global methodology
 4. **Duplicate Prevention**: Prevents registering methods with same name/version
+5. **Result Binding**: Stores integer `1` or `0` through `ar_result_binding` when assigned
 
 ### Memory Management
 
@@ -81,6 +83,7 @@ The module follows strict memory ownership rules:
 - `ar_instruction_ast`: For accessing instruction AST structure
 - `ar_methodology`: For method registration
 - `ar_method`: For method creation
+- `ar_result_binding`: For assigned effectful result-path validation and owned-result storage
 - `ar_data`: For data manipulation
 - `ar_string`: For string operations
 - `ar_heap`: For memory tracking
@@ -93,6 +96,8 @@ The module:
 3. Creates a new method object
 4. Registers the method with the methodology
 5. Handles registration failures (e.g., duplicates)
+6. Validates assigned result targets before compilation so protected `memory.self` writes are rejected
+7. Binds assigned integer results through `ar_result_binding` without changing compile success
 
 ## Usage Example
 

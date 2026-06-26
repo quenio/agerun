@@ -48,7 +48,7 @@ Key features:
 1. **Frame-Based Execution**: Uses ar_frame_t for memory, context, and message bundling
 2. **Method Name/Version Evaluation**: Evaluates both arguments to strings
 3. **Method Unregistration**: Removes the method from methodology
-4. **Result Assignment**: Stores true (1) if method was destroyed, false (0) otherwise
+4. **Result Assignment**: Stores integer `1` if the method was destroyed, or `0` otherwise, through `ar_result_binding`
 5. **Memory Access**: Gets memory from frame during evaluation
 
 ### Deprecation Behavior
@@ -82,6 +82,7 @@ The module follows strict memory ownership rules:
 - `ar_agency`: For agent operations
 - `ar_methodology`: For method operations
 - `ar_method`: For method references
+- `ar_result_binding`: For assigned effectful result-path validation and owned-result storage
 - `ar_data`: For data manipulation
 - `ar_heap`: For memory tracking
 
@@ -93,7 +94,8 @@ The module:
 3. Validates both results are strings
 4. Checks if method exists
 5. Unregisters the method from methodology (if it exists)
-6. Stores result if assignment specified (1 if unregistered, 0 if not found)
+6. Validates assigned result targets before deprecating so protected `memory.self` writes are rejected
+7. Stores result through `ar_result_binding` if assignment specified (1 if unregistered, 0 if not found)
 
 ## Usage Examples
 

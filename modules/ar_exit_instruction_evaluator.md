@@ -48,7 +48,7 @@ Key features:
 1. **Frame-Based Execution**: Uses ar_frame_t for memory, context, and message bundling
 2. **Agent ID Evaluation**: Evaluates the agent ID expression to an integer
 3. **Agent Destruction**: Exits the agent if it exists
-4. **Result Assignment**: Stores true (1) if agent was terminated, false (0) otherwise
+4. **Result Assignment**: Stores integer `1` if the agent was terminated, or `0` otherwise, through `ar_result_binding`
 5. **Error Handling**: Returns false for invalid argument types
 6. **Memory Access**: Gets memory from frame during evaluation
 
@@ -90,6 +90,7 @@ defer ar_allocator.free(own_items);  // Automatically frees on any return
 - `ar_expression_ast`: For expression AST nodes
 - `ar_instruction_ast`: For accessing instruction AST structure
 - `ar_agency`: For agent destruction
+- `ar_result_binding`: For assigned effectful result-path validation and owned-result storage
 - `ar_data`: For data manipulation
 - `ar_heap`: For memory tracking
 
@@ -100,7 +101,8 @@ The module:
 2. Evaluates the agent ID expression
 3. Validates the result is an integer
 4. Calls agency to exit the agent
-5. Stores result if assignment specified
+5. Validates assigned result targets before exiting so protected `memory.self` writes are rejected
+6. Stores result through `ar_result_binding` if assignment specified
 
 ## Usage Examples
 

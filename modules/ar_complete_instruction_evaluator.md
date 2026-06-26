@@ -9,7 +9,7 @@ The `ar_complete_instruction_evaluator` module evaluates `complete(...)` instruc
 - request local placeholder values from `ar_local_completion` only for missing placeholders
 - validate generated strings before storing the result map
 - reject empty values, leading/trailing whitespace, and generated `{` or `}` characters
-- write a new result map to the instruction result path when the call is assigned
+- write a new result map through `ar_result_binding` when the call is assigned
 - include deep copies of original input-map values and completed values in the returned map
 - return handled failure status without aborting the method for normal `complete(...)` failure cases
 
@@ -25,3 +25,6 @@ The `ar_complete_instruction_evaluator` module evaluates `complete(...)` instruc
 - direct local completions use a 30-second generation budget, matching the documented CI performance threshold for cold Phi-3 completions
 - generated-value validation failures return the copied input values map while omitting invalid generated values
 - completed values are stored as strings in the returned map for the first release
+- protected `memory.self` and `memory.self.*` result targets are rejected through
+  `ar_result_binding` before completion work starts
+- unassigned result maps are still destroyed locally because no result binding consumes them

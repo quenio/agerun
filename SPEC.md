@@ -163,9 +163,9 @@ The current language partially satisfies those principles:
 - **Expression Purity**: Current expression nodes are value-producing and side-effect free. Registered
   pure built-in calls are expression calls; effectful operations remain sequenced as method lines.
 - **Single Source of Semantics**: The shared function-call argument parser centralizes argument
-  boundary rules, but ordinary assignment and function-result assignment still use separate
-  AST/evaluator paths, and some instruction-specific exceptions remain documented outside one
-  consolidated semantics section.
+  boundary rules. Ordinary assignment and function-result assignment still use separate AST/evaluator
+  paths, but assigned effectful result binding now shares one storage owner. Some
+  instruction-specific exceptions remain documented outside one consolidated semantics section.
 - **Syntax-Directed Semantics**: Memory assignment, function-result assignment, standalone
   compatibility mutation such as `append(memory.items, value)`, and sentinel uses of integer `0`
   still have documented special cases.

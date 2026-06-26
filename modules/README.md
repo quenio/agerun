@@ -1210,12 +1210,21 @@ The [assignment instruction evaluator module](ar_assignment_instruction_evaluato
 - **Expression Evaluation**: Evaluates right-hand side expressions
 - **Ownership Transfer**: Properly transfers ownership of evaluated values
 
+#### Result Binding Module (`ar_result_binding`)
+
+The [result binding module](ar_result_binding.md) owns assigned result storage for effectful
+instructions:
+- **Effectful Result Targets**: Validates assigned instruction result paths
+- **Protected Identity**: Rejects `memory.self` and `memory.self.*` result storage
+- **Owned Result Consumption**: Transfers owned results into frame memory or destroys them on failed storage
+
 #### Send Instruction Evaluator Module (`ar_send_instruction_evaluator`)
 
 The [send instruction evaluator module](ar_send_instruction_evaluator.md) handles agent messaging:
 - **Message Sending**: Sends messages to agents by ID
 - **Agent ID 0**: Special case for logging/no-op sends
 - **Memory Management**: Transfers message ownership to agency
+- **Result Binding**: Uses `ar_result_binding` for assigned send results
 
 #### Condition Instruction Evaluator Module (`ar_condition_instruction_evaluator`)
 

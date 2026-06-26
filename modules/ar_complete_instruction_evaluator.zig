@@ -9,6 +9,7 @@ const c = @cImport({
     @cInclude("ar_data.h");
     @cInclude("ar_list.h");
     @cInclude("ar_log.h");
+    @cInclude("ar_result_binding.h");
 });
 
 const ar_complete_instruction_evaluator_t = struct {
@@ -39,37 +40,41 @@ fn _logError(ref_evaluator: *const ar_complete_instruction_evaluator_t, ref_mess
 }
 
 fn _writeResultMap(
-    mut_memory: ?*c.ar_data_t,
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
     ref_ast: ?*const c.ar_instruction_ast_t,
     own_result: ?*c.ar_data_t,
 ) bool {
-    if (mut_memory == null or ref_ast == null or own_result == null) return false;
+    if (ref_ast == null or own_result == null) {
+        if (own_result != null) c.ar_data__destroy(own_result);
+        return false;
+    }
     if (!c.ar_instruction_ast__has_result_assignment(ref_ast)) {
         c.ar_data__destroy(own_result);
         return true;
     }
 
     const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
-    if (!c.ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
-        c.ar_data__destroy(own_result);
-        return false;
-    }
-    return true;
+    return c.ar_result_binding__bind(ref_log, ref_frame, ref_result_path, own_result);
 }
 
-fn _writeEmptyResultMap(mut_memory: ?*c.ar_data_t, ref_ast: ?*const c.ar_instruction_ast_t) bool {
+fn _writeEmptyResultMap(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_ast: ?*const c.ar_instruction_ast_t,
+) bool {
     const own_result = c.ar_data__create_map() orelse return false;
-    return _writeResultMap(mut_memory, ref_ast, own_result);
+    return _writeResultMap(ref_log, ref_frame, ref_ast, own_result);
 }
 
 fn _handledFailure(
     ref_evaluator: *const ar_complete_instruction_evaluator_t,
-    mut_memory: ?*c.ar_data_t,
+    ref_frame: ?*const c.ar_frame_t,
     ref_ast: ?*const c.ar_instruction_ast_t,
     ref_message: [*:0]const u8,
 ) bool {
     _logError(ref_evaluator, ref_message);
-    return _writeEmptyResultMap(mut_memory, ref_ast);
+    return _writeEmptyResultMap(ref_evaluator.ref_log, ref_frame, ref_ast);
 }
 
 fn _formatDetailedFailureMessage(
@@ -88,7 +93,7 @@ fn _formatDetailedFailureMessage(
 
 fn _handledFailureDetailed(
     ref_evaluator: *const ar_complete_instruction_evaluator_t,
-    mut_memory: ?*c.ar_data_t,
+    ref_frame: ?*const c.ar_frame_t,
     ref_ast: ?*const c.ar_instruction_ast_t,
     ref_base_message: []const u8,
     ref_failure_category: []const u8,
@@ -102,14 +107,14 @@ fn _handledFailureDetailed(
         ref_cause,
         ref_recovery_hint,
         &own_buffer,
-    ) orelse return _handledFailure(ref_evaluator, mut_memory, ref_ast, "complete() failed");
+    ) orelse return _handledFailure(ref_evaluator, ref_frame, ref_ast, "complete() failed");
     _logError(ref_evaluator, ref_message);
-    return _writeEmptyResultMap(mut_memory, ref_ast);
+    return _writeEmptyResultMap(ref_evaluator.ref_log, ref_frame, ref_ast);
 }
 
 fn _handledFailureDetailedWithResultMap(
     ref_evaluator: *const ar_complete_instruction_evaluator_t,
-    mut_memory: ?*c.ar_data_t,
+    ref_frame: ?*const c.ar_frame_t,
     ref_ast: ?*const c.ar_instruction_ast_t,
     own_result: ?*c.ar_data_t,
     ref_base_message: []const u8,
@@ -126,10 +131,10 @@ fn _handledFailureDetailedWithResultMap(
         &own_buffer,
     ) orelse {
         _logError(ref_evaluator, "complete() failed");
-        return _writeResultMap(mut_memory, ref_ast, own_result);
+        return _writeResultMap(ref_evaluator.ref_log, ref_frame, ref_ast, own_result);
     };
     _logError(ref_evaluator, ref_message);
-    return _writeResultMap(mut_memory, ref_ast, own_result);
+    return _writeResultMap(ref_evaluator.ref_log, ref_frame, ref_ast, own_result);
 }
 
 fn _copyProvidedValuesOrEmpty(ref_values_data: ?*const c.ar_data_t) ?*c.ar_data_t {
@@ -141,7 +146,7 @@ fn _copyProvidedValuesOrEmpty(ref_values_data: ?*const c.ar_data_t) ?*c.ar_data_
 
 fn _handledFailureFromExistingOrFallbackLog(
     ref_evaluator: *const ar_complete_instruction_evaluator_t,
-    mut_memory: ?*c.ar_data_t,
+    ref_frame: ?*const c.ar_frame_t,
     ref_ast: ?*const c.ar_instruction_ast_t,
     ref_fallback_message: [*:0]const u8,
 ) bool {
@@ -153,7 +158,7 @@ fn _handledFailureFromExistingOrFallbackLog(
     if (ref_existing_error == null or std.mem.len(ref_existing_error.?) == 0) {
         _logError(ref_evaluator, ref_fallback_message);
     }
-    return _writeEmptyResultMap(mut_memory, ref_ast);
+    return _writeEmptyResultMap(ref_evaluator.ref_log, ref_frame, ref_ast);
 }
 
 fn _makeCString(ref_text: []const u8, ref_desc: [*:0]const u8) ?[*:0]u8 {
@@ -345,24 +350,24 @@ export fn ar_complete_instruction_evaluator__evaluate(
     if (ref_evaluator == null or ref_frame == null or ref_ast == null) return false;
     if (c.ar_instruction_ast__get_type(ref_ast) != c.AR_INSTRUCTION_AST_TYPE__COMPLETE) return false;
 
-    if (c.ar_instruction_ast__has_protected_memory_self_assignment(ref_ast)) {
-        c.ar_log__error(ref_evaluator.?.ref_log, "memory.self is agency-managed and cannot be assigned");
+    const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
+    if (!c.ar_result_binding__validate_target(ref_evaluator.?.ref_log, ref_result_path)) {
         return false;
     }
 
-    const mut_memory = c.ar_frame__get_memory(ref_frame) orelse return false;
+    if (c.ar_frame__get_memory(ref_frame) == null) return false;
     if (ref_evaluator.?.ref_log != null) {
         c.ar_log__error(ref_evaluator.?.ref_log, null);
     }
 
     const ref_arg_asts = c.ar_instruction_ast__get_function_arg_asts(ref_ast) orelse
-        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() requires parsed argument ASTs");
+        return _handledFailure(ref_evaluator.?, ref_frame, ref_ast, "complete() requires parsed argument ASTs");
     const arg_count = c.ar_list__count(ref_arg_asts);
     if (arg_count < 1 or arg_count > 2) {
-        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() expects one or two arguments");
+        return _handledFailure(ref_evaluator.?, ref_frame, ref_ast, "complete() expects one or two arguments");
     }
     const own_items = c.ar_list__items(ref_arg_asts) orelse
-        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not enumerate argument ASTs");
+        return _handledFailure(ref_evaluator.?, ref_frame, ref_ast, "complete() could not enumerate argument ASTs");
     defer ar_allocator.free(own_items);
 
     const ref_template_ast: ?*const c.ar_expression_ast_t = @ptrCast(own_items[0]);
@@ -370,13 +375,13 @@ export fn ar_complete_instruction_evaluator__evaluate(
 
     const template_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_template_ast);
     const own_template_data = c.ar_data__claim_or_copy(template_result, ref_evaluator) orelse
-        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() template must evaluate to a string value");
+        return _handledFailure(ref_evaluator.?, ref_frame, ref_ast, "complete() template must evaluate to a string value");
     defer c.ar_data__destroy(own_template_data);
     if (c.ar_data__get_type(own_template_data) != c.AR_DATA_TYPE__STRING) {
-        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() template must evaluate to a string value");
+        return _handledFailure(ref_evaluator.?, ref_frame, ref_ast, "complete() template must evaluate to a string value");
     }
     const ref_template = c.ar_data__get_string(own_template_data) orelse
-        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() template string could not be read");
+        return _handledFailure(ref_evaluator.?, ref_frame, ref_ast, "complete() template string could not be read");
 
     var ref_values_data: ?*const c.ar_data_t = null;
     var mut_values_result: ?*c.ar_data_t = null;
@@ -384,7 +389,7 @@ export fn ar_complete_instruction_evaluator__evaluate(
     if (ref_values_ast != null) {
         mut_values_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_values_ast);
         if (mut_values_result == null or c.ar_data__get_type(mut_values_result) != c.AR_DATA_TYPE__MAP) {
-            return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() second argument must evaluate to a map value");
+            return _handledFailure(ref_evaluator.?, ref_frame, ref_ast, "complete() second argument must evaluate to a map value");
         }
         ref_values_data = mut_values_result;
     }
@@ -394,7 +399,7 @@ export fn ar_complete_instruction_evaluator__evaluate(
     else
         c.ar_data__create_map();
     if (own_result_map == null) {
-        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not copy the provided map values");
+        return _handledFailure(ref_evaluator.?, ref_frame, ref_ast, "complete() could not copy the provided map values");
     }
     defer if (own_result_map) |own_map| c.ar_data__destroy(own_map);
 
@@ -408,7 +413,7 @@ export fn ar_complete_instruction_evaluator__evaluate(
         .no_placeholders => {},
         .out_of_memory => return _handledFailureDetailed(
             ref_evaluator.?,
-            mut_memory,
+            ref_frame,
             ref_ast,
             "complete() could not stage placeholder names",
             "runtime_failure",
@@ -420,7 +425,7 @@ export fn ar_complete_instruction_evaluator__evaluate(
     const own_prefilled_template = _buildPrefilledText(std.mem.span(ref_template), ref_values_data) orelse
         return _handledFailureDetailed(
             ref_evaluator.?,
-            mut_memory,
+            ref_frame,
             ref_ast,
             "complete() could not apply provided map values to the template",
             "runtime_failure",
@@ -430,12 +435,12 @@ export fn ar_complete_instruction_evaluator__evaluate(
     defer ar_allocator.free(own_prefilled_template);
 
     const own_placeholder_list = c.ar_list__create() orelse
-        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not stage placeholder names");
+        return _handledFailure(ref_evaluator.?, ref_frame, ref_ast, "complete() could not stage placeholder names");
     defer c.ar_list__destroy(own_placeholder_list);
     for (own_placeholders.items) |own_name| {
         if (!_hasExistingValue(ref_values_data, own_name)) {
             if (!c.ar_list__add_last(own_placeholder_list, own_name)) {
-                return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not stage placeholder names");
+                return _handledFailure(ref_evaluator.?, ref_frame, ref_ast, "complete() could not stage placeholder names");
             }
         }
     }
@@ -448,7 +453,7 @@ export fn ar_complete_instruction_evaluator__evaluate(
             30000,
         ) orelse return _handledFailureFromExistingOrFallbackLog(
             ref_evaluator.?,
-            mut_memory,
+            ref_frame,
             ref_ast,
             "complete() local completion failed",
         );
@@ -462,7 +467,7 @@ export fn ar_complete_instruction_evaluator__evaluate(
                 const own_failure_result = _copyProvidedValuesOrEmpty(ref_values_data);
                 return _handledFailureDetailedWithResultMap(
                     ref_evaluator.?,
-                    mut_memory,
+                    ref_frame,
                     ref_ast,
                     own_failure_result,
                     "complete() generated values must be non-empty strings with no leading/trailing whitespace or braces",
@@ -475,7 +480,7 @@ export fn ar_complete_instruction_evaluator__evaluate(
                 const own_failure_result = _copyProvidedValuesOrEmpty(ref_values_data);
                 return _handledFailureDetailedWithResultMap(
                     ref_evaluator.?,
-                    mut_memory,
+                    ref_frame,
                     ref_ast,
                     own_failure_result,
                     "complete() could not stage generated values",
@@ -489,7 +494,7 @@ export fn ar_complete_instruction_evaluator__evaluate(
                 const own_failure_result = _copyProvidedValuesOrEmpty(ref_values_data);
                 return _handledFailureDetailedWithResultMap(
                     ref_evaluator.?,
-                    mut_memory,
+                    ref_frame,
                     ref_ast,
                     own_failure_result,
                     "complete() could not stage generated values",
@@ -503,7 +508,7 @@ export fn ar_complete_instruction_evaluator__evaluate(
                 const own_failure_result = _copyProvidedValuesOrEmpty(ref_values_data);
                 return _handledFailureDetailedWithResultMap(
                     ref_evaluator.?,
-                    mut_memory,
+                    ref_frame,
                     ref_ast,
                     own_failure_result,
                     "complete() could not store generated values in result map",
@@ -516,11 +521,11 @@ export fn ar_complete_instruction_evaluator__evaluate(
     }
 
     if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {
-        const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
-        if (!c.ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result_map)) {
+        const own_bound_result = own_result_map;
+        own_result_map = null;
+        if (!c.ar_result_binding__bind(ref_evaluator.?.ref_log, ref_frame, ref_result_path, own_bound_result)) {
             return false;
         }
-        own_result_map = null;
     }
 
     return true;

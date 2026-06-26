@@ -113,6 +113,14 @@ ignored_errors:
     message: "ERROR: append value expression failed"
     comment: "Testing append no-op continuation when value expression evaluation fails"
 
+  # ar_result_binding_tests
+  - context: "ar_result_binding_tests"
+    message: "ERROR: memory.self is agency-managed and cannot be assigned"
+    comment: "Testing protected agency-managed memory.self result-binding rejection"
+  - context: "ar_result_binding_tests"
+    message: "test_result_binding__bind_destroys_result_when_storage_fails"
+    comment: "Test name intentionally documents failed-storage cleanup behavior"
+
   # ar_head_instruction_parser_tests
   - context: "ar_head_instruction_parser_tests"
     message: "ERROR: Empty argument (at position 5)"

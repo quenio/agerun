@@ -11,6 +11,7 @@ const c = @cImport({
     @cInclude("ar_agency.h");
     @cInclude("ar_method.h");
     @cInclude("ar_methodology.h");
+    @cInclude("ar_result_binding.h");
 });
 
 const ar_spawn_instruction_evaluator_t = struct {
@@ -78,9 +79,7 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
     }
     
     const ref_expr_evaluator = ref_evaluator.?.ref_expr_evaluator;
-    const mut_memory = c.ar_frame__get_memory(ref_frame);
-    
-    if (mut_memory == null) {
+    if (c.ar_frame__get_memory(ref_frame) == null) {
         return false;
     }
     
@@ -89,8 +88,8 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
         return false;
     }
 
-    if (c.ar_instruction_ast__has_protected_memory_self_assignment(ref_ast)) {
-        c.ar_log__error(ref_evaluator.?.ref_log, "memory.self is agency-managed and cannot be assigned");
+    const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
+    if (!c.ar_result_binding__validate_target(ref_evaluator.?.ref_log, ref_result_path)) {
         return false;
     }
     
@@ -148,10 +147,7 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
         if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {
             const own_result = c.ar_data__create_integer(0);
             if (own_result != null) {
-                const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
-                if (!c.ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
-                    c.ar_data__destroy(own_result);
-                }
+                _ = c.ar_result_binding__bind(ref_evaluator.?.ref_log, ref_frame, ref_result_path, own_result);
             }
         }
         return true; // Success for no-op
@@ -163,10 +159,7 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
             if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {
                 const own_result = c.ar_data__create_integer(0);
                 if (own_result != null) {
-                    const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
-                    if (!c.ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
-                        c.ar_data__destroy(own_result);
-                    }
+                    _ = c.ar_result_binding__bind(ref_evaluator.?.ref_log, ref_frame, ref_result_path, own_result);
                 }
             }
             return true; // Success for no-op
@@ -238,10 +231,7 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
     if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {
         const own_result = c.ar_data__create_integer(@intCast(agent_id));
         if (own_result != null) {
-            const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
-            if (!c.ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
-                c.ar_data__destroy(own_result);
-            }
+            _ = c.ar_result_binding__bind(ref_evaluator.?.ref_log, ref_frame, ref_result_path, own_result);
         }
     }
     
