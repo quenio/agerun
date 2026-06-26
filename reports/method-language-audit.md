@@ -319,9 +319,8 @@ inside instruction evaluators, so that duplicate path has not been eliminated ye
 evaluator that can store a result must still repeat or delegate result-path validation, ownership
 transfer, and protected `memory.self` handling.
 
-Recommended follow-up: consolidate the remaining pure-call evaluator dispatch shape, and only then
-centralize any remaining statement-level result binding. Pure-expression storage should remain
-ordinary assignment:
+Recommended follow-up: centralize the remaining statement-level result binding. Pure-expression
+storage should remain ordinary assignment:
 
 - pure-expression model: `memory.value := append(memory.items, value)` evaluates a pure call
   expression and stores the new list
@@ -389,16 +388,13 @@ instruction argument or result position. In ordinary expression evaluation and o
 
 ## Remaining Recommended Follow-Up Order
 
-1. **Pure-call evaluator dispatch consolidation**: reduce evaluator-side pure-call dispatch
-   duplication now that `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and
-   `tail(...)` all use the expression-call path.
-2. **Effectful result-binding consolidation**: centralize statement-level result binding for
+1. **Effectful result-binding consolidation**: centralize statement-level result binding for
    assigned effectful instructions such as `send(...)`, `complete(...)`, `compile(...)`,
    `spawn(...)`, `deprecate(...)`, and `exit(...)`, while keeping `memory.path := <expression>` the
    only pure-expression storage mechanism.
-3. **Multiline expression plan**: choose between documenting assignment-only multiline literals as
+2. **Multiline expression plan**: choose between documenting assignment-only multiline literals as
    an explicit exception or promoting them into the expression parser.
-4. **Sentinel semantics plan**: evaluate whether integer `0` remains the language-wide absent value
+3. **Sentinel semantics plan**: evaluate whether integer `0` remains the language-wide absent value
    or whether the data model needs an explicit absence representation.
 
 ## Current Baseline Now Satisfied
@@ -603,3 +599,8 @@ recommended follow-up:
 After pure-call metadata consolidation, this report was revised to mark shared `ar_pure_call`
 metadata as the source of truth for registered pure-call names, arities, and classification, and to
 make pure-call evaluator dispatch consolidation the next recommended follow-up.
+
+After pure-call evaluator dispatch consolidation, this report was revised to mark evaluator
+dispatch as table-driven from `ar_pure_call_type_t` with registry-owned arity validation, while
+preserving lazy `if(...)` branch selection and existing fallback/ownership behavior, and to make
+effectful result-binding consolidation the next recommended follow-up.
