@@ -355,17 +355,11 @@ jobs:
                   "WebFetch",
                   "WebSearch",
                   "Bash(gh pr view:*)",
-                  "Bash(cd /tmp)",
-                  "Bash(cd /tmp && gh pr view:*)",
                   "Bash(gh pr diff:*)",
-                  "Bash(cd /tmp && gh pr diff:*)",
                   "Bash(gh pr list:*)",
                   "Bash(gh api --method GET repos/*/*/issues/*/comments:*)",
                   "Bash(gh api --method GET repos/*/*/pulls/*/comments:*)",
                   "Bash(gh api --method GET repos/*/*/pulls/*/reviews:*)",
-                  "Bash(cd /tmp && gh api --method GET repos/*/*/issues/*/comments:*)",
-                  "Bash(cd /tmp && gh api --method GET repos/*/*/pulls/*/comments:*)",
-                  "Bash(cd /tmp && gh api --method GET repos/*/*/pulls/*/reviews:*)",
                   "Bash(git log:*)",
                   "Bash(git show:*)",
                   "Bash(head -50)",
@@ -479,10 +473,9 @@ jobs:
             tool attempts fail this check. Do not use Bash pipes, redirection,
             semicolons, `||`, Bash grep, Bash sed, or Bash wc. Use only one
             allowed Bash command at a time, such as `gh pr view`, `gh pr diff`,
-            file-specific `gh pr diff ... -- path`, `cd /tmp && gh pr view`,
-            or `cd /tmp && gh pr diff`. If a diff is too large, inspect smaller
-            file-specific diffs, use the Grep/Read tools on checked-out files,
-            or continue without that optional check.
+            or file-specific `gh pr diff ... -- path`. If a diff is too large,
+            inspect smaller file-specific diffs, use the Grep/Read tools on
+            checked-out files, or continue without that optional check.
             Report only high-confidence bugs, workflow/configuration failures,
             security problems, or clear repository-instruction violations.
 
@@ -502,7 +495,7 @@ jobs:
             true. If no issues are found, print a short terminal summary and do
             not post a PR comment.
           claude_args: |
-            --allowedTools "Read(/**),Read(//tmp/claude-pr-review-context.json),Read(//tmp/claude-pr-review-*),Read(//tmp/claude-pr-review-*/**),Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(cd /tmp),Bash(cd /tmp && gh pr view:*),Bash(gh pr diff:*),Bash(cd /tmp && gh pr diff:*),Bash(gh pr list:*),Bash(gh api --method GET repos/*/*/issues/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(cd /tmp && gh api --method GET repos/*/*/issues/*/comments:*),Bash(cd /tmp && gh api --method GET repos/*/*/pulls/*/comments:*),Bash(cd /tmp && gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(git log:*),Bash(git show:*),Bash(head -50),Bash(head -100),Bash(head -200),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Read(/**),Read(//tmp/claude-pr-review-context.json),Read(//tmp/claude-pr-review-*),Read(//tmp/claude-pr-review-*/**),Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api --method GET repos/*/*/issues/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(git log:*),Bash(git show:*),Bash(head -50),Bash(head -100),Bash(head -200),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
         env:
           GH_TOKEN: ${{ github.token }}
 
