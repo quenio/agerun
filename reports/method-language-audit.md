@@ -119,7 +119,7 @@ principles or should be treated as a future design gap.
 | Registered pure function calls are expressions; effectful built-ins remain instructions. | `SPEC.md`, `AGENTS.md`, `kb/agerun-method-language-nesting-constraint.md`, `modules/ar_expression_ast.h`, `modules/ar_expression_parser.c`, `modules/ar_expression_evaluator.zig`, `modules/ar_condition.md`, `modules/ar_parse.md`, `modules/ar_build.md`, `modules/ar_append.md`, `modules/ar_head.md`, `modules/ar_tail.md` | Aligns with composability and expression purity. `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)` are now pure expression calls; effectful operations such as `send(...)`, `spawn(...)`, `compile(...)`, `exit(...)`, `deprecate(...)`, and `complete(...)` remain sequenced instructions. | Preserve the pure-expression versus effectful-instruction split without admitting side-effectful operations into expression parsing. |
 | Function-call argument boundaries use one shared grammar rule. | `SPEC.md`, `modules/ar_function_call_parser.md`, `modules/ar_function_call_parser_tests.c`, `modules/ar_expression_parser.c` | Aligns with Single Source of Semantics: top-level commas and closing parentheses delimit arguments, while quoted strings, parenthesized expression groups, one-line list/map literals, and registered pure calls are preserved inside an argument. | Preserve as the current baseline for both instruction calls and pure expression calls. Future pure-call-expression work should reuse this boundary rule instead of reintroducing per-call scanners. |
 | String literal escaping is boundary-level, not value-level. | `SPEC.md`, `modules/ar_function_call_parser.zig`, `modules/ar_expression_parser.c`, parser tests | Partially aligns now that the distinction is documented. Backslash parity has parser-boundary meaning before quotes in function-call arguments, but the expression parser preserves backslashes as ordinary characters and does not decode escape sequences. | Do not describe this as general escaped-character support. Preserve raw string literals unless true expression-level escape parsing is added as an explicit language change. |
-| Function result storage uses both ordinary assignment and instruction result binding. | `SPEC.md`, `modules/ar_instruction_ast.md`, `modules/ar_instruction_parser.md`, evaluator module docs | Partially conflicts with Syntax-Directed Semantics because ordinary assignment and instruction result binding look similar while using different AST/evaluator paths. `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)` now have ordinary expression assignment semantics, and their standalone compatibility instruction forms do not create result paths in the unified parser. Remaining instruction-result functions such as `send(...)`, `complete(...)`, `compile(...)`, `spawn(...)`, `deprecate(...)`, and `exit(...)` still use function-result paths when assigned. | Keep pure call results on the expression-assignment path, and centralize or visibly distinguish any remaining effectful or compatibility result binding. |
+| Function result storage uses both ordinary assignment and instruction result binding. | `SPEC.md`, `modules/ar_instruction_ast.md`, `modules/ar_instruction_parser.md`, `modules/ar_result_binding.md`, evaluator module docs | Partially conflicts with Syntax-Directed Semantics because ordinary assignment and instruction result binding look similar while using different AST/evaluator paths. `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)` now have ordinary expression assignment semantics, and their standalone compatibility instruction forms do not create result paths in the unified parser. Remaining instruction-result functions such as `send(...)`, `complete(...)`, `compile(...)`, `spawn(...)`, `deprecate(...)`, and `exit(...)` still use function-result paths when assigned, but `ar_result_binding` now owns effectful result-path validation, protected `memory.self` rejection, ownership transfer, and failed-storage cleanup. | Keep pure call results on the expression-assignment path, and keep effectful result binding centralized in `ar_result_binding`. |
 | One-line list/map literals can appear in expression contexts; multiline list/map literals are assignment-only and cannot appear as call arguments, list items, or map values. | `SPEC.md`, `README.md`, `modules/ar_method_parser.md` | Partially aligns. One-line literals are composable; multiline literals are an explicit formatting exception to the one-line instruction model. | Either document multiline literals as a deliberate source-format exception or move them into expression parsing while preserving clear line-boundary rules. |
 | Map literal keys must be identifiers; quoted keys are not supported. | `SPEC.md`, `modules/ar_expression_parser.md` | Mostly compatible as an explicit grammar restriction. It limits data shape expressiveness but does not by itself create semantic drift. | Preserve unless future data requirements need arbitrary string keys. |
 | There is no null type; integer `0` is used as the absent/failure/no-op sentinel in several places. | `AGENTS.md`, `SPEC.md`, `modules/ar_expression_evaluator.md` | Conflicts with orthogonality when unrelated cases share the same value: missing field, empty `head(...)`, invalid `tail(...)` input, no-op spawn, false condition. | Preserve existing `0` behavior for compatibility, but stop treating it as a default pattern for new features. Before adding another `0`-based case, decide whether the language should keep `0` as the official absence/no-op value, add explicit predicates such as "is missing" or "is empty", or introduce a distinct absence value. |
@@ -164,7 +164,7 @@ principles or should be treated as a future design gap.
 | F1b | Quote and escape handling | Function-call boundary parsing is quote-aware, including even/odd backslash parity before quotes. Expression string parsing remains a simple raw span between delimiters. | Backslash has context-dependent meaning: it can keep a quote from closing an argument span, but it is preserved as data and is not decoded by expression evaluation. Escaped quotes are not currently string value characters. | `SPEC.md` and parser module docs document the split. `_isQuote` in `ar_function_call_parser.zig` counts consecutive backslashes before quotes. `ar_expression_parser.c` copies bytes between the opening quote and the next quote. | Low |
 | F2 | Multiline list/map literals | Not composable. Multiline literals are canonicalized only as top-level assignment RHS values. | A list/map value has different syntax availability depending on whether it is one-line or multiline. | `SPEC.md`, `README.md`, and `ar_method_parser.md` say multiline lists/maps are assignment-only. Current corpus has 36 top-level multiline literal assignments. | Medium |
 | F3 | `if(...)` condition and branch evaluation | Composable. `if(...)` is now a registered pure expression call, so it can appear in assignment RHS values, instruction arguments, list/map literals, nested pure calls, and branch expressions. Standalone `if(...)` remains supported as a compatibility instruction statement. | Docs and tests now agree that both expression-level and instruction-level paths check the condition first, evaluate only the selected branch, treat integer `0` as false, treat non-zero integers as true, and send non-integer condition values to the false branch. | `ar_expression_parser.c` registers `if` as a pure call. `ar_expression_evaluator.zig` evaluates only the selected branch. `ar_condition.zig` owns shared truthiness used by expression and instruction condition evaluation. `ar_condition_instruction_evaluator.zig` preserves standalone condition instruction behavior. | Low |
-| F4 | Assignment vs result assignment | Expression assignment is normal for `memory.path := <expression>`, including pure `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)` calls. Function result assignment still exists for effectful result-binding instructions. | Pure expression results and effectful instruction results are still represented through overlapping storage paths. The syntax may remain compact, but storage validation should have one owner. | `ar_instruction_ast_t` stores assignment data separately from function-call result paths. The instruction parser now leaves assigned `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)` calls to assignment parsing, while `_is_instruction_result_function()` still routes assigned `send(...)`, `complete(...)`, `compile(...)`, `spawn(...)`, `deprecate(...)`, and `exit(...)` through function-call result paths. | Medium |
+| F4 | Assignment vs result assignment | Expression assignment is normal for `memory.path := <expression>`, including pure `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)` calls. Function result assignment still exists for effectful result-binding instructions. | Pure expression results and effectful instruction results are still represented through overlapping storage paths, but storage validation now has one effectful owner. | `ar_instruction_ast_t` stores assignment data separately from function-call result paths. The instruction parser now leaves assigned `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)` calls to assignment parsing, while `_is_instruction_result_function()` still routes assigned `send(...)`, `complete(...)`, `compile(...)`, `spawn(...)`, `deprecate(...)`, and `exit(...)` through function-call result paths. `ar_result_binding` owns effectful result-path validation, protected `memory.self` rejection, ownership transfer, and failed-storage cleanup for those assigned effectful evaluators. | Low |
 | F5 | `append(...)` target | Pure expression `append(list, value)` is composable anywhere expressions are accepted. Standalone compatibility `append(target, value)` remains a sequenced mutation instruction. | Pure append treats equivalent list values the same regardless of origin and returns a new list. The standalone compatibility form remains origin-sensitive because only memory-owned lists can mutate. | `ar_append.md` documents pure list construction, `ar_expression_parser.c` registers `append`, `ar_expression_evaluator.zig` dispatches to `ar_append`, and `ar_append_instruction_evaluator.md` documents compatibility no-op targets. Tests cover pure composition, non-mutation, deep copies, path-neutral arguments, and standalone mutating compatibility. | Low |
 | F6 | Missing field and empty-list sentinels | Composable as expressions once produced, but sentinel values leak into method logic. | Missing `message.field`, empty `head(...)`, invalid `tail(...)`, failed spawn, and no-op send/spawn all use integer `0` in different roles. | `SPEC.md` documents integer `0` sentinel behavior for `head(...)`, `tail(...)`, `send(0, ...)`, and `spawn(0, ...)`. Tests cover missing message fields for head/tail. | Medium |
 | F7 | `memory.self` protection | Protection is consistently enforced for assignment and many result paths, and pure `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)` no longer treat `self` names or `memory.self` argument paths specially. | Write permission depends on target root/path. Pure call argument handling is now value-based and path-neutral; protected identity behavior belongs to assignment and result-storage rules. | `SPEC.md` says protected identity behavior is enforced by storage rules, `ar_instruction_ast__has_protected_memory_self_assignment()` supports instruction-level checks, and pure-call module docs document path-neutral argument handling. | Low |
@@ -309,27 +309,28 @@ integer `0` is false, nonzero integers are true, and non-integer or missing cond
 the false branch. Branch expressions remain pure because effectful instructions are still rejected
 by expression parsing.
 
-### 7. Result Assignment Is Duplicated Semantics
+### 7. Result Assignment Has Separate Owners
 
 Regular assignment stores an evaluated expression into memory. `parse(...)`, `build(...)`,
 `if(...)`, `append(...)`, `head(...)`, and `tail(...)` now participate in that path when used as pure
 expressions, and their standalone compatibility instruction forms do not create result-storage paths
-in the unified parser. The remaining result-producing function instructions still store results from
-inside instruction evaluators, so that duplicate path has not been eliminated yet. Every instruction
-evaluator that can store a result must still repeat or delegate result-path validation, ownership
-transfer, and protected `memory.self` handling.
+in the unified parser.
 
-Recommended follow-up: centralize the remaining statement-level result binding. Pure-expression
-storage should remain ordinary assignment:
+The remaining result-producing function instructions still use statement-level result paths, but the
+shared `ar_result_binding` module now owns effectful result-path validation, protected
+`memory.self`/`memory.self.*` rejection, owned-result transfer into frame memory, and owned-result
+destruction when storage does not consume the value. Individual evaluators still own their
+instruction-specific result values and return behavior.
+
+Current boundary:
 
 - pure-expression model: `memory.value := append(memory.items, value)` evaluates a pure call
   expression and stores the new list
-- effectful result-binding model: `memory.ok := send(agent, message)` remains statement-level
-  result storage until a centralized result-binding rule owns that behavior
+- effectful result-binding model: `memory.ok := send(agent, message)` remains statement-level result
+  storage owned by `ar_result_binding`
 
-Effectful instructions that return values, such as a future `spawn(...)` result binding, may still
-need statement-level result storage. If so, that storage rule should be centralized and explicitly
-separate from expression assignment rather than repeated in each evaluator.
+This keeps effectful instructions out of expression parsing while removing duplicated storage logic
+from `send(...)`, `complete(...)`, `compile(...)`, `spawn(...)`, `deprecate(...)`, and `exit(...)`.
 
 ### 8. `append(...)` Is Now Pure List Construction
 
@@ -388,13 +389,9 @@ instruction argument or result position. In ordinary expression evaluation and o
 
 ## Remaining Recommended Follow-Up Order
 
-1. **Effectful result-binding consolidation**: centralize statement-level result binding for
-   assigned effectful instructions such as `send(...)`, `complete(...)`, `compile(...)`,
-   `spawn(...)`, `deprecate(...)`, and `exit(...)`, while keeping `memory.path := <expression>` the
-   only pure-expression storage mechanism.
-2. **Multiline expression plan**: choose between documenting assignment-only multiline literals as
+1. **Multiline expression plan**: choose between documenting assignment-only multiline literals as
    an explicit exception or promoting them into the expression parser.
-3. **Sentinel semantics plan**: evaluate whether integer `0` remains the language-wide absent value
+2. **Sentinel semantics plan**: evaluate whether integer `0` remains the language-wide absent value
    or whether the data model needs an explicit absence representation.
 
 ## Current Baseline Now Satisfied
@@ -454,6 +451,10 @@ instruction argument or result position. In ordinary expression evaluation and o
   evaluation and standalone compatibility instruction evaluation.
 - `head(...)` and `tail(...)` argument handling is path-neutral; empty, missing, non-LIST, and
   copy-failure cases return the documented integer `0` or empty-list sentinel values.
+- Effectful result binding is centralized in `ar_result_binding` for assigned `send(...)`,
+  `complete(...)`, `compile(...)`, `spawn(...)`, `deprecate(...)`, and `exit(...)` calls.
+- Protected `memory.self` and `memory.self.*` result targets are rejected before effectful work
+  starts, while failed result storage destroys the owned result value.
 
 ## Acceptance Criteria for Remaining Future Implementation
 
@@ -604,3 +605,9 @@ After pure-call evaluator dispatch consolidation, this report was revised to mar
 dispatch as table-driven from `ar_pure_call_type_t` with registry-owned arity validation, while
 preserving lazy `if(...)` branch selection and existing fallback/ownership behavior, and to make
 effectful result-binding consolidation the next recommended follow-up.
+
+After effectful result-binding consolidation, this report was revised to mark `ar_result_binding` as
+the owner for assigned effectful result-path validation, protected `memory.self` rejection,
+owned-result transfer, and failed-storage cleanup across `send(...)`, `complete(...)`,
+`compile(...)`, `spawn(...)`, `deprecate(...)`, and `exit(...)`, and to make the multiline expression
+plan the next recommended follow-up.

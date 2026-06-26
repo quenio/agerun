@@ -66,7 +66,7 @@ Key features:
    - **ID == 0**: No-op (destroys message, returns true)
    - **ID > 0**: Routes to agency for agent delivery
    - **ID < 0**: Routes to delegation for delegate delivery
-4. **Result Assignment**: Stores the send result (boolean) when assignment is specified
+4. **Result Assignment**: Stores integer `1` or `0` through `ar_result_binding` when assignment is specified
 5. **Ownership Transfer**: Transfers message ownership to appropriate destination (agency or delegation)
 6. **Nested Payloads**: Deep-copies borrowed nested list/map messages before delivery
 
@@ -101,6 +101,7 @@ The module follows strict memory ownership rules:
 - `ar_instruction_ast`: For accessing instruction AST structure
 - `ar_agency`: For sending messages to agents (positive IDs)
 - `ar_delegation`: For sending messages to delegates (negative IDs)
+- `ar_result_binding`: For assigned effectful result-path validation and owned-result storage
 - `ar_data`: For data manipulation
 - `ar_string`: For string operations
 - `ar_heap`: For memory tracking
@@ -111,8 +112,9 @@ The module evaluates both arguments:
 1. Agent ID must evaluate to an integer
 2. Message can be any data type
 3. Routes based on ID sign to appropriate destination
-4. Handles result storage for assigned sends
-5. Properly manages ownership transfer based on destination
+4. Validates assigned result targets before sending so protected `memory.self` writes are rejected
+5. Handles assigned send result storage through `ar_result_binding`
+6. Properly manages ownership transfer based on destination
 
 ## Usage Examples
 

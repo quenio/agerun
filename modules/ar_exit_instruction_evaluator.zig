@@ -13,6 +13,7 @@ const c = @cImport({
     @cInclude("ar_data.h");
     @cInclude("ar_frame.h");
     @cInclude("ar_instruction_ast.h");
+    @cInclude("ar_result_binding.h");
 });
 
 /// Opaque struct definition
@@ -61,15 +62,15 @@ pub export fn ar_exit_instruction_evaluator__evaluate(
     }
     
     const mut_expr_evaluator = ref_evaluator.?.ref_expr_evaluator orelse return false;
-    const mut_memory = c.ar_frame__get_memory(ref_frame) orelse return false;
+    if (c.ar_frame__get_memory(ref_frame) == null) return false;
     
     // Validate AST type
     if (c.ar_instruction_ast__get_type(ref_ast) != c.AR_INSTRUCTION_AST_TYPE__EXIT) {
         return false;
     }
 
-    if (c.ar_instruction_ast__has_protected_memory_self_assignment(ref_ast)) {
-        c.ar_log__error(ref_evaluator.?.ref_log, "memory.self is agency-managed and cannot be assigned");
+    const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
+    if (!c.ar_result_binding__validate_target(ref_evaluator.?.ref_log, ref_result_path)) {
         return false;
     }
     
@@ -114,10 +115,7 @@ pub export fn ar_exit_instruction_evaluator__evaluate(
     // Store result if assigned
     if (success and c.ar_instruction_ast__has_result_assignment(ref_ast)) {
         const own_result = c.ar_data__create_integer(if (destroy_result) 1 else 0) orelse return success;
-        const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
-        if (!c.ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
-            c.ar_data__destroy(own_result);
-        }
+        _ = c.ar_result_binding__bind(ref_evaluator.?.ref_log, ref_frame, ref_result_path, own_result);
     }
     
     return success;

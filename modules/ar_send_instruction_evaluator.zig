@@ -11,6 +11,7 @@ const c = @cImport({
     @cInclude("ar_log.h");
     @cInclude("ar_frame.h");
     @cInclude("ar_data.h");
+    @cInclude("ar_result_binding.h");
     @cInclude("string.h");
 });
 
@@ -82,8 +83,8 @@ pub export fn ar_send_instruction_evaluator__evaluate(
         return false;
     }
 
-    if (c.ar_instruction_ast__has_protected_memory_self_assignment(ref_ast)) {
-        c.ar_log__error(ref_evaluator.?.ref_log, "memory.self is agency-managed and cannot be assigned");
+    const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
+    if (!c.ar_result_binding__validate_target(ref_evaluator.?.ref_log, ref_result_path)) {
         return false;
     }
     
@@ -226,16 +227,10 @@ pub export fn ar_send_instruction_evaluator__evaluate(
     }
     
     // Handle result assignment if present
-    const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
     if (ref_result_path != null) {
-        // Get memory from frame
-        const mut_memory = c.ar_frame__get_memory(ref_frame) orelse return false;
-        
         // Create result value (true = 1, false = 0)
         const own_result = c.ar_data__create_integer(if (send_result) 1 else 0);
-        if (!c.ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
-            c.ar_data__destroy(own_result);
-        }
+        _ = c.ar_result_binding__bind(ref_evaluator.?.ref_log, ref_frame, ref_result_path, own_result);
         
         // For assignments, return true to indicate the instruction succeeded
         return true;

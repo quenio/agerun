@@ -45,7 +45,7 @@ Key features:
 2. **Agent Creation**: Spawns agents with specified method and context
 3. **Method Validation**: Ensures the method exists before creating agent
 4. **Context Handling**: Uses borrowed context expressions or owned literal context maps
-5. **Result Assignment**: Stores agent ID when assignment specified
+5. **Result Assignment**: Stores the spawned agent ID, or `0` for no-op/failure result cases, through `ar_result_binding`
 
 ### Frame-Based Architecture
 
@@ -79,6 +79,7 @@ The module follows strict memory ownership rules:
 - `ar_agency`: For agent creation
 - `ar_methodology`: For method lookup
 - `ar_method`: For method references
+- `ar_result_binding`: For assigned effectful result-path validation and owned-result storage
 - `ar_data`: For data manipulation
 - `ar_string`: For string operations
 - `ar_allocator`: For memory allocation (Zig implementation)
@@ -91,7 +92,8 @@ The module:
 3. Context evaluation returns a borrowed reference unless the context AST is a literal map
 4. Validates method exists in methodology before agent creation
 5. Creates agent via agency with borrowed context reference or owned literal context
-6. Stores agent ID if assignment specified
+6. Validates assigned result targets before spawning so protected `memory.self` writes are rejected
+7. Stores agent ID through `ar_result_binding` if assignment specified
 7. Eliminates temporary variables by combining operations
 
 ## Usage Examples
