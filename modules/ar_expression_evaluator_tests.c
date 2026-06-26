@@ -1159,6 +1159,12 @@ static ar_expression_ast_t *_create_dispatch_call_ast(const ar_pure_call_t *ref_
     }
 
     size_t arg_count = ar_pure_call__get_arity(ref_call);
+    size_t arg_capacity = sizeof(own_args) / sizeof(own_args[0]);
+    if (arg_count > arg_capacity) {
+        AR_ASSERT(false, "Dispatch call argument count should fit test helper capacity");
+        return NULL;
+    }
+
     for (size_t i = 0; i < arg_count; i++) {
         AR_ASSERT(own_args[i] != NULL, "Dispatch call argument AST should be created");
     }
