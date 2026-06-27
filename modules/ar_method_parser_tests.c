@@ -513,6 +513,16 @@ static void test_method_parser__rejects_one_line_map_literal_with_local_referenc
     test_method_parser__rejects_invalid_multiline_literal(ref_source);
 }
 
+static void test_method_parser__rejects_malformed_multiline_map_local_reference(void) {
+    printf("Testing method parser rejects malformed multi-line map local reference...\n");
+
+    // Given a multi-line map assignment with a block-local accessor missing an identifier
+    const char *ref_source = "memory.profile := {\n  value := .123\n}";
+
+    // When/Then parsing rejects the source because block-local access requires `.identifier`
+    test_method_parser__rejects_invalid_multiline_literal(ref_source);
+}
+
 int main(void) {
     printf("Running method parser tests...\n\n");
     
@@ -541,6 +551,7 @@ int main(void) {
     test_method_parser__rejects_multiline_map_literal_with_trailing_commas();
     test_method_parser__rejects_multiline_map_literal_with_colon_entries();
     test_method_parser__rejects_one_line_map_literal_with_local_reference();
+    test_method_parser__rejects_malformed_multiline_map_local_reference();
     
     printf("\nAll method parser tests passed!\n");
     return 0;

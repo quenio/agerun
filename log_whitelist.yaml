@@ -764,6 +764,9 @@ ignored_errors:
     message: "ERROR: Failed to parse expression (at position 18)"
     comment: "Testing rejection of block-local .key access in one-line map literals"
   - context: "ar_method_parser_tests"
+    message: "ERROR: Expected identifier after '.' (at position 9)"
+    comment: "Testing rejection of malformed block-local access in multi-line map literals"
+  - context: "ar_method_parser_tests"
     message: "✓ test_method_parser__successful_parse_after_failure passed"
     comment: "Test pass message treated as error by pattern"
 

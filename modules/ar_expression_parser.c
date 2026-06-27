@@ -948,13 +948,16 @@ static ar_expression_ast_t* _parse_primary(ar_expression_parser_t *mut_parser) {
         return _parse_function_call(mut_parser);
     }
     
-    // Try memory access first
+    // Try memory access first. If it consumes a root accessor before failing, keep the failure.
+    size_t memory_start = mut_parser->position;
     ar_expression_ast_t *own_node = ar_expression_parser__parse_memory_access(mut_parser);
     if (own_node) {
         return own_node;
     }
-    
-    // Note: Error from failed memory access attempt is already logged to ar_log
+
+    if (mut_parser->position != memory_start) {
+        return NULL;
+    }
     
     // Try literal
     return ar_expression_parser__parse_literal(mut_parser);
