@@ -503,6 +503,16 @@ static void test_method_parser__rejects_multiline_map_literal_with_colon_entries
     test_method_parser__rejects_invalid_multiline_literal(ref_source);
 }
 
+static void test_method_parser__rejects_one_line_map_literal_with_local_reference(void) {
+    printf("Testing method parser rejects one-line map literal with local reference...\n");
+
+    // Given a one-line map assignment that tries to use multi-line block-local access
+    const char *ref_source = "memory.profile := {base: 2, doubled: .base * 2}";
+
+    // When/Then parsing rejects the source because `.base` is only valid in multi-line map blocks
+    test_method_parser__rejects_invalid_multiline_literal(ref_source);
+}
+
 int main(void) {
     printf("Running method parser tests...\n\n");
     
@@ -530,6 +540,7 @@ int main(void) {
     test_method_parser__rejects_multiline_list_literal_with_trailing_commas();
     test_method_parser__rejects_multiline_map_literal_with_trailing_commas();
     test_method_parser__rejects_multiline_map_literal_with_colon_entries();
+    test_method_parser__rejects_one_line_map_literal_with_local_reference();
     
     printf("\nAll method parser tests passed!\n");
     return 0;

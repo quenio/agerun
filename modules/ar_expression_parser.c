@@ -18,6 +18,7 @@ struct ar_expression_parser_s {
     ar_log_t *ref_log;         /* Log instance for error reporting (borrowed) */
     char *own_expression;      /* Copy of the expression string */
     size_t position;           /* Current parsing position */
+    bool local_access_enabled; /* Whether `.key` block-local access is accepted */
 };
 
 /* Forward declarations for internal parsing functions */
@@ -66,6 +67,7 @@ ar_expression_parser_t* ar_expression_parser__create(ar_log_t *ref_log, const ch
     }
     
     own_parser->position = 0;
+    own_parser->local_access_enabled = false;
     
     return own_parser; // Ownership transferred to caller
 }
@@ -104,6 +106,16 @@ const char* ar_expression_parser__get_error(const ar_expression_parser_t *ref_pa
     return NULL;
 }
 
+void ar_expression_parser__set_local_access_enabled(
+    ar_expression_parser_t *mut_parser,
+    bool enabled
+) {
+    if (!mut_parser) {
+        return;
+    }
+
+    mut_parser->local_access_enabled = enabled;
+}
 
 /**
  * Skip whitespace characters.
@@ -751,16 +763,22 @@ ar_expression_ast_t* ar_expression_parser__parse_memory_access(ar_expression_par
     const char *bases[] = {"memory", "message", "context"};
     const char *base = NULL;
     size_t base_len = 0;
+    bool local_access = false;
     
-    for (int i = 0; i < 3; i++) {
-        size_t len = strlen(bases[i]);
-        if (strncmp(mut_parser->own_expression + mut_parser->position, bases[i], len) == 0) {
-            // Check that it's not part of a larger identifier
-            char next = mut_parser->own_expression[mut_parser->position + len];
-            if (!isalnum((unsigned char)next) && next != '_') {
-                base = bases[i];
-                base_len = len;
-                break;
+    if (mut_parser->local_access_enabled && _peek_char(mut_parser, '.')) {
+        base = ".";
+        local_access = true;
+    } else {
+        for (int i = 0; i < 3; i++) {
+            size_t len = strlen(bases[i]);
+            if (strncmp(mut_parser->own_expression + mut_parser->position, bases[i], len) == 0) {
+                // Check that it's not part of a larger identifier
+                char next = mut_parser->own_expression[mut_parser->position + len];
+                if (!isalnum((unsigned char)next) && next != '_') {
+                    base = bases[i];
+                    base_len = len;
+                    break;
+                }
             }
         }
     }
@@ -772,7 +790,11 @@ ar_expression_ast_t* ar_expression_parser__parse_memory_access(ar_expression_par
     }
     
     // Advance past the base
-    mut_parser->position += base_len;
+    if (local_access) {
+        _advance(mut_parser);
+    } else {
+        mut_parser->position += base_len;
+    }
     
     // Parse path components if present
     ar_list_t *own_path_list = ar_list__create();
@@ -781,7 +803,12 @@ ar_expression_ast_t* ar_expression_parser__parse_memory_access(ar_expression_par
         return NULL;
     }
     
-    while (_consume_char(mut_parser, '.')) {
+    do {
+        if (!local_access && !_consume_char(mut_parser, '.')) {
+            break;
+        }
+        local_access = false;
+
         // Parse identifier
         size_t start = mut_parser->position;
         
@@ -818,7 +845,7 @@ ar_expression_ast_t* ar_expression_parser__parse_memory_access(ar_expression_par
         own_component[length] = '\0';
         
         ar_list__add_last(own_path_list, own_component);
-    }
+    } while (true);
     
     // Convert list to array for AST node creation
     size_t path_count = ar_list__count(own_path_list);

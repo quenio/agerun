@@ -93,6 +93,7 @@ memory.items := [
 
 memory.profile := {
   name := "Ada"
+  label := "Agent " + .name
   scores := [1, 2]
 }
 ```
@@ -102,6 +103,8 @@ Rules enforced by the parser:
 - The opener must be the full assignment right side: `memory.path := [` or `memory.path := {`
 - Every list item line must contain exactly one complete top-level expression
 - Every map entry line must use `identifier := expression`
+- A multi-line map entry expression may use `.key` to read a key assigned on an earlier line in the
+  same map block; `memory.`, `message.`, and `context.` continue to read from the frame
 - Linefeeds are the only item/entry separators; item-line and entry-line commas are rejected
 - Every item/entry line must use identical indentation
 - The closing delimiter must be on its own line and align with the assignment line

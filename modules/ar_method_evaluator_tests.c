@@ -19,6 +19,7 @@
 #include "ar_instruction_ast.h"
 #include "ar_system.h"
 #include "ar_agency.h"
+#include "ar_assert.h"
 
 static void test_method_evaluator__create_destroy(void) {
     printf("Testing method evaluator create/destroy...\n");
@@ -405,6 +406,226 @@ static void test_method_evaluator__evaluates_parsed_append_instruction(void) {
     printf("  ✓ Parsed append instruction evaluated successfully\n");
 }
 
+static void test_method_evaluator__evaluates_multiline_map_local_references(void) {
+    printf("Testing method evaluator with multi-line map local references...\n");
+
+    // Given a method evaluator with agency dependencies
+    ar_system_t *own_system = ar_system__create();
+    AR_ASSERT(own_system != NULL, "System should be created");
+    ar_agency_t *ref_agency = ar_system__get_agency(own_system);
+    ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
+    AR_ASSERT(ref_agency != NULL, "Agency should exist");
+    AR_ASSERT(ref_delegation != NULL, "Delegation should exist");
+
+    // Given method parser and evaluator facades
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log should be created");
+    ar_method_parser_t *own_parser = ar_method_parser__create(own_log);
+    AR_ASSERT(own_parser != NULL, "Method parser should be created");
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(
+        own_log,
+        ref_agency,
+        ref_delegation
+    );
+    AR_ASSERT(own_evaluator != NULL, "Method evaluator should be created");
+
+    // Given a multi-line map assignment whose second entry reads the first entry
+    const char *ref_source =
+        "memory.profile := {\n"
+        "  base := 2\n"
+        "  doubled := .base * 2\n"
+        "}\n";
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+    AR_ASSERT(own_ast != NULL, "Multi-line map with local reference should parse");
+    AR_ASSERT(ar_method_ast__get_instruction_count(own_ast) == 1, "Method should contain one instruction");
+
+    // Given an empty frame
+    ar_data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_context = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
+    AR_ASSERT(own_memory != NULL, "Memory should be created");
+    AR_ASSERT(own_context != NULL, "Context should be created");
+    AR_ASSERT(own_message != NULL, "Message should be created");
+    ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
+    AR_ASSERT(own_frame != NULL, "Frame should be created");
+
+    // When evaluating the parsed method
+    bool result = ar_method_evaluator__evaluate(own_evaluator, own_frame, own_ast);
+
+    // Then the local reference should read the prior key in the same map block
+    AR_ASSERT(result == true, "Method evaluation should succeed");
+    ar_data_t *ref_profile = ar_data__get_map_data(own_memory, "profile");
+    AR_ASSERT(ref_profile != NULL, "Profile map should be stored");
+    AR_ASSERT(ar_data__get_type(ref_profile) == AR_DATA_TYPE__MAP, "Profile should be a map");
+    AR_ASSERT(ar_data__get_map_integer(ref_profile, "base") == 2, "Base key should be stored");
+    AR_ASSERT(ar_data__get_map_integer(ref_profile, "doubled") == 4, "Doubled key should use .base");
+
+    // Cleanup
+    ar_frame__destroy(own_frame);
+    ar_data__destroy(own_message);
+    ar_data__destroy(own_context);
+    ar_data__destroy(own_memory);
+    ar_method_ast__destroy(own_ast);
+    ar_method_evaluator__destroy(own_evaluator);
+    ar_method_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
+    ar_system__destroy(own_system);
+
+    printf("  ✓ Multi-line map local references evaluated successfully\n");
+}
+
+static void test_method_evaluator__evaluates_frame_references_in_multiline_map(void) {
+    printf("Testing method evaluator with frame references in multi-line map...\n");
+
+    // Given a method evaluator with agency dependencies
+    ar_system_t *own_system = ar_system__create();
+    AR_ASSERT(own_system != NULL, "System should be created");
+    ar_agency_t *ref_agency = ar_system__get_agency(own_system);
+    ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
+    AR_ASSERT(ref_agency != NULL, "Agency should exist");
+    AR_ASSERT(ref_delegation != NULL, "Delegation should exist");
+
+    // Given method parser and evaluator facades
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log should be created");
+    ar_method_parser_t *own_parser = ar_method_parser__create(own_log);
+    AR_ASSERT(own_parser != NULL, "Method parser should be created");
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(
+        own_log,
+        ref_agency,
+        ref_delegation
+    );
+    AR_ASSERT(own_evaluator != NULL, "Method evaluator should be created");
+
+    // Given a multi-line map assignment that reads all frame roots
+    const char *ref_source =
+        "memory.profile := {\n"
+        "  from_memory := memory.seed\n"
+        "  from_message := message.count\n"
+        "  from_context := context.limit\n"
+        "}\n";
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+    AR_ASSERT(own_ast != NULL, "Multi-line map with frame references should parse");
+    AR_ASSERT(ar_method_ast__get_instruction_count(own_ast) == 1, "Method should contain one instruction");
+
+    // Given a frame with memory, message, and context values
+    ar_data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_context = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
+    AR_ASSERT(own_memory != NULL, "Memory should be created");
+    AR_ASSERT(own_context != NULL, "Context should be created");
+    AR_ASSERT(own_message != NULL, "Message should be created");
+    AR_ASSERT(ar_data__set_map_integer(own_memory, "seed", 3), "Memory seed should be set");
+    AR_ASSERT(ar_data__set_map_integer(own_message, "count", 5), "Message count should be set");
+    AR_ASSERT(ar_data__set_map_integer(own_context, "limit", 7), "Context limit should be set");
+    ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
+    AR_ASSERT(own_frame != NULL, "Frame should be created");
+
+    // When evaluating the parsed method
+    bool result = ar_method_evaluator__evaluate(own_evaluator, own_frame, own_ast);
+
+    // Then frame-root references should keep their ordinary meaning inside the map block
+    AR_ASSERT(result == true, "Method evaluation should succeed");
+    ar_data_t *ref_profile = ar_data__get_map_data(own_memory, "profile");
+    AR_ASSERT(ref_profile != NULL, "Profile map should be stored");
+    AR_ASSERT(ar_data__get_type(ref_profile) == AR_DATA_TYPE__MAP, "Profile should be a map");
+    AR_ASSERT(ar_data__get_map_integer(ref_profile, "from_memory") == 3, "memory.seed should be read");
+    AR_ASSERT(ar_data__get_map_integer(ref_profile, "from_message") == 5, "message.count should be read");
+    AR_ASSERT(ar_data__get_map_integer(ref_profile, "from_context") == 7, "context.limit should be read");
+
+    // Cleanup
+    ar_frame__destroy(own_frame);
+    ar_data__destroy(own_message);
+    ar_data__destroy(own_context);
+    ar_data__destroy(own_memory);
+    ar_method_ast__destroy(own_ast);
+    ar_method_evaluator__destroy(own_evaluator);
+    ar_method_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
+    ar_system__destroy(own_system);
+
+    printf("  ✓ Frame references in multi-line map evaluated successfully\n");
+}
+
+static void test_method_evaluator__evaluates_local_references_inside_nested_one_line_literals(void) {
+    printf("Testing method evaluator with local references inside nested one-line literals...\n");
+
+    // Given a method evaluator with agency dependencies
+    ar_system_t *own_system = ar_system__create();
+    AR_ASSERT(own_system != NULL, "System should be created");
+    ar_agency_t *ref_agency = ar_system__get_agency(own_system);
+    ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
+    AR_ASSERT(ref_agency != NULL, "Agency should exist");
+    AR_ASSERT(ref_delegation != NULL, "Delegation should exist");
+
+    // Given method parser and evaluator facades
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log should be created");
+    ar_method_parser_t *own_parser = ar_method_parser__create(own_log);
+    AR_ASSERT(own_parser != NULL, "Method parser should be created");
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(
+        own_log,
+        ref_agency,
+        ref_delegation
+    );
+    AR_ASSERT(own_evaluator != NULL, "Method evaluator should be created");
+
+    // Given nested one-line literals inside a multi-line map assignment
+    const char *ref_source =
+        "memory.profile := {\n"
+        "  base := 3\n"
+        "  nested_map := {base: 100, copied: .base, doubled: .base * 2}\n"
+        "  nested_list := [.base, .base + 1]\n"
+        "}\n";
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+    AR_ASSERT(own_ast != NULL, "Nested one-line local references should parse");
+    AR_ASSERT(ar_method_ast__get_instruction_count(own_ast) == 1, "Method should contain one instruction");
+
+    // Given an empty frame
+    ar_data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_context = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
+    AR_ASSERT(own_memory != NULL, "Memory should be created");
+    AR_ASSERT(own_context != NULL, "Context should be created");
+    AR_ASSERT(own_message != NULL, "Message should be created");
+    ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
+    AR_ASSERT(own_frame != NULL, "Frame should be created");
+
+    // When evaluating the parsed method
+    bool result = ar_method_evaluator__evaluate(own_evaluator, own_frame, own_ast);
+
+    // Then nested one-line literals should read from the outer multi-line map block
+    AR_ASSERT(result == true, "Method evaluation should succeed");
+    ar_data_t *ref_profile = ar_data__get_map_data(own_memory, "profile");
+    AR_ASSERT(ref_profile != NULL, "Profile map should be stored");
+    ar_data_t *ref_nested_map = ar_data__get_map_data(ref_profile, "nested_map");
+    AR_ASSERT(ref_nested_map != NULL, "Nested map should be stored");
+    AR_ASSERT(ar_data__get_map_integer(ref_nested_map, "base") == 100, "Nested map base should be local data");
+    AR_ASSERT(ar_data__get_map_integer(ref_nested_map, "copied") == 3, ".base should read outer block base");
+    AR_ASSERT(ar_data__get_map_integer(ref_nested_map, "doubled") == 6, ".base arithmetic should read outer block base");
+    ar_data_t *ref_nested_list = ar_data__get_map_data(ref_profile, "nested_list");
+    AR_ASSERT(ref_nested_list != NULL, "Nested list should be stored");
+    AR_ASSERT(ar_data__list_count(ref_nested_list) == 2, "Nested list should have two items");
+    ar_data_t **own_items = ar_data__list_items(ref_nested_list);
+    AR_ASSERT(own_items != NULL, "Nested list items should be readable");
+    AR_ASSERT(ar_data__get_integer(own_items[0]) == 3, "List .base item should read outer block base");
+    AR_ASSERT(ar_data__get_integer(own_items[1]) == 4, "List .base arithmetic item should read outer block base");
+    AR__HEAP__FREE(own_items);
+
+    // Cleanup
+    ar_frame__destroy(own_frame);
+    ar_data__destroy(own_message);
+    ar_data__destroy(own_context);
+    ar_data__destroy(own_memory);
+    ar_method_ast__destroy(own_ast);
+    ar_method_evaluator__destroy(own_evaluator);
+    ar_method_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
+    ar_system__destroy(own_system);
+
+    printf("  ✓ Local references inside nested one-line literals evaluated successfully\n");
+}
+
 static void test_method_evaluator__memory_stress_test(void) {
     printf("Testing method evaluator memory handling with many instructions...\n");
     
@@ -492,11 +713,14 @@ int main(void) {
     test_method_evaluator__evaluate_null_parameters();
     test_method_evaluator__evaluate_with_failing_instruction();
     test_method_evaluator__evaluates_parsed_append_instruction();
+    test_method_evaluator__evaluates_multiline_map_local_references();
+    test_method_evaluator__evaluates_frame_references_in_multiline_map();
+    test_method_evaluator__evaluates_local_references_inside_nested_one_line_literals();
     test_method_evaluator__memory_stress_test();
     
     // Check for memory leaks
     ar_heap__memory_report();
     
-    printf("All 7 tests passed!\n");
+    printf("All 11 tests passed!\n");
     return 0;
 }

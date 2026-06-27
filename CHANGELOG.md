@@ -2,6 +2,24 @@
 
 ## 2026-06-26 (Strict multiline assignment literals)
 
+- **Added block-local map entry references**
+
+  Multi-line map assignment entries can now read keys assigned on earlier lines in the same block
+  using `.key` or nested `.key.path` access. Explicit `memory.`, `message.`, and `context.` roots
+  keep their ordinary frame-based meaning inside those entry expressions.
+
+  **Implementation**: Extended `modules/ar_expression_parser.c` to parse the block-local `.`
+  accessor, and updated `modules/ar_expression_evaluator.zig` to evaluate map literal entries in
+  order with access to the map under construction. Added parsed method-evaluator coverage for local
+  entry references and frame-root references inside multi-line map assignments.
+
+  **Verification**: `make ar_expression_parser_tests`, `make ar_expression_evaluator_tests`,
+  `make ar_method_parser_tests`, `make ar_method_evaluator_tests`, and
+  `make ar_instruction_parser_tests` passed. Full validation passed with
+  `make check-test-structure 2>&1`, `make check-docs 2>&1`, `make build 2>&1`,
+  `make check-logs`, and `make check-all 2>&1`; the build included ASan/UBSan and TSAN test
+  sweeps with no memory leaks.
+
 - **Made multiline assignment literals strictly line-bound**
 
   Multiline list and map literals remain valid only as top-level assignment right-hand sides, but
@@ -17,7 +35,8 @@
 
   **Verification**: `make ar_method_parser_tests`, `make ar_instruction_parser_tests`,
   `make check-test-structure 2>&1`, `make check-docs 2>&1`, `make build 2>&1`,
-  `make check-logs`, `make sanitize-tests 2>&1`, and `make check-all 2>&1` passed.
+  `make check-logs`, and `make check-all 2>&1` passed. The build included ASan/UBSan and TSAN
+  test sweeps with no memory leaks.
 
   **Impact**: Multiline assignment literals are now an explicit assignment-only, strictly
   line-bound source-format exception. One-line list/map literals, function-call comma rules, and

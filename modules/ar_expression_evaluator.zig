@@ -111,7 +111,8 @@ fn _evaluate_literal_string(
 fn _evaluate_literal_list(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
-    ref_node: ?*const c.ar_expression_ast_t
+    ref_node: ?*const c.ar_expression_ast_t,
+    ref_local_map: ?*const c.ar_data_t
 ) ?*c.ar_data_t {
     if (ref_node == null) {
         c.ar_log__error(ref_log, "evaluate_literal_list: NULL node");
@@ -130,7 +131,12 @@ fn _evaluate_literal_list(
     const item_count = c.ar_expression_ast__get_list_item_count(ref_node);
     for (0..item_count) |i| {
         const ref_item_ast = c.ar_expression_ast__get_list_item(ref_node, i);
-        const own_item = _evaluate_expression(ref_log, ref_frame, ref_item_ast) orelse {
+        const own_item = _evaluate_expression_with_local(
+            ref_log,
+            ref_frame,
+            ref_item_ast,
+            ref_local_map
+        ) orelse {
             c.ar_data__destroy(own_list);
             c.ar_log__error(ref_log, "evaluate_literal_list: Failed to evaluate item");
             return null;
@@ -150,7 +156,8 @@ fn _evaluate_literal_list(
 fn _evaluate_literal_map(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
-    ref_node: ?*const c.ar_expression_ast_t
+    ref_node: ?*const c.ar_expression_ast_t,
+    ref_local_map: ?*const c.ar_data_t
 ) ?*c.ar_data_t {
     if (ref_node == null) {
         c.ar_log__error(ref_log, "evaluate_literal_map: NULL node");
@@ -167,6 +174,10 @@ fn _evaluate_literal_map(
     };
 
     const entry_count = c.ar_expression_ast__get_map_entry_count(ref_node);
+    const ref_entry_local_map = if (c.ar_expression_ast__is_map_local_access_enabled(ref_node))
+        own_map
+    else
+        ref_local_map;
     for (0..entry_count) |i| {
         const ref_key = c.ar_expression_ast__get_map_key(ref_node, i);
         const ref_value_ast = c.ar_expression_ast__get_map_value(ref_node, i);
@@ -176,7 +187,12 @@ fn _evaluate_literal_map(
             return null;
         }
 
-        const own_value = _evaluate_expression(ref_log, ref_frame, ref_value_ast) orelse {
+        const own_value = _evaluate_expression_with_local(
+            ref_log,
+            ref_frame,
+            ref_value_ast,
+            ref_entry_local_map
+        ) orelse {
             c.ar_data__destroy(own_map);
             c.ar_log__error(ref_log, "evaluate_literal_map: Failed to evaluate value");
             return null;
@@ -197,7 +213,8 @@ fn _evaluate_literal_map(
 fn _evaluate_memory_access(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
-    ref_node: ?*const c.ar_expression_ast_t
+    ref_node: ?*const c.ar_expression_ast_t,
+    ref_local_map: ?*const c.ar_data_t
 ) ?*c.ar_data_t {
     if (ref_node == null) {
         c.ar_log__error(ref_log, "evaluate_memory_access: NULL node");
@@ -210,7 +227,7 @@ fn _evaluate_memory_access(
         return null;
     }
     
-    // Get the base accessor (should be "memory" or "context")
+    // Get the base accessor (should be "memory", "message", "context", or ".")
     const base = c.ar_expression_ast__get_memory_base(ref_node);
     if (base == null) {
         c.ar_log__error(ref_log, "evaluate_memory_access: No base accessor");
@@ -221,7 +238,9 @@ fn _evaluate_memory_access(
     
     // Determine which map to use based on the base
     var map: ?*c.ar_data_t = null;
-    if (c.strcmp(base, "memory") == 0) {
+    if (c.strcmp(base, ".") == 0) {
+        map = @constCast(ref_local_map);
+    } else if (c.strcmp(base, "memory") == 0) {
         map = c.ar_frame__get_memory(ref_frame);
     } else if (c.strcmp(base, "context") == 0) {
         map = @constCast(c.ar_frame__get_context(ref_frame));
@@ -234,10 +253,18 @@ fn _evaluate_memory_access(
         return null;
     }
     
+    if (c.strcmp(base, ".") == 0 and path_count == 0) {
+        c.ar_log__error(ref_log, "evaluate_memory_access: Local accessor requires a key");
+        return null;
+    }
+
     // Missing message fields are treated as integer 0 so methods can use absent sender IDs
     if (map == null) {
         if (c.strcmp(base, "message") == 0) {
             return c.ar_data__create_integer(0);
+        }
+        if (c.strcmp(base, ".") == 0) {
+            c.ar_log__error(ref_log, "evaluate_memory_access: Local accessor used outside map block");
         }
         return null;
     }
@@ -365,6 +392,18 @@ fn _is_frame_reference(
         c.ar_data__is_owned_by(ref_value, c.ar_frame__get_message(ref_frame));
 }
 
+fn _is_frame_or_local_reference(
+    ref_frame: ?*const c.ar_frame_t,
+    ref_local_map: ?*const c.ar_data_t,
+    ref_value: ?*const c.ar_data_t
+) bool {
+    if (_is_frame_reference(ref_frame, ref_value)) {
+        return true;
+    }
+
+    return c.ar_data__is_owned_by(ref_value, ref_local_map);
+}
+
 fn _is_root_frame_value(
     ref_frame: ?*const c.ar_frame_t,
     ref_value: ?*const c.ar_data_t
@@ -392,17 +431,18 @@ fn _destroy_temporary_result(
 fn _evaluate_read_only_expression(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
-    ref_node: ?*const c.ar_expression_ast_t
+    ref_node: ?*const c.ar_expression_ast_t,
+    ref_local_map: ?*const c.ar_data_t
 ) ?*c.ar_data_t {
     if (ref_node == null) {
         return null;
     }
 
     if (c.ar_expression_ast__get_type(ref_node) == c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS) {
-        return _evaluate_memory_access(ref_log, ref_frame, ref_node);
+        return _evaluate_memory_access(ref_log, ref_frame, ref_node, ref_local_map);
     }
 
-    return _evaluate_expression(ref_log, ref_frame, ref_node);
+    return _evaluate_expression_with_local(ref_log, ref_frame, ref_node, ref_local_map);
 }
 
 fn _create_zero_result(
@@ -577,6 +617,7 @@ fn _evaluate_eager_call_arguments(
     ref_node: ?*const c.ar_expression_ast_t,
     arg_count: usize,
     arg_mode: pure_call_arg_mode_t,
+    ref_local_map: ?*const c.ar_data_t,
     mut_args: *[EAGER_PURE_CALL_ARG_LIMIT]?*c.ar_data_t
 ) void {
     var i: usize = 0;
@@ -584,8 +625,18 @@ fn _evaluate_eager_call_arguments(
         const ref_arg_ast = c.ar_expression_ast__get_function_arg(ref_node, i);
         mut_args.*[i] = if (ref_arg_ast != null)
             switch (arg_mode) {
-                .owned_result => _evaluate_expression(ref_log, ref_frame, ref_arg_ast),
-                .read_only_result => _evaluate_read_only_expression(ref_log, ref_frame, ref_arg_ast),
+                .owned_result => _evaluate_expression_with_local(
+                    ref_log,
+                    ref_frame,
+                    ref_arg_ast,
+                    ref_local_map
+                ),
+                .read_only_result => _evaluate_read_only_expression(
+                    ref_log,
+                    ref_frame,
+                    ref_arg_ast,
+                    ref_local_map
+                ),
             }
         else
             null;
@@ -619,7 +670,8 @@ fn _evaluate_eager_pure_call(
     ref_frame: ?*const c.ar_frame_t,
     ref_node: ?*const c.ar_expression_ast_t,
     ref_dispatch: *const pure_call_dispatch_entry_t,
-    arg_count: usize
+    arg_count: usize,
+    ref_local_map: ?*const c.ar_data_t
 ) ?*c.ar_data_t {
     if (arg_count > EAGER_PURE_CALL_ARG_LIMIT) {
         c.ar_log__error(ref_log, "evaluate_function_call: Unsupported pure-call arity");
@@ -632,7 +684,15 @@ fn _evaluate_eager_pure_call(
     };
 
     var args = [_]?*c.ar_data_t{null} ** EAGER_PURE_CALL_ARG_LIMIT;
-    _evaluate_eager_call_arguments(ref_log, ref_frame, ref_node, arg_count, ref_dispatch.arg_mode, &args);
+    _evaluate_eager_call_arguments(
+        ref_log,
+        ref_frame,
+        ref_node,
+        arg_count,
+        ref_dispatch.arg_mode,
+        ref_local_map,
+        &args
+    );
     defer _destroy_eager_call_arguments(&args, arg_count, ref_dispatch.arg_mode, ref_frame);
 
     return create_result(ref_log, &args);
@@ -641,14 +701,15 @@ fn _evaluate_eager_pure_call(
 fn _evaluate_if_call(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
-    ref_node: ?*const c.ar_expression_ast_t
+    ref_node: ?*const c.ar_expression_ast_t,
+    ref_local_map: ?*const c.ar_data_t
 ) ?*c.ar_data_t {
     const ref_condition_ast = c.ar_expression_ast__get_function_arg(ref_node, 0);
     const ref_true_ast = c.ar_expression_ast__get_function_arg(ref_node, 1);
     const ref_false_ast = c.ar_expression_ast__get_function_arg(ref_node, 2);
 
     const condition_result = if (ref_condition_ast != null)
-        _evaluate_read_only_expression(ref_log, ref_frame, ref_condition_ast)
+        _evaluate_read_only_expression(ref_log, ref_frame, ref_condition_ast, ref_local_map)
     else
         null;
     defer if (condition_result != null) _destroy_temporary_result(condition_result, ref_frame);
@@ -662,7 +723,7 @@ fn _evaluate_if_call(
         return _create_zero_result(ref_log);
     }
 
-    const own_result = _evaluate_expression(ref_log, ref_frame, ref_selected_ast);
+    const own_result = _evaluate_expression_with_local(ref_log, ref_frame, ref_selected_ast, ref_local_map);
     if (own_result == null) {
         return _create_zero_result(ref_log);
     }
@@ -674,7 +735,8 @@ fn _evaluate_registered_pure_call(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
     ref_node: ?*const c.ar_expression_ast_t,
-    ref_call: *const c.ar_pure_call_t
+    ref_call: *const c.ar_pure_call_t,
+    ref_local_map: ?*const c.ar_data_t
 ) ?*c.ar_data_t {
     const ref_dispatch = _find_pure_call_dispatch(c.ar_pure_call__get_type(ref_call)) orelse {
         c.ar_log__error(ref_log, "evaluate_function_call: Unknown pure function");
@@ -693,16 +755,18 @@ fn _evaluate_registered_pure_call(
             ref_frame,
             ref_node,
             ref_dispatch,
-            expected_arg_count
+            expected_arg_count,
+            ref_local_map
         ),
-        .lazy_if => _evaluate_if_call(ref_log, ref_frame, ref_node),
+        .lazy_if => _evaluate_if_call(ref_log, ref_frame, ref_node, ref_local_map),
     };
 }
 
 fn _evaluate_function_call(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
-    ref_node: ?*const c.ar_expression_ast_t
+    ref_node: ?*const c.ar_expression_ast_t,
+    ref_local_map: ?*const c.ar_data_t
 ) ?*c.ar_data_t {
     if (ref_node == null) {
         c.ar_log__error(ref_log, "evaluate_function_call: NULL node");
@@ -723,16 +787,17 @@ fn _evaluate_function_call(
         return null;
     };
 
-    return _evaluate_registered_pure_call(ref_log, ref_frame, ref_node, ref_call);
+    return _evaluate_registered_pure_call(ref_log, ref_frame, ref_node, ref_call, ref_local_map);
 }
 
 
 /// Helper function to evaluate any expression AST node
 /// This is used internally by binary operations to evaluate operands
-fn _evaluate_expression(
+fn _evaluate_expression_with_local(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
-    ref_node: ?*const c.ar_expression_ast_t
+    ref_node: ?*const c.ar_expression_ast_t,
+    ref_local_map: ?*const c.ar_data_t
 ) ?*c.ar_data_t {
     if (ref_node == null) return null;
     
@@ -749,36 +814,49 @@ fn _evaluate_expression(
             return _evaluate_literal_string(ref_log, ref_node);
         },
         c.AR_EXPRESSION_AST_TYPE__LITERAL_LIST => {
-            return _evaluate_literal_list(ref_log, ref_frame, ref_node);
+            return _evaluate_literal_list(ref_log, ref_frame, ref_node, ref_local_map);
         },
         c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP => {
-            return _evaluate_literal_map(ref_log, ref_frame, ref_node);
+            return _evaluate_literal_map(ref_log, ref_frame, ref_node, ref_local_map);
         },
         c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS => {
             // Memory access returns frame references. Internal callers need independent values.
-            const ref_value = _evaluate_memory_access(ref_log, ref_frame, ref_node) orelse return null;
+            const ref_value = _evaluate_memory_access(
+                ref_log,
+                ref_frame,
+                ref_node,
+                ref_local_map
+            ) orelse return null;
 
-            if (!_is_frame_reference(ref_frame, ref_value)) {
+            if (!_is_frame_or_local_reference(ref_frame, ref_local_map, ref_value)) {
                 return ref_value;
             }
 
             const own_value = c.ar_data__deep_copy(ref_value);
             if (own_value == null) {
-                c.ar_log__error(ref_log, "_evaluate_expression: Cannot copy value");
+                c.ar_log__error(ref_log, "_evaluate_expression_with_local: Cannot copy value");
             }
             return own_value;
         },
         c.AR_EXPRESSION_AST_TYPE__BINARY_OP => {
-            return _evaluate_binary_op(ref_log, ref_frame, ref_node);
+            return _evaluate_binary_op(ref_log, ref_frame, ref_node, ref_local_map);
         },
         c.AR_EXPRESSION_AST_TYPE__CALL => {
-            return _evaluate_function_call(ref_log, ref_frame, ref_node);
+            return _evaluate_function_call(ref_log, ref_frame, ref_node, ref_local_map);
         },
         else => {
-            c.ar_log__error(ref_log, "_evaluate_expression: Unknown expression type");
+            c.ar_log__error(ref_log, "_evaluate_expression_with_local: Unknown expression type");
             return null;
         },
     }
+}
+
+fn _evaluate_expression(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t
+) ?*c.ar_data_t {
+    return _evaluate_expression_with_local(ref_log, ref_frame, ref_node, null);
 }
 
 /// Main evaluation dispatch function
@@ -805,20 +883,20 @@ fn _evaluate(
             return _evaluate_literal_string(ref_log, ref_ast);
         },
         c.AR_EXPRESSION_AST_TYPE__LITERAL_LIST => {
-            return _evaluate_literal_list(ref_log, ref_frame, ref_ast);
+            return _evaluate_literal_list(ref_log, ref_frame, ref_ast, null);
         },
         c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP => {
-            return _evaluate_literal_map(ref_log, ref_frame, ref_ast);
+            return _evaluate_literal_map(ref_log, ref_frame, ref_ast, null);
         },
         c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS => {
             // Memory access returns a reference owned by the memory/context map
-            return _evaluate_memory_access(ref_log, ref_frame, ref_ast);
+            return _evaluate_memory_access(ref_log, ref_frame, ref_ast, null);
         },
         c.AR_EXPRESSION_AST_TYPE__BINARY_OP => {
-            return _evaluate_binary_op(ref_log, ref_frame, ref_ast);
+            return _evaluate_binary_op(ref_log, ref_frame, ref_ast, null);
         },
         c.AR_EXPRESSION_AST_TYPE__CALL => {
-            return _evaluate_function_call(ref_log, ref_frame, ref_ast);
+            return _evaluate_function_call(ref_log, ref_frame, ref_ast, null);
         },
         else => {
             c.ar_log__error(ref_log, "evaluate: Unknown expression type");
@@ -846,7 +924,8 @@ export fn ar_expression_evaluator__evaluate(
 fn _evaluate_binary_op(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
-    ref_node: ?*const c.ar_expression_ast_t
+    ref_node: ?*const c.ar_expression_ast_t,
+    ref_local_map: ?*const c.ar_data_t
 ) ?*c.ar_data_t {
     if (ref_node == null) {
         c.ar_log__error(ref_log, "evaluate_binary_op: NULL node");
@@ -871,13 +950,13 @@ fn _evaluate_binary_op(
     
     // Recursively evaluate both operands
     // _evaluate_expression now always returns owned values (via claim_or_copy)
-    const left = _evaluate_expression(ref_log, ref_frame, left_node) orelse {
+    const left = _evaluate_expression_with_local(ref_log, ref_frame, left_node, ref_local_map) orelse {
         c.ar_log__error(ref_log, "evaluate_binary_op: Failed to evaluate left operand");
         return null;
     };
     defer c.ar_data__destroy_if_owned(left, ref_frame);
     
-    const right = _evaluate_expression(ref_log, ref_frame, right_node) orelse {
+    const right = _evaluate_expression_with_local(ref_log, ref_frame, right_node, ref_local_map) orelse {
         c.ar_log__error(ref_log, "evaluate_binary_op: Failed to evaluate right operand");
         return null;
     };

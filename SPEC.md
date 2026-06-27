@@ -339,6 +339,9 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 <memory-access> ::= 'message' {'.' <identifier>}
                  | 'memory' {'.' <identifier>}
                  | 'context' {'.' <identifier>}
+                 | <block-local-access>
+
+<block-local-access> ::= '.' <identifier> {'.' <identifier>}
 
 <arithmetic-expression> ::= <expression> <arithmetic-operator> <expression>
 <arithmetic-operator> ::= '+' | '-' | '*' | '/'
@@ -367,6 +370,11 @@ The expression evaluator follows these rules:
 - Multi-line list item lines contain one expression; multi-line map entry lines use `identifier := expression`
 - Multi-line literal item/entry lines must use identical indentation, the closing delimiter must align with the assignment line, and linefeeds are the only item/entry separators
 - Multi-line literal item/entry lines do not allow trailing commas
+- In a multi-line map assignment, an entry right-hand expression may use `.key` or `.key.nested`
+  to read a key assigned on an earlier line in the same map block
+- Block-local `.key` access is rejected in ordinary one-line expressions and one-line map literals
+- In those same entry right-hand expressions, `memory.`, `message.`, and `context.` retain their
+  ordinary frame-root meaning
 - Multi-line literals cannot appear as function arguments, list elements, or map values; nested list and map values must be written as one-line literals
 - `message` refers to the current message being processed, and nested fields can be accessed using dot notation (e.g., `message.field`)
 - `memory` provides access to the agent's memory map, and nested fields can be accessed using dot notation (e.g., `memory.field`)
@@ -438,7 +446,9 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
 
 ### 4. Memory Access
 
-- **Reading**: Access values using dot notation with the root identifiers `message`, `memory`, or `context` (e.g., `message.field`, `memory.user.name`, `context.settings`).
+- **Reading**: Access frame values using dot notation with the root identifiers `message`,
+  `memory`, or `context` (e.g., `message.field`, `memory.user.name`, `context.settings`). Inside a
+  multi-line map assignment block, `.key` reads keys already assigned earlier in that same block.
 - **Writing**: Assign values to memory using `memory.path := value`. Only `memory` paths can be used on the left side of an assignment.
 
 ### 5. Arithmetic Operations

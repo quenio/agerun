@@ -11,6 +11,7 @@
 
 // Error buffer size for formatting error messages
 #define ERROR_BUFFER_SIZE 512
+static const char *MULTILINE_MAP_EXPRESSION_PREFIX = "__agerun_multiline_map__(";
 
 // Opaque structure definition
 struct ar_method_parser_s {
@@ -221,10 +222,22 @@ static bool _append_canonical_literal_block(
     size_t item_indent = (size_t)-1;
     size_t consumed_lines = 1;
     bool first_item = true;
+    bool is_map_literal_block = open_delimiter == '{';
 
     if (!_append_cstr(own_output, mut_output_length, mut_output_capacity, ref_lhs) ||
-        !_append_cstr(own_output, mut_output_length, mut_output_capacity, " := ") ||
-        !_append_char(own_output, mut_output_length, mut_output_capacity, open_delimiter)) {
+        !_append_cstr(own_output, mut_output_length, mut_output_capacity, " := ")) {
+        _log_error(mut_parser, *mut_line_number, "Out of memory");
+        return false;
+    }
+
+    if (is_map_literal_block &&
+        !_append_cstr(own_output, mut_output_length, mut_output_capacity,
+                      MULTILINE_MAP_EXPRESSION_PREFIX)) {
+        _log_error(mut_parser, *mut_line_number, "Out of memory");
+        return false;
+    }
+
+    if (!_append_char(own_output, mut_output_length, mut_output_capacity, open_delimiter)) {
         _log_error(mut_parser, *mut_line_number, "Out of memory");
         return false;
     }
@@ -270,6 +283,13 @@ static bool _append_canonical_literal_block(
             }
 
             if (!_append_char(own_output, mut_output_length, mut_output_capacity, close_delimiter)) {
+                AR__HEAP__FREE(own_line);
+                _log_error(mut_parser, item_line_number, "Out of memory");
+                return false;
+            }
+
+            if (is_map_literal_block &&
+                !_append_char(own_output, mut_output_length, mut_output_capacity, ')')) {
                 AR__HEAP__FREE(own_line);
                 _log_error(mut_parser, item_line_number, "Out of memory");
                 return false;
