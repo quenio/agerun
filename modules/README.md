@@ -1278,7 +1278,7 @@ The [build instruction evaluator module](ar_build_instruction_evaluator.md) hand
 
 The [complete instruction evaluator module](ar_complete_instruction_evaluator.md) handles `complete(...)` execution:
 - **Atomic Memory Population**: Writes generated placeholder strings into `memory...` targets only after full validation succeeds
-- **Handled Failure Semantics**: Records actionable errors, preserves prior memory, and writes boolean status results
+- **Handled Failure Semantics**: Records actionable errors, preserves prior memory, and writes integer `1`/`0` status results
 - **Backend Separation**: Delegates model/runtime lifecycle and placeholder generation to `ar_local_completion`
 
 #### Append Module (`ar_append`)
@@ -1520,7 +1520,7 @@ The [condition instruction parser module](ar_condition_instruction_parser.md) ha
 - **Compatibility Result Path**: Supports specialized condition ASTs with result paths, while the
   unified parser treats `memory.result := if(...)` as ordinary assignment expression syntax
 - **Shared Argument Parsing**: Uses the function-call parser for argument boundaries
-- **Complex Conditions**: Parses boolean expressions with operators
+- **Complex Conditions**: Parses condition expressions with comparison operators
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
 #### Exit Instruction Parser Module (`ar_exit_instruction_parser`)
@@ -1529,7 +1529,7 @@ The [exit agent instruction parser module](ar_exit_instruction_parser.md) handle
 - **Single Argument**: Parses `destroy(agent_id)` format for agent termination
 - **Agent ID Types**: Accepts integer literals or memory references (e.g., `memory.agent_id`)
 - **Optional Assignment**: Supports `memory.result := destroy(agent_id)` syntax
-- **Return Value**: Destroy operations return 1 (true) on success, 0 (false) on failure
+- **Return Value**: Destroy operations return integer `1` on success and integer `0` on failure
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
 #### Deprecate Instruction Parser Module (`ar_deprecate_instruction_parser`)

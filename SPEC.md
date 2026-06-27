@@ -205,9 +205,9 @@ as the documented fallback, absence, or no-op sentinel only in the language posi
 - Pure `append(list, value)` returns integer `0` for missing, non-LIST, invalid, or not-copyable
   inputs and copy failures. Appending the ordinary integer value `0` to a valid list is normal data
   construction, not a sentinel.
-- `send(0, message)` is an instruction-level no-op destination. The message is destroyed, the send
-  returns true, and no message is delivered. Integer `0` elsewhere in the message payload remains
-  ordinary data.
+- `send(0, message)` is an instruction-level no-op destination. The message is destroyed, the
+  instruction succeeds, and no message is delivered. If the result is assigned, the stored status is
+  integer `1`. Integer `0` elsewhere in the message payload remains ordinary data.
 - `spawn(0, version, context)` and `spawn("", version, context)` are instruction-level no-op method
   selections. The instruction performs no spawn and stores integer `0` as the assigned result when a
   result target is present.
@@ -306,7 +306,7 @@ discard their values.
 
 Function call instructions can optionally assign their result to a variable. For example:
 - `send(agent_id, message)` - Call the function without storing the result
-- `success := send(agent_id, message)` - Store the result in a memory variable
+- `memory.status := send(agent_id, message)` - Store integer `1`/`0` delivery status in memory
 - `memory.result := complete("The capital of {country} is {city}.", memory.values)` - Return a new map containing values from `memory.values` plus generated values for missing placeholders
 - `append(memory.results, message.value)` - Standalone compatibility append: mutate the existing
   `memory.results` list
@@ -417,12 +417,12 @@ The expression evaluator follows these rules:
 - In assignments, only `memory` paths can be used on the left side of the ':=' operator
 - Arithmetic operations can be performed with basic operators: +, -, *, /
 - Comparison operations use relational operators to compare values:
-  - `=` equality (returns true if the values are equal)
-  - `<>` inequality (returns true if the values are not equal)
-  - `<` less than (returns true if the left value is less than the right value)
-  - `<=` less than or equal to (returns true if the left value is less than or equal to the right value)
-  - `>` greater than (returns true if the left value is greater than the right value)
-  - `>=` greater than or equal to (returns true if the left value is greater than or equal to the right value)
+  - `=` equality (produces integer `1` if the values are equal, otherwise integer `0`)
+  - `<>` inequality (produces integer `1` if the values are not equal, otherwise integer `0`)
+  - `<` less than (produces integer `1` if the left value is less than the right value, otherwise integer `0`)
+  - `<=` less than or equal to (produces integer `1` if the left value is less than or equal to the right value, otherwise integer `0`)
+  - `>` greater than (produces integer `1` if the left value is greater than the right value, otherwise integer `0`)
+  - `>=` greater than or equal to (produces integer `1` if the left value is greater than or equal to the right value, otherwise integer `0`)
 - Type conversion is automatic where possible; integers are promoted to doubles, numeric types can be converted to strings
 
 ### 1. Parsing, Building, and Completing Strings
@@ -480,16 +480,17 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
 
 ### 3. Messaging
 
-- `send(recipient_id: integer, message: data) → boolean`:
+- `send(recipient_id: integer, message: data) → integer status`:
   - **Routing by ID**:
-    - `recipient_id == 0`: No operation (no-op); returns `true` per
+    - `recipient_id == 0`: No operation (no-op); succeeds with integer status `1` per
       [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics)
     - `recipient_id > 0`: Routes to agent's message queue
     - `recipient_id < 0`: Routes to delegate's message queue
   - **Asynchronous Delivery**: All messages are enqueued for non-blocking operation
   - **Return Value**:
-    - Returns `true` if the recipient exists and message is enqueued
-    - Returns `false` if the recipient does not exist
+    - Produces integer `1` if the recipient exists and message is enqueued, or if the recipient is
+      the no-op destination `0`
+    - Produces integer `0` if the recipient does not exist
   - The `message` parameter can be any supported data type (INTEGER, DOUBLE, STRING, LIST, or MAP)
   - **Ownership**: Message ownership transfers to the recipient's queue
 
@@ -519,17 +520,17 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
 
 ### 7. Agent Management
 
-- `compile(method_name: string, instructions: string, version: string) → boolean`: Defines a new method with the specified name, instruction code, and version string. The version string must follow semantic versioning (e.g., "1.0.0"). Compatibility between versions is determined based on semantic versioning rules: agents using version 1.x.x will automatically use the latest 1.x.x version. Returns true if the method was successfully defined, or false if the instructions cannot be parsed or compiled.
+- `compile(method_name: string, instructions: string, version: string) → integer status`: Defines a new method with the specified name, instruction code, and version string. The version string must follow semantic versioning (e.g., "1.0.0"). Compatibility between versions is determined based on semantic versioning rules: agents using version 1.x.x will automatically use the latest 1.x.x version. Produces integer `1` if the method was successfully defined, or integer `0` if the instructions cannot be parsed or compiled.
 - `complete(...)` is local-only in the first release, uses CPU-only execution, returns generated values as strings in a new map, rejects empty/outer-whitespace/braced generated values, applies build-style substitution for provided values, and never mutates the provided values map.
 - `spawn(method_name: string | integer, version: string, context: map) → agent_id`: Spawns a new agent
   instance based on the specified method name and version string. The version parameter is required.
   If a partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x")
   will be used. A context map must be provided as the third argument. Returns a unique agent ID.
   Special no-op cases: if method_name is integer `0` or an empty string, the instruction performs no
-  operation but returns true and sets the result to integer `0` if assigned to a variable, per
+  operation and sets the result to integer `0` if assigned to a variable, per
   [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics).
-- `exit(agent_id: integer) → boolean`: Attempts to exit the specified agent. The agent is immediately destroyed. Returns true if successful, or false if the agent does not exist or is already destroyed.
-- `deprecate(method_name: string, method_version: string) → boolean`: Attempts to deprecate the specified method version by unregistering it from the methodology. This allows deprecating methods even when agents are actively using them. Returns true if successful, or false if the method does not exist.
+- `exit(agent_id: integer) → integer status`: Attempts to exit the specified agent. The agent is immediately destroyed. Produces integer `1` if successful, or integer `0` if the agent does not exist or is already destroyed.
+- `deprecate(method_name: string, method_version: string) → integer status`: Attempts to deprecate the specified method version by unregistering it from the methodology. This allows deprecating methods even when agents are actively using them. Produces integer `1` if successful, or integer `0` if the method does not exist.
 
 ## Message Handling
 

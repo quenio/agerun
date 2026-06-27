@@ -1,7 +1,10 @@
 # No-op Semantics Pattern
 
 ## Learning
-In AgeRun, send(0, message) is implemented as a no-op that destroys the message without processing or output. Agent ID 0 serves as a "null destination" or message sink, useful for conditional message handling and failure cases.
+In AgeRun, `send(0, message)` is implemented as a no-op destination that destroys the message
+without processing or output. Agent ID `0` serves as a message sink, useful for conditional message
+handling and failure cases. If the `send(...)` result is assigned, the language stores integer `1`
+for this successful no-op status; AgeRun has no boolean data type.
 
 ## Importance
 Understanding no-op semantics prevents confusion when messages seem to "disappear" without output. This pattern is documented in AGENTS.md but often surprises developers who expect agent 0 to represent console output or debugging.
@@ -10,12 +13,12 @@ Understanding no-op semantics prevents confusion when messages seem to "disappea
 ```c
 // Implementation in ar_send_instruction_evaluator.zig
 if (agent_id == 0) {
-    // Special case: agent_id 0 is a no-op that always returns true
+    // Special case: agent_id 0 is a successful no-op in evaluator control flow
     // We need to destroy the message since it won't be sent
     std.debug.print("DEBUG [SEND_EVAL]: Sending to agent 0 - destroying message type={}\n", 
                     .{c.ar_data__get_type(own_message)});
     c.ar_data__destroy_if_owned(own_message, ref_evaluator);
-    send_result = true;  // Always returns success
+    send_result = true;  // Host bool; assigned AgeRun status is integer 1
 } else {
     // Normal case: send to actual agent
     send_result = c.ar_agency__send_to_agent(agent_id, own_message);
@@ -45,7 +48,7 @@ void handle_conditional_message(int64_t condition, ar_data_t *own_message) {
     // Pattern 1: Use agent 0 as conditional sink
     int64_t target = condition ? real_agent_id : 0;
     ar_agency__send_to_agent(target, own_message);
-    // Message is sent if condition true, destroyed if false
+    // Message is sent for a nonzero target, destroyed for target 0
     
     // Pattern 2: Document no-op behavior in tests
     // Note: send(0, ...) is a no-op per AGENTS.md

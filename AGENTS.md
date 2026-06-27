@@ -451,7 +451,7 @@ interleave with already queued messages but are not re-entrant
 - Instructions: assignments, effectful function calls
 - Pure function calls such as `parse(...)`, `if(...)`, and `append(...)` can be nested
 - Effectful function calls cannot be nested
-- `send(0, message)` is a no-op returning true ([details](kb/no-op-semantics-pattern.md))
+- `send(0, message)` is a no-op destination; assigned send status uses integer `1`/`0` ([details](kb/no-op-semantics-pattern.md))
 
 ### 8. Development Practices
 
@@ -686,7 +686,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Send with memory references not supported** - send() needs ownership of message
 - **Message accessor** - `message.field` returns references like memory/context ([details](kb/expression-evaluator-accessor-extension.md))
 - **Language constraints** - No type checking, if() returns values ([details](kb/agerun-language-constraint-workarounds.md))
-- **No-op instructions** - spawn(0,..) & spawn("",..) return true ([details](kb/no-op-instruction-semantics.md))
+- **No-op instructions** - spawn(0,..) & spawn("",..) succeed and store integer `0` when assigned ([details](kb/no-op-instruction-semantics.md))
 
 ## Method Test Template
 

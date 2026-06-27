@@ -1,7 +1,10 @@
 # No-op Instruction Semantics
 
 ## Learning
-Instructions in the AgeRun language should handle no-op cases gracefully by returning true rather than false. This allows conditional execution without breaking the method's control flow, since returning false stops execution.
+Instruction evaluators should handle no-op cases gracefully by succeeding in evaluator control flow
+rather than failing the instruction. This allows conditional execution without breaking the method's
+control flow. If the instruction has a language-level result assignment, store the documented integer
+status/result value; AgeRun has no boolean data type.
 
 ## Importance
 Proper no-op semantics enable:
@@ -25,7 +28,7 @@ if (c.ar_data__get_type(own_method_name) == c.AR_DATA_TYPE__INTEGER and
             mut_memory, "memory", ref_result_path, own_result
         );
     }
-    return true; // Success for no-op (not false!)
+    return true; // Host bool: evaluator succeeds for this no-op
 }
 ```
 
@@ -34,13 +37,13 @@ AgeRun method usage:
 # Conditional spawning - no-op when not booting
 memory.method_name := if(memory.is_boot = 1, "echo", 0)
 memory.echo_id := spawn(memory.method_name, memory.version, context)
-# spawn returns true and echo_id = 0 when method_name = 0
+# spawn succeeds and echo_id = 0 when method_name = 0
 ```
 
 ## Generalization
 When implementing instruction evaluators:
 1. Identify valid no-op conditions (0, empty string, null equivalent)
-2. Return true for no-op cases to allow method continuation
+2. Succeed in evaluator control flow for no-op cases to allow method continuation
 3. Set result variables to appropriate no-op values (usually 0)
 4. Document no-op behavior in specifications
 5. Add tests specifically for no-op cases
@@ -51,8 +54,8 @@ When implementing instruction evaluators:
 grep -r "return false" modules/*_instruction_evaluator.zig
 
 # Add no-op checks before validation
-# Return true for no-op cases
-# Set appropriate result values
+# Succeed in evaluator control flow for no-op cases
+# Set appropriate integer result values
 ```
 
 ## Related Patterns
