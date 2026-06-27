@@ -193,7 +193,8 @@ as the documented fallback, absence, or no-op sentinel only in the language posi
   evaluate to integer `0`. Once produced, that `0` composes as ordinary integer data.
 - Condition truthiness treats integer `0` as false and nonzero integers as true. Non-integer and
   missing condition values are false. This rule is condition truthiness, not a general conversion of
-  data values into absence.
+  data values into absence. It exists so methods can use integer status and flag values directly in
+  conditions when no relational operator is needed.
 - Expression-level `if(condition, true_value, false_value)` returns integer `0` when the selected
   branch cannot produce a value. If the selected branch explicitly evaluates to integer `0`, that
   result is still ordinary integer data selected by the branch.
