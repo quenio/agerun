@@ -56,16 +56,18 @@ Evaluates a send instruction using frame-based execution. The frame provides acc
 ### Functionality
 
 The module evaluates send instructions of the form:
-- `send(agent_id, message)`
-- `memory.result := send(agent_id, message)`
+- `send(recipient, message)`
+- `memory.result := send(recipient, message)`
 
 Key features:
-1. **Agent ID Evaluation**: Evaluates the agent ID expression to an integer
+1. **Recipient Evaluation**: Evaluates the recipient expression; only nonzero INTEGER values route
 2. **Message Evaluation**: Evaluates the message expression to any data type
 3. **ID-Based Routing**: Routes messages based on ID sign:
-   - **ID == 0**: No-op (destroys message, returns true)
    - **ID > 0**: Routes to agency for agent delivery
    - **ID < 0**: Routes to delegation for delegate delivery
+   - **ID == 0 or non-INTEGER recipient**: No-delivery sink from the central
+     [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics); no message is delivered,
+     and assigned calls store integer `0` because no message was sent
 4. **Result Assignment**: Stores integer `1` or `0` through `ar_result_binding` when assignment is specified
 5. **Ownership Transfer**: Transfers message ownership to appropriate destination (agency or delegation)
 6. **Nested Payloads**: Deep-copies borrowed nested list/map messages before delivery
@@ -76,9 +78,10 @@ The send instruction evaluator implements **ID-based message routing** following
 
 | Target ID | Destination | Function Called |
 |-----------|-------------|-----------------|
-| `0` | No-op (message destroyed) | N/A - returns `true` |
+| `0` | No-delivery sink | N/A - no delivery status |
 | `> 0` | Agent via agency | `ar_agency__send_to_agent()` |
 | `< 0` | Delegate via delegation | `ar_delegation__send_to_delegate()` |
+| non-INTEGER | No-delivery sink | N/A - no delivery status |
 
 ### Memory Management
 
@@ -109,9 +112,9 @@ The module follows strict memory ownership rules:
 ## Implementation Details
 
 The module evaluates both arguments:
-1. Agent ID must evaluate to an integer
+1. Recipient values route only when they evaluate to nonzero integers
 2. Message can be any data type
-3. Routes based on ID sign to appropriate destination
+3. Routes nonzero integers based on ID sign to the appropriate destination
 4. Validates assigned result targets before sending so protected `memory.self` writes are rejected
 5. Handles assigned send result storage through `ar_result_binding`
 6. Properly manages ownership transfer based on destination
@@ -164,20 +167,21 @@ bool success = ar_send_instruction_evaluator__evaluate(send_eval, frame, ast);
 ar_instruction_ast_t *ast = ar_instruction_parser__parse_send(parser);
 bool success = ar_send_instruction_evaluator__evaluate(send_eval, frame, ast);
 
-// Result (true/false) is now stored in memory.result
+// Result status (integer 1/0) is now stored in memory.result
 ```
 
 ## Error Handling
 
 The send instruction evaluator handles errors gracefully:
 
-| Error Case | Behavior | Return Value | Message Handling |
+| Error Case | Behavior | Evaluator Status | Assigned Result |
 |------------|----------|--------------|------------------|
-| Non-existent agent | Agent not found in agency | `false` | Message destroyed |
-| Non-existent delegate | Delegate not found in delegation | `false` | Message destroyed |
-| Invalid agent_id expression | Expression evaluation fails | `false` | Message destroyed |
-| Invalid message expression | Expression evaluation fails | `false` | No message created |
-| agent_id == 0 | No-op (special case) | `true` | Message destroyed |
+| Non-existent agent | Agent not found in agency; message destroyed | Continues if assigned result stores | Integer `0` |
+| Non-existent delegate | Delegate not found in delegation; message destroyed | Continues if assigned result stores | Integer `0` |
+| Recipient expression evaluation fails | Message expression is not evaluated | Fails | No result stored |
+| Non-INTEGER recipient | No message is delivered | Continues | Integer `0` |
+| Invalid message expression | Expression evaluation fails | Fails | No result stored |
+| INTEGER `0` recipient | No message is delivered | Continues | Integer `0` |
 
 All error paths ensure proper memory cleanup - messages are destroyed when delivery fails to prevent memory leaks.
 
@@ -186,10 +190,10 @@ All error paths ensure proper memory cleanup - messages are destroyed when deliv
 The module includes comprehensive tests covering:
 - Sending to valid agents (positive IDs)
 - Sending to valid delegates (negative IDs)
-- Sending to agent 0 (no-op case)
+- Sending to non-routable recipients, including integer `0` and non-INTEGER values
 - Send with result assignment
 - Various message types (integers, strings, maps, lists)
-- Invalid agent ID handling (returns false gracefully)
+- Invalid agent ID handling (stores integer `0` status when assigned)
 - Delegate routing verification (message actually queued)
 - Memory leak verification
 - Message ownership transfer validation

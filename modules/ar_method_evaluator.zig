@@ -83,7 +83,8 @@ export fn ar_method_evaluator__evaluate(
         return true;
     }
     
-    // Evaluate each instruction in sequence
+    // Evaluate each instruction in sequence, recording failures without ending the pass early.
+    var all_instructions_succeeded = true;
     var line_no: usize = 1;
     while (line_no <= instruction_count) : (line_no += 1) {
         // Get the instruction
@@ -93,10 +94,12 @@ export fn ar_method_evaluator__evaluate(
             var buffer: [256]u8 = undefined;
             const formatted = std.fmt.bufPrintZ(&buffer, "Failed to retrieve instruction at line {d}", .{line_no}) catch {
                 c.ar_log__error(ref_evaluator.?.ref_log, "Failed to retrieve instruction");
-                return false;
+                all_instructions_succeeded = false;
+                continue;
             };
             c.ar_log__error(ref_evaluator.?.ref_log, formatted);
-            return false;
+            all_instructions_succeeded = false;
+            continue;
         }
         
         // Evaluate the instruction with the frame
@@ -106,13 +109,14 @@ export fn ar_method_evaluator__evaluate(
             var buffer: [256]u8 = undefined;
             const formatted = std.fmt.bufPrintZ(&buffer, "Method evaluation failed at line {d}", .{line_no}) catch {
                 c.ar_log__error(ref_evaluator.?.ref_log, "Method evaluation failed");
-                return false;
+                all_instructions_succeeded = false;
+                continue;
             };
             c.ar_log__error(ref_evaluator.?.ref_log, formatted);
-            return false;
+            all_instructions_succeeded = false;
         }
     }
     
-    // All instructions evaluated successfully
-    return true;
+    // All instructions were attempted; return whether every instruction succeeded.
+    return all_instructions_succeeded;
 }

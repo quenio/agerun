@@ -112,11 +112,13 @@ pub export fn ar_send_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Extract agent ID as integer
+    // Extract routable destination only from nonzero integers.
     var agent_id: i64 = 0;
-    if (c.ar_data__get_type(agent_id_result) == c.AR_DATA_TYPE__INTEGER) {
+    const recipient_is_integer = c.ar_data__get_type(agent_id_result) == c.AR_DATA_TYPE__INTEGER;
+    if (recipient_is_integer) {
         agent_id = c.ar_data__get_integer(agent_id_result);
     }
+    const recipient_can_route = recipient_is_integer and agent_id != 0;
     
     // We only need the value, not the data itself
     // Check if we can destroy it (unowned) or if it's a reference
@@ -125,9 +127,9 @@ pub export fn ar_send_instruction_evaluator__evaluate(
     // Send the message based on ID sign
     const current_agent_id = c.ar_frame__get_current_agent_id(ref_frame);
     var send_result: bool = undefined;
-    if (agent_id == 0) {
+    if (!recipient_can_route) {
         if (_is_exact_message_forward(ref_message_ast)) {
-            send_result = true;
+            send_result = false;
         } else {
             // Evaluate message expression
             const message_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_message_ast);
@@ -141,10 +143,9 @@ pub export fn ar_send_instruction_evaluator__evaluate(
                 return false;
             };
 
-            // Special case: agent_id 0 is a no-op that always returns true
-            // We need to destroy the message since it won't be sent
+            // Non-routable recipients are sinks: destroy the message and report no delivery.
             c.ar_data__destroy_if_owned(own_message, ref_evaluator);
-            send_result = true;
+            send_result = false;
         }
     } else if (_is_exact_message_forward(ref_message_ast)) {
         const ref_current_message = c.ar_frame__get_message(ref_frame);
@@ -236,5 +237,9 @@ pub export fn ar_send_instruction_evaluator__evaluate(
         return true;
     }
     
+    if (!recipient_can_route) {
+        return true;
+    }
+
     return send_result;
 }

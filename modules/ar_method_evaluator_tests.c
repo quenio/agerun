@@ -32,6 +32,7 @@ static void test_method_evaluator__create_destroy(void) {
     ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
     assert(ref_delegation != NULL);
 
+    // Given evaluator resources
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
 
@@ -60,21 +61,22 @@ static void test_method_evaluator__evaluate_empty_method(void) {
     ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
     assert(ref_delegation != NULL);
 
+    // Given evaluator resources
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
     ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency, ref_delegation);
     
-    // Create a frame
+    // Given a frame
     ar_data_t *own_message = ar_data__create_string("test message");
     ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
     assert(own_frame != NULL);
     
-    // Create an empty method AST
+    // Given an empty method AST
     ar_method_ast_t *own_ast = ar_method_ast__create();
     assert(own_ast != NULL);
     
-    // Verify the method is actually empty
+    // Given the method has no instructions
     assert(ar_method_ast__get_instruction_count(own_ast) == 0);
     
     // When evaluating the empty method
@@ -107,25 +109,26 @@ static void test_method_evaluator__evaluate_single_instruction_method(void) {
     ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
     assert(ref_delegation != NULL);
 
+    // Given evaluator resources
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
     ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency, ref_delegation);
     
-    // Create a frame
+    // Given a frame
     ar_data_t *own_message = ar_data__create_string("test message");
     ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
     
-    // Create a method AST with one instruction
+    // Given a method AST with one instruction
     ar_method_ast_t *own_ast = ar_method_ast__create();
     
-    // Create a proper assignment instruction with expression AST
+    // Given a proper assignment instruction with expression AST
     ar_instruction_ast_t *own_instr = ar_instruction_ast__create_assignment("memory.x", "42");
     ar_expression_ast_t *own_expr = ar_expression_ast__create_literal_int(42);
     ar_instruction_ast__set_assignment_expression_ast(own_instr, own_expr);
     ar_method_ast__add_instruction(own_ast, own_instr);
     
-    // Verify the method has one instruction
+    // Given the method has one instruction
     assert(ar_method_ast__get_instruction_count(own_ast) == 1);
     
     // When evaluating the method with one instruction
@@ -134,7 +137,7 @@ static void test_method_evaluator__evaluate_single_instruction_method(void) {
     // Then it should succeed
     assert(result == true);
     
-    // And the value should be stored in memory
+    // Then the value should be stored in memory
     assert(ar_data__get_map_integer(own_memory, "x") == 42);
     
     // Cleanup
@@ -161,37 +164,38 @@ static void test_method_evaluator__evaluate_multiple_instructions(void) {
     ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
     assert(ref_delegation != NULL);
 
+    // Given evaluator resources
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
     ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency, ref_delegation);
     
-    // Create a frame
+    // Given a frame
     ar_data_t *own_message = ar_data__create_string("test message");
     ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
     
-    // Create a method AST with three instructions
+    // Given a method AST with three instructions
     ar_method_ast_t *own_ast = ar_method_ast__create();
     
-    // First instruction: memory.x := 10
+    // Given the first instruction: memory.x := 10
     ar_instruction_ast_t *own_instr1 = ar_instruction_ast__create_assignment("memory.x", "10");
     ar_expression_ast_t *own_expr1 = ar_expression_ast__create_literal_int(10);
     ar_instruction_ast__set_assignment_expression_ast(own_instr1, own_expr1);
     ar_method_ast__add_instruction(own_ast, own_instr1);
     
-    // Second instruction: memory.y := 20
+    // Given the second instruction: memory.y := 20
     ar_instruction_ast_t *own_instr2 = ar_instruction_ast__create_assignment("memory.y", "20");
     ar_expression_ast_t *own_expr2 = ar_expression_ast__create_literal_int(20);
     ar_instruction_ast__set_assignment_expression_ast(own_instr2, own_expr2);
     ar_method_ast__add_instruction(own_ast, own_instr2);
     
-    // Third instruction: memory.z := 30
+    // Given the third instruction: memory.z := 30
     ar_instruction_ast_t *own_instr3 = ar_instruction_ast__create_assignment("memory.z", "30");
     ar_expression_ast_t *own_expr3 = ar_expression_ast__create_literal_int(30);
     ar_instruction_ast__set_assignment_expression_ast(own_instr3, own_expr3);
     ar_method_ast__add_instruction(own_ast, own_instr3);
     
-    // Verify the method has three instructions
+    // Given the method has three instructions
     assert(ar_method_ast__get_instruction_count(own_ast) == 3);
     
     // When evaluating the method with multiple instructions
@@ -200,7 +204,7 @@ static void test_method_evaluator__evaluate_multiple_instructions(void) {
     // Then it should succeed
     assert(result == true);
     
-    // And all values should be stored in memory
+    // Then all values should be stored in memory
     assert(ar_data__get_map_integer(own_memory, "x") == 10);
     assert(ar_data__get_map_integer(own_memory, "y") == 20);
     assert(ar_data__get_map_integer(own_memory, "z") == 30);
@@ -229,12 +233,13 @@ static void test_method_evaluator__evaluate_null_parameters(void) {
     ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
     assert(ref_delegation != NULL);
 
+    // Given evaluator resources
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
     ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency, ref_delegation);
     
-    // Create valid frame and AST for testing
+    // Given valid frame and AST inputs for testing
     ar_data_t *own_message = ar_data__create_string("test message");
     ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
     ar_method_ast_t *own_ast = ar_method_ast__create();
@@ -281,29 +286,36 @@ static void test_method_evaluator__evaluate_with_failing_instruction(void) {
     ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
     assert(ref_delegation != NULL);
 
+    // Given evaluator resources
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
     ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency, ref_delegation);
     
-    // Create a frame
+    // Given a frame
     ar_data_t *own_message = ar_data__create_string("test message");
     ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
     
-    // Create a method AST with a failing instruction
+    // Given a method AST with a failing instruction followed by another valid instruction
     ar_method_ast_t *own_ast = ar_method_ast__create();
     
-    // Add a valid instruction first
+    // Given a valid first instruction
     ar_instruction_ast_t *own_instr1 = ar_instruction_ast__create_assignment("memory.x", "10");
     ar_expression_ast_t *own_expr1 = ar_expression_ast__create_literal_int(10);
     ar_instruction_ast__set_assignment_expression_ast(own_instr1, own_expr1);
     ar_method_ast__add_instruction(own_ast, own_instr1);
     
-    // Add an invalid instruction (assignment to non-memory target)
+    // Given an invalid second instruction that assigns to a non-memory target
     ar_instruction_ast_t *own_instr2 = ar_instruction_ast__create_assignment("invalid.target", "20");
     ar_expression_ast_t *own_expr2 = ar_expression_ast__create_literal_int(20);
     ar_instruction_ast__set_assignment_expression_ast(own_instr2, own_expr2);
     ar_method_ast__add_instruction(own_ast, own_instr2);
+
+    // Given another valid instruction after the failure
+    ar_instruction_ast_t *own_instr3 = ar_instruction_ast__create_assignment("memory.y", "30");
+    ar_expression_ast_t *own_expr3 = ar_expression_ast__create_literal_int(30);
+    ar_instruction_ast__set_assignment_expression_ast(own_instr3, own_expr3);
+    ar_method_ast__add_instruction(own_ast, own_instr3);
     
     // When evaluating the method with a failing instruction
     bool result = ar_method_evaluator__evaluate(own_evaluator, own_frame, own_ast);
@@ -311,17 +323,19 @@ static void test_method_evaluator__evaluate_with_failing_instruction(void) {
     // Then it should fail
     assert(result == false);
     
-    // And the first instruction should have succeeded
+    // Then the first instruction should have succeeded
     assert(ar_data__get_map_integer(own_memory, "x") == 10);
+
+    // Then the later instruction should still run after the failure
+    assert(ar_data__get_map_integer(own_memory, "y") == 30);
     
-    // And an error should be logged by the assignment evaluator
+    // Then an error should be logged by the assignment evaluator
     ar_event_t *ref_error = ar_log__get_last_error(own_log);
     assert(ref_error != NULL);
     const char *ref_message = ar_event__get_message(ref_error);
     assert(ref_message != NULL);
     
-    // The error message should mention that it failed at line 2
-    // (This will fail until we add error logging to method evaluator)
+    // Then the error message should mention that it failed at line 2
     assert(strstr(ref_message, "line 2") != NULL);
     
     // Cleanup
@@ -434,6 +448,7 @@ static void test_method_evaluator__evaluates_multiline_map_local_references(void
         "memory.profile := {\n"
         "  base := 2\n"
         "  doubled := .base * 2\n"
+        "  fallback := .missing\n"
         "}\n";
     ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
     AR_ASSERT(own_ast != NULL, "Multi-line map with local reference should parse");
@@ -459,6 +474,8 @@ static void test_method_evaluator__evaluates_multiline_map_local_references(void
     AR_ASSERT(ar_data__get_type(ref_profile) == AR_DATA_TYPE__MAP, "Profile should be a map");
     AR_ASSERT(ar_data__get_map_integer(ref_profile, "base") == 2, "Base key should be stored");
     AR_ASSERT(ar_data__get_map_integer(ref_profile, "doubled") == 4, "Doubled key should use .base");
+    AR_ASSERT(ar_data__get_map_integer(ref_profile, "fallback") == 0,
+              "Missing .key should use integer 0 sentinel");
 
     // Cleanup
     ar_frame__destroy(own_frame);

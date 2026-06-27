@@ -110,6 +110,9 @@ ignored_errors:
 
   # ar_append_instruction_evaluator_tests
   - context: "ar_append_instruction_evaluator_tests"
+    message: "ERROR: evaluate_memory_access: Local accessor used outside map block"
+    comment: "Testing append no-op continuation when value expression evaluation fails"
+  - context: "ar_append_instruction_evaluator_tests"
     message: "ERROR: append value expression failed"
     comment: "Testing append no-op continuation when value expression evaluation fails"
 

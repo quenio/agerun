@@ -17,7 +17,10 @@ semantics, and still supported through compatibility instruction paths where tho
 multiline expression plan is now resolved by documenting and enforcing multiline list/map literals
 as an assignment-only, strictly line-bound source-format exception rather than promoting them into
 the expression parser; multi-line map entry expressions may read earlier entries in the same block
-through `.key` while `memory.`, `message.`, and `context.` remain frame roots.
+through `.key` while `memory.`, `message.`, and `context.` remain frame roots. The sentinel
+semantics plan is now resolved by keeping integer `0` as the documented fallback/absence/no-op
+sentinel only in the specific positions centralized in `SPEC.md`; ordinary integer `0` remains
+ordinary data elsewhere, and AgeRun still has no null or absence data type.
 **Focus**: AgeRun method definition grammar, parser architecture, evaluator semantics, documentation, tests, and current method corpus.
 
 ## Executive Summary
@@ -32,7 +35,9 @@ composable as expressions, while effectful operations should remain sequenced in
 
 The other governing design rule is line-based parsing and evaluation. Each nonempty method line is
 one instruction boundary, and method evaluation proceeds line by line in source order. That keeps
-runtime behavior easy to trace and keeps parser/evaluator responsibilities small.
+runtime behavior easy to trace and keeps parser/evaluator responsibilities small. Once a valid
+method evaluation starts, every instruction in the method definition is attempted; failures are
+recorded in logs and final status rather than ending the method pass early.
 
 A related rule is syntax-directed semantics: each syntax construct should lead to one evaluation
 behavior, and meaningful semantic differences should be visible in syntax. Several current gaps are
@@ -66,18 +71,17 @@ can read keys assigned on earlier lines in the same block with `.key`, while `me
 `message.`, and `context.` keep their ordinary frame-root meaning. One-line list/map expressions
 keep their existing comma and `identifier: expression` grammar.
 
-The main remaining semantic gaps are coupled to syntax and sentinels. Some result-producing
+The main remaining semantic caveats are coupled to syntax. Some result-producing
 effectful functions still bind results through instruction-specific storage instead of normal
 assignment of an expression result. Standalone compatibility `append(...)` still mutates only
-memory-owned lists. `head(...)`, `tail(...)`, pure `append(...)`, and missing `message` fields rely
-on integer `0` sentinels in invalid or missing cases. These choices are useful in the current
-language, but they are not fully orthogonal because equivalent-looking values can behave differently
-depending on syntax, storage path, or sentinel interpretation.
+memory-owned lists. Integer `0` sentinel behavior remains a documented exception, but the exception
+now has one central specification: it applies only to the listed fallback/absence/no-op positions and
+does not create a null type or reinterpret ordinary integer `0` data.
 
 The initial audit did not change behavior. This revision records completed documentation, parser,
 pure-`parse(...)`, pure-`build(...)`, lazy pure-`if(...)`, pure-`append(...)`,
-pure-`head(...)`/`tail(...)`, and strict multiline-assignment-literal follow-ups and keeps the
-remaining recommendation scoped to sentinel semantics.
+pure-`head(...)`/`tail(...)`, strict multiline-assignment-literal, and sentinel semantics follow-ups.
+No higher-priority audit action remains in the current report.
 
 ## Audit Principles
 
@@ -86,7 +90,9 @@ This audit is guided by these principles:
 1. **Line-Based Parsing and Evaluation**: Each nonempty source line should parse to one complete
    instruction, and instructions should evaluate in source order. A line boundary is therefore both a
    parser boundary and an evaluation boundary. This keeps control flow explicit, makes traces easy to
-   follow, and avoids hidden multi-statement parsing rules.
+   follow, and avoids hidden multi-statement parsing rules. Once a valid method evaluation starts,
+   every instruction in the method definition should be attempted; failures should not prevent later
+   instructions from being evaluated.
 2. **Expression Purity**: Expressions must have no side effects. Evaluating an expression should not
    mutate memory, send messages, create agents, deprecate methods, exit agents, complete work, or
    change observable runtime state. This keeps expression evaluation easy to reason about and makes
@@ -126,7 +132,7 @@ principles or should be treated as a future design gap.
 
 | Documented Constraint | Documentation Evidence | Principle Alignment | Audit Treatment |
 |-----------------------|------------------------|---------------------|-----------------|
-| Methods are line-oriented: one instruction per line, no combined instructions, final newline required, empty lines ignored. | `SPEC.md`, `methods/README.md`, `modules/ar_method_parser.md` | Strongly aligns with Line-Based Parsing and Evaluation. It is an intentional instruction-boundary rule that simplifies parsing, evaluation, and traceability. | Preserve as a core language principle. Future expression work should compose inside a line, not erase line boundaries. |
+| Methods are line-oriented: one instruction per line, no combined instructions, final newline required, empty lines ignored, and every instruction is attempted once method evaluation starts. | `SPEC.md`, `methods/README.md`, `modules/ar_method_parser.md`, `modules/ar_method_evaluator.md` | Strongly aligns with Line-Based Parsing and Evaluation. It is an intentional instruction-boundary rule that simplifies parsing, evaluation, and traceability. The method evaluator now logs failed instruction lines and continues, returning final failure status only after the full pass. | Preserve as a core language principle. Future expression work should compose inside a line, not erase line boundaries, and runtime failures should report status without preventing later lines from being attempted. |
 | Standalone expressions are not instructions. Expressions must appear under assignment or allowed function calls. | `SPEC.md` | Aligns with the line-based instruction model because a method line remains an executable instruction, not an implicit expression statement. It still limits statement-level composability. | Preserve unless a future design explicitly adds expression statements without side effects. |
 | Registered pure function calls are expressions; effectful built-ins remain instructions. | `SPEC.md`, `AGENTS.md`, `kb/agerun-method-language-nesting-constraint.md`, `modules/ar_expression_ast.h`, `modules/ar_expression_parser.c`, `modules/ar_expression_evaluator.zig`, `modules/ar_condition.md`, `modules/ar_parse.md`, `modules/ar_build.md`, `modules/ar_append.md`, `modules/ar_head.md`, `modules/ar_tail.md` | Aligns with composability and expression purity. `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)` are now pure expression calls; effectful operations such as `send(...)`, `spawn(...)`, `compile(...)`, `exit(...)`, `deprecate(...)`, and `complete(...)` remain sequenced instructions. | Preserve the pure-expression versus effectful-instruction split without admitting side-effectful operations into expression parsing. |
 | Function-call argument boundaries use one shared grammar rule. | `SPEC.md`, `modules/ar_function_call_parser.md`, `modules/ar_function_call_parser_tests.c`, `modules/ar_expression_parser.c` | Aligns with Single Source of Semantics: top-level commas and closing parentheses delimit arguments, while quoted strings, parenthesized expression groups, one-line list/map literals, and registered pure calls are preserved inside an argument. | Preserve as the current baseline for both instruction calls and pure expression calls. Future pure-call-expression work should reuse this boundary rule instead of reintroducing per-call scanners. |
@@ -134,14 +140,14 @@ principles or should be treated as a future design gap.
 | Function result storage uses both ordinary assignment and instruction result binding. | `SPEC.md`, `modules/ar_instruction_ast.md`, `modules/ar_instruction_parser.md`, `modules/ar_result_binding.md`, evaluator module docs | Partially conflicts with Syntax-Directed Semantics because ordinary assignment and instruction result binding look similar while using different AST/evaluator paths. `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)` now have ordinary expression assignment semantics, and their standalone compatibility instruction forms do not create result paths in the unified parser. Remaining instruction-result functions such as `send(...)`, `complete(...)`, `compile(...)`, `spawn(...)`, `deprecate(...)`, and `exit(...)` still use function-result paths when assigned, but `ar_result_binding` now owns effectful result-path validation, protected `memory.self` rejection, ownership transfer, and failed-storage cleanup. | Keep pure call results on the expression-assignment path, and keep effectful result binding centralized in `ar_result_binding`. |
 | One-line list/map literals can appear in expression contexts; multiline list/map literals are assignment-only and cannot appear as call arguments, list items, or map values. | `SPEC.md`, `README.md`, `modules/ar_method_parser.md` | Aligns as an explicit exception. One-line literals are composable expressions; multiline literals are a statement-block-style source-format exception with linefeed-only item/entry boundaries and map-entry RHS access to earlier entries through `.key`. | Preserve as assignment-only syntax. Do not promote multiline literals into expression parsing unless the language later abandons this line-bound exception deliberately. |
 | Map literal keys must be identifiers; quoted keys are not supported. | `SPEC.md`, `modules/ar_expression_parser.md` | Mostly compatible as an explicit grammar restriction. It limits data shape expressiveness but does not by itself create semantic drift. | Preserve unless future data requirements need arbitrary string keys. |
-| There is no null type; integer `0` is used as the absent/failure/no-op sentinel in several places. | `AGENTS.md`, `SPEC.md`, `modules/ar_expression_evaluator.md` | Conflicts with orthogonality when unrelated cases share the same value: missing field, empty `head(...)`, invalid `tail(...)` input, no-op spawn, false condition. | Preserve existing `0` behavior for compatibility, but stop treating it as a default pattern for new features. Before adding another `0`-based case, decide whether the language should keep `0` as the official absence/no-op value, add explicit predicates such as "is missing" or "is empty", or introduce a distinct absence value. |
+| There is no null type; integer `0` is the documented absent/failure/no-op sentinel only in specific language positions. | `AGENTS.md`, `SPEC.md`, `modules/ar_expression_evaluator.md` | Aligns as an explicit exception now that `SPEC.md` centralizes the sentinel positions and says ordinary integer `0` remains ordinary data elsewhere. It still requires care when a valid payload can also be integer `0`, such as `head([0])`. | Resolved as the current contract: keep integer `0`, do not introduce a null/absence type, and require future features to reuse or explicitly extend the central sentinel section rather than adding ad hoc meanings. |
 | No static type checking; methods must handle possible runtime types defensively. | `AGENTS.md`, `kb/agerun-language-constraint-workarounds.md` | Acceptable as a dynamic-language constraint, but it raises the burden on orthogonal runtime behavior and diagnostics. | Preserve as current-state behavior; improve documentation and tests around type-dependent built-ins. |
 | `if(...)` is documented and implemented as lazy value selection: evaluate the condition, then evaluate and return only the selected branch expression. | `SPEC.md`, `modules/ar_condition.md`, `modules/ar_expression_evaluator.md`, `modules/ar_condition_instruction_evaluator.md`, `kb/agerun-language-constraint-workarounds.md` | Aligns with Single Source of Semantics for expression-level and instruction-level conditionals. Selected-branch evaluation fits conditional value selection; expression purity keeps branch evaluation from becoming a place to hide side effects. | Preserve the lazy selected-branch rule and keep shared condition truthiness in one helper. |
-| No conditional execution statement exists; all method instructions execute in order and conditional behavior is encoded with value selection and no-op targets. | `kb/agerun-language-constraint-workarounds.md`, coordination method patterns | Aligns with line-based sequential evaluation and pure expressions, but it couples conditional side effects to sentinel/no-op instruction behavior instead of explicit control flow. | Keep in scope for the line-based, pure-expression, sequenced-instruction, and sentinel semantics follow-up plans. |
-| `send(0, message)` is a no-op; `spawn(0, ...)` and `spawn("", ...)` are no-ops returning/storing `0`. | `AGENTS.md`, `SPEC.md`, `kb/no-op-semantics-pattern.md`, `kb/no-op-instruction-semantics.md` | Aligns with Explicit Exceptions when documented and with Expression Purity when kept outside expressions. It still assigns special instruction semantics to ordinary integer/string values. | Preserve the current no-op rules, but document them as instruction-specific exceptions: in `send(...)`, `0` means "no destination, do not send"; in `spawn(...)`, `0` or `""` means "do not spawn and return/store `0`". Do not imply that integer `0` has this no-op meaning in ordinary expression evaluation or ordinary data values. |
+| No conditional execution statement exists; all method instructions execute in order and conditional behavior is encoded with value selection and no-op targets. | `kb/agerun-language-constraint-workarounds.md`, coordination method patterns | Aligns with line-based sequential evaluation and pure expressions, but it couples conditional side effects to documented sentinel/no-op instruction behavior instead of explicit control flow. | Preserve under the line-based, pure-expression, sequenced-instruction, and centralized sentinel contracts. |
+| `send(...)` with a non-routable recipient is a no-delivery sink; `spawn(...)` method selections that cannot create an agent store integer `0` when assigned and do not create an agent. | `AGENTS.md`, `SPEC.md`, `kb/no-op-semantics-pattern.md`, `kb/no-op-instruction-semantics.md` | Aligns with Explicit Exceptions when documented and with Expression Purity when kept outside expressions. `send(...)` keeps its result model as delivery status: integer `1` means a message was enqueued, while integer `0` or non-INTEGER recipients store integer `0` because no message was sent. `spawn(...)` keeps its result model as either a positive agent ID or integer `0` when no agent is spawned. Both no-op result cases continue method evaluation. | Preserve the current no-op rules, but document them as instruction-specific exceptions: in `send(...)`, recipients that are not routable nonzero integers mean "no destination, do not send, and store integer `0` when assigned"; in `spawn(...)`, method selections that cannot name or resolve to a registered method mean "do not spawn, store integer `0` when assigned, and continue". Do not imply that integer `0` has this no-op meaning in ordinary expression evaluation or ordinary data values. |
 | `append(list, value)` is a pure expression call, while standalone `append(target, value)` remains a compatibility mutating instruction. | `SPEC.md`, `modules/ar_append.md`, `modules/ar_expression_evaluator.md`, `modules/ar_append_instruction_evaluator.md` | Mostly aligns. Assigned and nested `append(...)` now behaves like a value transformation regardless of source origin, returning a new list or integer `0`. The standalone compatibility form remains an explicit lvalue exception for existing method behavior. | Preserve the syntax split: expression contexts use pure list construction, and only the standalone compatibility instruction mutates memory-owned lists. |
 | Writes are limited to `memory` paths, and `memory.self` plus nested `memory.self.*` are protected from assignment/result storage. | `SPEC.md`, `modules/ar_instruction_ast.md`, `modules/ar_assignment_instruction_evaluator.md`, `modules/ar_parse.md`, `modules/ar_build.md`, `modules/ar_condition.md`, `modules/ar_append.md`, `modules/ar_head.md`, `modules/ar_tail.md`, pure-call evaluator docs | Aligns with Explicit Exceptions and runtime identity safety. The `memory` root visibly marks writable state. Pure-call arguments are now path-neutral for `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)`; protected identity behavior belongs to storage rules, not pure-call argument names or paths. | Preserve and centralize the storage rule so assignment, compatibility function results, and future merge-like operations cannot drift. Do not reintroduce path-specific argument restrictions for pure calls. |
-| `head(...)` and `tail(...)` use deep-copy list traversal, but their sentinel cases differ. `head(...)` returns integer `0` for empty, missing, non-list, or copy-failure inputs; `tail(...)` returns a new empty LIST for empty or single-item lists and returns integer `0` only for missing, non-list, or copy-failure inputs. | `SPEC.md`, `modules/ar_head.md`, `modules/ar_tail.md`, `modules/ar_head_instruction_evaluator.md`, `modules/ar_tail_instruction_evaluator.md`, `modules/ar_expression_evaluator.md` | Partially aligns: list values are safely copied, `head(...)` and `tail(...)` now compose as pure expressions, and `tail(...)` distinguishes valid empty tails from invalid input. `head(...)` still uses integer `0` for both empty input and invalid input, so that sentinel remains coupled to valid integer payloads. | Keep as current behavior; include the asymmetric `head(...)`/`tail(...)` sentinel rules in sentinel semantics planning. |
+| `head(...)` and `tail(...)` use deep-copy list traversal, but their sentinel cases differ. `head(...)` returns integer `0` for empty, missing, non-list, or copy-failure inputs; `tail(...)` returns a new empty LIST for empty or single-item lists and returns integer `0` only for missing, non-list, or copy-failure inputs. | `SPEC.md`, `modules/ar_head.md`, `modules/ar_tail.md`, `modules/ar_head_instruction_evaluator.md`, `modules/ar_tail_instruction_evaluator.md`, `modules/ar_expression_evaluator.md` | Partially aligns: list values are safely copied, `head(...)` and `tail(...)` now compose as pure expressions, and `tail(...)` distinguishes valid empty tails from invalid input. `head(...)` still uses integer `0` for both empty input and invalid input, so that sentinel remains coupled to valid integer payloads. | Keep as current behavior under the centralized sentinel contract, including the asymmetric `head(...)`/`tail(...)` rules. |
 | Non-empty list equality and map structural equality are not supported; list equality is limited to empty-list checks. | `modules/ar_expression_evaluator.md` | Limits orthogonality and syntax-directed semantics. The same `=` syntax changes behavior based on container shape and content. | Treat as a lower-risk expression semantics gap. |
 
 ## Analysis Methodology
@@ -178,7 +184,7 @@ principles or should be treated as a future design gap.
 | F3 | `if(...)` condition and branch evaluation | Composable. `if(...)` is now a registered pure expression call, so it can appear in assignment RHS values, instruction arguments, list/map literals, nested pure calls, and branch expressions. Standalone `if(...)` remains supported as a compatibility instruction statement. | Docs and tests now agree that both expression-level and instruction-level paths check the condition first, evaluate only the selected branch, treat integer `0` as false, treat non-zero integers as true, and send non-integer condition values to the false branch. | `ar_expression_parser.c` registers `if` as a pure call. `ar_expression_evaluator.zig` evaluates only the selected branch. `ar_condition.zig` owns shared truthiness used by expression and instruction condition evaluation. `ar_condition_instruction_evaluator.zig` preserves standalone condition instruction behavior. | Low |
 | F4 | Assignment vs result assignment | Expression assignment is normal for `memory.path := <expression>`, including pure `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)` calls. Function result assignment still exists for effectful result-binding instructions. | Pure expression results and effectful instruction results are still represented through overlapping storage paths, but storage validation now has one effectful owner. | `ar_instruction_ast_t` stores assignment data separately from function-call result paths. The instruction parser now leaves assigned `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)` calls to assignment parsing, while `_is_instruction_result_function()` still routes assigned `send(...)`, `complete(...)`, `compile(...)`, `spawn(...)`, `deprecate(...)`, and `exit(...)` through function-call result paths. `ar_result_binding` owns effectful result-path validation, protected `memory.self` rejection, ownership transfer, and failed-storage cleanup for those assigned effectful evaluators. | Low |
 | F5 | `append(...)` target | Pure expression `append(list, value)` is composable anywhere expressions are accepted. Standalone compatibility `append(target, value)` remains a sequenced mutation instruction. | Pure append treats equivalent list values the same regardless of origin and returns a new list. The standalone compatibility form remains origin-sensitive because only memory-owned lists can mutate. | `ar_append.md` documents pure list construction, `ar_expression_parser.c` registers `append`, `ar_expression_evaluator.zig` dispatches to `ar_append`, and `ar_append_instruction_evaluator.md` documents compatibility no-op targets. Tests cover pure composition, non-mutation, deep copies, path-neutral arguments, and standalone mutating compatibility. | Low |
-| F6 | Missing field and empty-list sentinels | Composable as expressions once produced, but sentinel values leak into method logic. | Missing `message.field`, empty `head(...)`, invalid `tail(...)`, failed spawn, and no-op send/spawn all use integer `0` in different roles. | `SPEC.md` documents integer `0` sentinel behavior for `head(...)`, `tail(...)`, `send(0, ...)`, and `spawn(0, ...)`. Tests cover missing message fields for head/tail. | Medium |
+| F6 | Missing field and empty-list sentinels | Resolved as a documented exception. Sentinel values are composable as ordinary expression results once produced, but their special meaning applies only in the central SPEC positions. | Missing path references under `message`, `memory`, `context`, and active block-local `.` roots, selected-branch `if(...)` fallback, empty `head(...)`, invalid `tail(...)`, invalid pure `append(...)`, no-spawn `spawn(...)` results, and no-delivery `send(...)` recipients use integer `0` in documented positions. Ordinary integer `0` remains data elsewhere. | `SPEC.md` centralizes integer `0` sentinel semantics and the module docs reference that contract. Tests cover root-uniform missing path references and the existing focused sentinel behaviors. | Low |
 | F7 | `memory.self` protection | Protection is consistently enforced for assignment and many result paths, and pure `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)` no longer treat `self` names or `memory.self` argument paths specially. | Write permission depends on target root/path. Pure call argument handling is now value-based and path-neutral; protected identity behavior belongs to assignment and result-storage rules. | `SPEC.md` says protected identity behavior is enforced by storage rules, `ar_instruction_ast__has_protected_memory_self_assignment()` supports instruction-level checks, and pure-call module docs document path-neutral argument handling. | Low |
 | F8 | Operators over containers | One-line literals are composable in expressions, but equality semantics are partial. | Empty list equality exists; non-empty list structural equality does not. Maps are constructible but not structurally comparable. | `ar_expression_evaluator.md` says list equality is limited to empty-list checks and non-empty lists are not structurally compared. | Low |
 | F9 | Documentation consistency | `SPEC.md` now names the language design principles, separates them from current language state, and documents pure `parse(...)`, `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)` expression calls. The earlier stale string-escape and pure-call wording has been corrected in the directly affected docs. | The remaining risk is future drift across the spec, README, KB, parser docs, module index, and this audit report as language behavior evolves. | `SPEC.md` documents `Language Design Principles`, `Current Language State`, `<pure-function-call>`, `parse(template: data, input: data) -> map`, `build(template: data, values: data) -> string`, `if(condition, true_value, false_value)`, `append(list, value)`, `head(list)`, and `tail(list)`. `AGENTS.md` and `kb/agerun-method-language-nesting-constraint.md` document registered pure calls as expressions. | Low |
@@ -220,14 +226,15 @@ where one syntactic form hides multiple evaluation paths:
 - Standalone `append(memory.items, value)` and standalone `append(message.items, value)` use the
   same expression-looking target position, but only the `memory` target can mutate; assigned or
   nested `append(...)` calls use pure value semantics instead.
-- Integer `0` can mean ordinary data, condition false, missing value, empty `head(...)`, invalid
-  `tail(...)`, failed/no-op `spawn(...)`, or no-op `send(...)` destination.
+- Integer `0` remains ordinary data by default, but in the central documented sentinel positions it
+  can mean condition false, missing path reference, empty `head(...)`, invalid `tail(...)`, invalid
+  pure `append(...)`, no-spawn `spawn(...)` result, or no-delivery `send(...)` recipient.
 - The `=` operator has special empty-list equality behavior but not general list/map structural
   equality.
 
-Recommended follow-up: when a semantic distinction is intentional, either make it visible in syntax
-or document it as an explicit exception. Avoid adding new constructs where the evaluator has to
-infer a different behavior from hidden origin, ownership, or data-shape checks.
+Future language work should keep intentional semantic distinctions visible in syntax or documented as
+explicit exceptions. Avoid adding new constructs where the evaluator has to infer a different
+behavior from hidden origin, ownership, or data-shape checks.
 
 ### 3. Pure `append(...)` Completes the Initial Pure-Call Set
 
@@ -263,7 +270,7 @@ Current classification: keep the pure-call AST/evaluator path only for calls cla
 | `append(list, value)` | Completed as a pure expression and shared value operation. | It returns a new list containing deep copies of each source item followed by a deep copy of the appended value, or integer `0` for invalid, missing, non-list, or copy-failure inputs. Standalone compatibility `append(target, value)` remains a sequenced mutating instruction for memory-owned lists. |
 | `head(list)` | Completed as a pure expression and shared value operation. | It returns an independent deep copy of the first item or integer `0` and never mutates the source list. Standalone compatibility instructions delegate to `ar_head`. |
 | `tail(list)` | Completed as a pure expression and shared value operation. | It returns a new list or integer `0` and never mutates the source list. Standalone compatibility instructions delegate to `ar_tail`. |
-| `send(recipient_id, message)` | Keep as an instruction. | It enqueues messages, routes to agents or delegates, and transfers message ownership. |
+| `send(recipient, message)` | Keep as an instruction. | It enqueues messages for routable nonzero integer recipients, routes to agents or delegates, and transfers message ownership. |
 | `compile(method_name, instructions, version)` | Keep as an instruction. | It registers a method in the methodology. |
 | `spawn(method_name, version, context)` | Keep as an instruction. | It creates a runtime agent and returns a new agent ID. |
 | `exit(agent_id)` | Keep as an instruction. | It destroys an agent. |
@@ -370,43 +377,35 @@ value)` method lines. That standalone form remains an explicit effectful instruc
 semantics: it mutates only an existing memory-owned LIST target, and message/context/fresh/missing,
 non-list, or protected `memory.self` targets remain no-ops.
 
-### 9. Sentinel `0` Is Useful but Leaks Across Components
+### 9. Integer `0` Sentinel Semantics Are Centralized
 
-The language has no null type, so integer `0` appears as:
+The sentinel decision is now made: AgeRun keeps integer `0` as the documented sentinel and does not
+add a null or absence data type. `SPEC.md` owns the central contract and limits sentinel behavior to
+specific language positions:
 
-- missing `message.field`
-- empty or invalid `head(...)`
-- missing, non-LIST, or copy-failed `tail(...)` input
-- missing, non-LIST, or copy-failed pure `append(...)` input
-- failed/no-op `spawn(...)`
-- `send(0, ...)` no-op destination
-- common conditional false value
+- missing path references under `message`, `memory`, `context`, and active block-local `.` roots
+- condition truthiness and expression-level `if(...)` selected-branch fallback
+- empty, missing, non-LIST, or copy-failed `head(...)` input
+- missing, non-LIST, or copy-failed `tail(...)` input, while empty and single-item tails stay `[]`
+- missing, non-LIST, invalid, or copy-failed pure `append(...)` input
+- `send(...)` non-routable recipient
+- `spawn(...)` method selections that cannot name or resolve to a registered method
 
-This is workable as current behavior, but it couples unrelated components through a shared sentinel.
-It also makes method authors choose item domains carefully, such as avoiding integer `0` as a valid
-list item when using `head(...)` as a stop condition.
+This makes path-reference absence uniform while keeping the scope explicit. Once a missing path
+reference produces integer `0`, it composes as ordinary integer data in expression evaluation,
+comparison, storage, list/map values, and message payloads. The collision risk is documented rather
+than hidden: for example, a method that uses `head(...) = 0` as a stop condition must avoid integer
+`0` as a valid list item or wrap arbitrary items in containers.
 
-The audit treatment is not "change all existing `0` behavior now." It is a design warning for future
-language work: avoid adding more feature-specific meanings to `0` until the language explicitly
-chooses one absence/no-op model. The follow-up decision should be one of:
-
-- Keep integer `0` as the official absence/no-op value and document that contract centrally.
-- Add explicit predicates, such as "is missing" or "is empty", so methods do not rely only on value
-  equality with `0`.
-- Introduce a distinct absence value if `0` needs to remain ordinary integer data.
-
-Recommended follow-up: make that choice before adding more sentinel-based built-ins, then update the
-grammar, evaluator docs, and method guidance consistently.
-
-For the existing `send(...)` and `spawn(...)` no-op rules, the important classification is scope.
-Those rules are instruction-specific exceptions: `0` is interpreted specially only in the documented
-instruction argument or result position. In ordinary expression evaluation and ordinary data storage,
-`0` remains just the integer value `0`.
+Future language features must not add new ad hoc `0` meanings. If a new feature needs
+fallback/absence/no-op behavior, it must either reuse the central sentinel contract explicitly or
+document a deliberate exception in `SPEC.md` and the feature-specific docs.
 
 ## Remaining Recommended Follow-Up Order
 
-1. **Sentinel semantics plan**: evaluate whether integer `0` remains the language-wide absent value
-   or whether the data model needs an explicit absence representation.
+No higher-priority audit follow-up remains in this report. The sentinel semantics plan is resolved by
+keeping integer `0` as the documented sentinel in the central SPEC contract and by not introducing a
+new null or absence data type.
 
 ## Current Baseline Now Satisfied
 
@@ -417,6 +416,9 @@ instruction argument or result position. In ordinary expression evaluation and o
 - `SPEC.md` now documents that quote/backslash handling for function-call argument splitting is a
   boundary rule, while string literal values preserve source characters and do not decode escapes.
 - `SPEC.md` now has separate `Language Design Principles` and `Current Language State` sections.
+- `SPEC.md` now centralizes integer `0` sentinel semantics: AgeRun keeps no null or absence type,
+  ordinary integer `0` remains ordinary data outside the listed positions, and future features must
+  not add ad hoc `0` meanings.
 - `SPEC.md`, `kb/agerun-language-constraint-workarounds.md`, `modules/README.md`, and
   `modules/ar_condition_instruction_evaluator.md` now agree on lazy selected-branch `if(...)`
   evaluation and the current non-integer-falls-through-false condition behavior.
@@ -630,4 +632,58 @@ After strict line-bound multiline assignment literals, this report was revised t
 multiline expression plan resolved as an assignment-only source-format exception. Multiline lists
 and maps remain top-level assignment RHS syntax only, linefeeds are the only item/entry separators,
 multiline map entries use `identifier := expression`, `.key` reads earlier entries in the same map
-block, and the next recommended follow-up is now the sentinel semantics plan.
+block. The sentinel semantics follow-up is now resolved by the central integer `0` contract in
+`SPEC.md`.
+
+Sentinel contract validation for this update:
+
+- `make ar_expression_evaluator_tests 2>&1`: passed.
+- `make ar_head_instruction_evaluator_tests 2>&1`: passed.
+- `make ar_tail_instruction_evaluator_tests 2>&1`: passed.
+- `make ar_append_instruction_evaluator_tests 2>&1`: passed.
+- `make ar_send_instruction_evaluator_tests 2>&1`: passed.
+- `make ar_spawn_instruction_evaluator_tests 2>&1`: passed.
+- `make coordination_supervision_tests 2>&1`: passed.
+- Focused memory reports for those behavior checks showed `Actual memory leaks: 0 (0 bytes)`.
+- `make check-test-structure 2>&1`: passed.
+- `make check-docs 2>&1`: passed; 765 documentation files checked.
+- `make build 2>&1`: passed; 115 tests ran in normal, sanitizer, and thread-sanitizer legs; static
+  analysis found no bugs; no memory leaks detected.
+- `make check-logs`: passed; no unexpected errors, warnings, leaks, or suspicious patterns found.
+- `make check-all 2>&1`: passed.
+
+After full method-pass evaluation was made explicit, this report was revised to record that valid
+method evaluation attempts every instruction in source order. Failed instruction lines are logged
+and contribute to the final false status, but do not prevent later instructions from being
+evaluated. The related no-op result model was also normalized so unresolved `spawn(...)` method
+selections bind integer `0`, do not create an agent, and continue as ordinary no-spawn outcomes.
+
+- `make ar_expression_evaluator_tests 2>&1`: passed.
+- `make ar_head_instruction_evaluator_tests 2>&1`: passed.
+- `make ar_tail_instruction_evaluator_tests 2>&1`: passed.
+- `make ar_append_instruction_evaluator_tests 2>&1`: passed.
+- `make ar_send_instruction_evaluator_tests 2>&1`: passed.
+- `make ar_spawn_instruction_evaluator_tests 2>&1`: passed.
+- `make ar_method_evaluator_tests 2>&1`: passed.
+- `make coordination_supervision_tests 2>&1`: passed.
+- Focused memory reports for those behavior checks showed `Actual memory leaks: 0 (0 bytes)`.
+- `make check-test-structure 2>&1`: passed.
+- `make check-docs 2>&1`: passed; 765 documentation files checked.
+- `make build 2>&1`: passed; 115 tests ran in normal, sanitizer, and thread-sanitizer legs; static
+  analysis found no bugs; no memory leaks detected.
+- `make check-logs`: passed; no unexpected errors, warnings, leaks, or suspicious patterns found.
+- `make check-all 2>&1`: passed.
+
+After send no-delivery status normalization, this report was revised to record that `send(...)`
+stores integer `1` only when a message is enqueued. Recipients that are not routable nonzero
+integers, including integer `0` and non-INTEGER values, continue method evaluation and store integer
+`0` when assigned because no message was sent.
+
+- `make check-test-structure 2>&1`: passed.
+- `make ar_send_instruction_evaluator_tests 2>&1`: passed.
+- Focused send memory report showed `Actual memory leaks: 0 (0 bytes)`.
+- `make check-docs 2>&1`: passed; 765 documentation files checked.
+- `make build 2>&1`: passed; 115 tests ran in normal, sanitizer, and thread-sanitizer legs; static
+  analysis found no bugs; no memory leaks detected.
+- `make check-logs`: passed; no unexpected errors, warnings, leaks, or suspicious patterns found.
+- `make check-all 2>&1`: passed.

@@ -8,13 +8,13 @@ The method evaluator is responsible for:
 - Evaluating complete methods represented as ASTs
 - Processing all instructions in sequence
 - Using frames to pass execution context
-- Stopping execution on the first error
+- Attempting every instruction in a method definition once evaluation starts
 
 ## Key Features
 
 - **Frame-based execution**: Uses frames to bundle memory, context, and message
 - **Sequential evaluation**: Processes instructions in order (1-based indexing)
-- **Error propagation**: Stops on first failed instruction
+- **Full instruction pass**: Logs failed instructions and continues to later instructions
 - **Top-down design**: First evaluator to use frames, establishing the pattern
 
 ## API Functions
@@ -50,11 +50,11 @@ bool ar_method_evaluator__evaluate(
 );
 ```
 Evaluates a method AST using the provided frame.
-- **Returns**: true if all instructions succeed, false on any error
+- **Returns**: true if all instructions succeed, false if any instruction fails
 - **Behavior**: 
   - Empty methods return true
   - Evaluates each instruction in sequence
-  - Stops on first failure
+  - Attempts every instruction even when an earlier instruction fails
 
 ## Implementation Details
 
@@ -65,8 +65,9 @@ The method evaluator:
 4. Iterates through instructions using 1-based indexing
 5. Evaluates each instruction via the instruction evaluator
 6. Logs errors with line numbers when instructions fail
-7. Returns false if any instruction fails or cannot be retrieved
-8. Returns true only if all instructions succeed
+7. Continues after instruction failures so later instructions are still evaluated
+8. Returns false after the full pass if any instruction fails or cannot be retrieved
+9. Returns true only if all instructions succeed
 
 ## Error Handling
 
@@ -75,6 +76,7 @@ The method evaluator provides detailed error reporting:
 - Logs error when instruction evaluation fails (with line number)
 - Error messages include the specific line where the failure occurred
 - Uses the ar_log module for centralized error collection
+- Instruction failures do not stop the method pass; later instructions are still attempted
 
 ## Usage Example
 
@@ -104,6 +106,8 @@ ar_log__destroy(log);
 - The method evaluator creates and owns its instruction evaluator internally
 - The instruction evaluator is stored in the struct and used for evaluating each instruction
 - Provides a simplified API that only requires a log instance
+- Once method evaluation starts with a valid evaluator, frame, and method AST, the evaluator attempts
+  every instruction in source order before returning
 
 ## Dependencies
 

@@ -40,6 +40,23 @@ fn _duplicate_c_string(ref_slice: []const u8, ref_desc: [*c]const u8) ?[*:0]u8 {
     return @as([*:0]u8, @ptrCast(own_buffer));
 }
 
+fn _bind_result_if_assigned(
+    ref_evaluator: ?*const ar_spawn_instruction_evaluator_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_ast: ?*const c.ar_instruction_ast_t,
+    ref_result_path: [*c]const u8,
+    result_value: i64
+) void {
+    if (!c.ar_instruction_ast__has_result_assignment(ref_ast)) {
+        return;
+    }
+
+    const own_result = c.ar_data__create_integer(@intCast(result_value));
+    if (own_result != null) {
+        _ = c.ar_result_binding__bind(ref_evaluator.?.ref_log, ref_frame, ref_result_path, own_result);
+    }
+}
+
 pub export fn ar_spawn_instruction_evaluator__create(
     ref_log: ?*c.ar_log_t,
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t,
@@ -141,41 +158,7 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
         return false;
     }
     defer c.ar_data__destroy_if_owned(own_version, @constCast(@ptrCast(ref_evaluator)));
-    
-    // Check for no-op cases: method_name is 0 (integer) or "" (empty string)
-    if (c.ar_data__get_type(own_method_name) == c.AR_DATA_TYPE__INTEGER and c.ar_data__get_integer(own_method_name) == 0) {
-        if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {
-            const own_result = c.ar_data__create_integer(0);
-            if (own_result != null) {
-                _ = c.ar_result_binding__bind(ref_evaluator.?.ref_log, ref_frame, ref_result_path, own_result);
-            }
-        }
-        return true; // Success for no-op
-    }
-    
-    if (c.ar_data__get_type(own_method_name) == c.AR_DATA_TYPE__STRING) {
-        const ref_method_name_slice = _normalized_string_slice(own_method_name);
-        if (ref_method_name_slice != null and ref_method_name_slice.?.len == 0) {
-            if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {
-                const own_result = c.ar_data__create_integer(0);
-                if (own_result != null) {
-                    _ = c.ar_result_binding__bind(ref_evaluator.?.ref_log, ref_frame, ref_result_path, own_result);
-                }
-            }
-            return true; // Success for no-op
-        }
-    }
 
-    const context_is_literal_map =
-        c.ar_expression_ast__get_type(ref_context_ast) == c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP;
-
-    const ref_context_data = c.ar_expression_evaluator__evaluate(ref_expr_evaluator, ref_frame, ref_context_ast);
-    var own_context_data: ?*c.ar_data_t = null;
-    if (context_is_literal_map) {
-        own_context_data = ref_context_data;
-    }
-    defer if (own_context_data != null) c.ar_data__destroy(own_context_data);
-    
     var agent_id: i64 = 0;
     var success = false;
     var own_method_name_string: ?[*:0]u8 = null;
@@ -183,57 +166,68 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
     defer if (own_method_name_string != null) ar_allocator.free(own_method_name_string.?);
     defer if (own_version_string != null) ar_allocator.free(own_version_string.?);
 
-    // Validate method name and version are strings
-    if (own_method_name != null and own_version != null and
-        c.ar_data__get_type(own_method_name) == c.AR_DATA_TYPE__STRING and
-        c.ar_data__get_type(own_version) == c.AR_DATA_TYPE__STRING) {
+    if (c.ar_data__get_type(own_method_name) != c.AR_DATA_TYPE__STRING) {
+        _bind_result_if_assigned(ref_evaluator, ref_frame, ref_ast, ref_result_path, 0);
+        return true;
+    }
 
-        // Validate context - must be a map (since parser requires 3 args)
-        if (ref_context_data != null and c.ar_data__get_type(ref_context_data) == c.AR_DATA_TYPE__MAP) {
-            const ref_method_name_slice = _normalized_string_slice(own_method_name) orelse return false;
-            const ref_version_slice = _normalized_string_slice(own_version) orelse return false;
+    if (c.ar_data__get_type(own_version) != c.AR_DATA_TYPE__STRING) {
+        _bind_result_if_assigned(ref_evaluator, ref_frame, ref_ast, ref_result_path, 0);
+        return true;
+    }
 
-            own_method_name_string = _duplicate_c_string(ref_method_name_slice, "spawn normalized method name");
-            own_version_string = _duplicate_c_string(ref_version_slice, "spawn normalized version");
-            if (own_method_name_string == null or own_version_string == null) {
-                return false;
-            }
+    const ref_method_name_slice = _normalized_string_slice(own_method_name) orelse return false;
+    const ref_version_slice = _normalized_string_slice(own_version) orelse return false;
 
-            // Get methodology from agency and check if method exists
-            const ref_methodology = c.ar_agency__get_methodology(ref_evaluator.?.ref_agency);
-            const ref_method = c.ar_methodology__get_method(
-                ref_methodology,
+    own_method_name_string = _duplicate_c_string(ref_method_name_slice, "spawn normalized method name");
+    own_version_string = _duplicate_c_string(ref_version_slice, "spawn normalized version");
+    if (own_method_name_string == null or own_version_string == null) {
+        return false;
+    }
+
+    const ref_methodology = c.ar_agency__get_methodology(ref_evaluator.?.ref_agency);
+    const ref_method = c.ar_methodology__get_method(
+        ref_methodology,
+        own_method_name_string,
+        own_version_string);
+    if (ref_method == null) {
+        _bind_result_if_assigned(ref_evaluator, ref_frame, ref_ast, ref_result_path, 0);
+        return true;
+    }
+
+    const context_returns_owned =
+        c.ar_expression_ast__get_type(ref_context_ast) != c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS;
+
+    const ref_context_data = c.ar_expression_evaluator__evaluate(ref_expr_evaluator, ref_frame, ref_context_ast);
+    var own_context_data: ?*c.ar_data_t = null;
+    if (context_returns_owned) {
+        own_context_data = ref_context_data;
+    }
+    defer if (own_context_data != null) c.ar_data__destroy(own_context_data);
+
+    if (ref_context_data != null and c.ar_data__get_type(ref_context_data) == c.AR_DATA_TYPE__MAP) {
+        if (context_returns_owned) {
+            agent_id = c.ar_agency__create_agent_with_owned_context(
+                ref_evaluator.?.ref_agency,
                 own_method_name_string,
-                own_version_string);
-            if (ref_method != null) {
-                if (context_is_literal_map) {
-                    agent_id = c.ar_agency__create_agent_with_owned_context(
-                        ref_evaluator.?.ref_agency,
-                        own_method_name_string,
-                        own_version_string,
-                        own_context_data);
-                    own_context_data = null;
-                } else {
-                    agent_id = c.ar_agency__create_agent(
-                        ref_evaluator.?.ref_agency,
-                        own_method_name_string,
-                        own_version_string,
-                        ref_context_data);
-                }
-                if (agent_id > 0) {
-                    success = true;
-                }
-            }
+                own_version_string,
+                own_context_data);
+            own_context_data = null;
+        } else {
+            agent_id = c.ar_agency__create_agent(
+                ref_evaluator.?.ref_agency,
+                own_method_name_string,
+                own_version_string,
+                ref_context_data);
         }
-    }
-    
-    // Store result if assigned
-    if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {
-        const own_result = c.ar_data__create_integer(@intCast(agent_id));
-        if (own_result != null) {
-            _ = c.ar_result_binding__bind(ref_evaluator.?.ref_log, ref_frame, ref_result_path, own_result);
+        if (agent_id > 0) {
+            success = true;
         }
+    } else if (own_context_data == null) {
+        c.ar_data__destroy_if_owned(ref_context_data, @constCast(@ptrCast(ref_evaluator)));
     }
-    
+
+    _bind_result_if_assigned(ref_evaluator, ref_frame, ref_ast, ref_result_path, agent_id);
+
     return success;
 }

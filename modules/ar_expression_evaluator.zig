@@ -258,15 +258,13 @@ fn _evaluate_memory_access(
         return null;
     }
 
-    // Missing message fields are treated as integer 0 so methods can use absent sender IDs
+    // Missing frame-root paths are treated as integer 0 by the central sentinel contract.
     if (map == null) {
-        if (c.strcmp(base, "message") == 0) {
-            return c.ar_data__create_integer(0);
-        }
         if (c.strcmp(base, ".") == 0) {
             c.ar_log__error(ref_log, "evaluate_memory_access: Local accessor used outside map block");
+            return null;
         }
-        return null;
+        return c.ar_data__create_integer(0);
     }
     
     // Build the full path with dot notation
@@ -322,10 +320,7 @@ fn _evaluate_memory_access(
         if (result != null) {
             return result;
         }
-        if (c.strcmp(base, "message") == 0) {
-            return c.ar_data__create_integer(0);
-        }
-        return null;
+        return c.ar_data__create_integer(0);
     }
 
     // Get the path components only for multi-segment accesses
@@ -369,14 +364,11 @@ fn _evaluate_memory_access(
     // Use ar_data__get_map_data with the full path
     const result = c.ar_data__get_map_data(map, @ptrCast(full_path));
     
-    // Return the found value (it's a reference, not owned). Missing message paths read as integer 0.
+    // Return the found value (it's a reference, not owned). Missing paths read as integer 0.
     if (result != null) {
         return result;
     }
-    if (c.strcmp(base, "message") == 0) {
-        return c.ar_data__create_integer(0);
-    }
-    return null;
+    return c.ar_data__create_integer(0);
 }
 
 fn _is_frame_reference(

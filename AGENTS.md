@@ -451,7 +451,8 @@ interleave with already queued messages but are not re-entrant
 - Instructions: assignments, effectful function calls
 - Pure function calls such as `parse(...)`, `if(...)`, and `append(...)` can be nested
 - Effectful function calls cannot be nested
-- `send(0, message)` is a no-op returning true ([details](kb/no-op-semantics-pattern.md))
+- `send(recipient, message)` stores integer `0` when the recipient is not a routable nonzero integer
+  and no message is sent ([details](kb/no-op-semantics-pattern.md))
 
 ### 8. Development Practices
 
@@ -678,7 +679,10 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - All parameters required
 - Version strings explicit (e.g., "1.0.0")
 - **Map literals** - one-line `{}` map literals are supported in AgeRun expressions
-- Agent ID 0 indicates failure
+- Positive agent IDs identify spawned agents; integer `0` results/statuses indicate no agent spawned
+  or no message delivered in the relevant instruction contract
+- **Full method pass** - once valid method evaluation starts, every instruction is attempted in
+  source order; failed instructions affect logs/status, not whether later lines are attempted
 - Always process messages after sending to prevent memory leaks
 - Message processing loop required for complete execution ([details](kb/message-processing-loop-pattern.md))
 - All messages flow through system layer ([details](kb/system-message-flow-architecture.md))
@@ -686,7 +690,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Send with memory references not supported** - send() needs ownership of message
 - **Message accessor** - `message.field` returns references like memory/context ([details](kb/expression-evaluator-accessor-extension.md))
 - **Language constraints** - No type checking, if() returns values ([details](kb/agerun-language-constraint-workarounds.md))
-- **No-op instructions** - spawn(0,..) & spawn("",..) return true ([details](kb/no-op-instruction-semantics.md))
+- **No-op instructions** - spawn selections that cannot create an agent store integer `0` when assigned ([details](kb/no-op-instruction-semantics.md))
 
 ## Method Test Template
 

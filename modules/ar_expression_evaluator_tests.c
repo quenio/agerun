@@ -18,6 +18,8 @@
 #include "ar_frame.h"
 #include "ar_assert.h"
 
+static void _assert_integer_value(ar_data_t *ref_data, int expected);
+
 /**
  * Test creating and destroying an evaluator with ar_log
  */
@@ -427,15 +429,17 @@ static void test_evaluate_memory_access_nested(void) {
 }
 
 /**
- * Test evaluating memory access for missing key
+ * Test evaluating path access for missing frame-root keys
  */
-static void test_evaluate_memory_access_missing(void) {
-    printf("Testing expression ref_evaluator mut_memory access for missing key...\n");
+static void test_evaluate_path_access_missing_frame_roots(void) {
+    printf("Testing expression evaluator path access for missing frame-root keys...\n");
     
     // Given a test fixture
-    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_memory_access_missing");
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_path_access_missing_frame_roots");
     assert(own_fixture != NULL);
     
+    // Given an evaluator and frame
     ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
@@ -444,17 +448,30 @@ static void test_evaluate_memory_access_missing(void) {
     ar_expression_ast_t *own_ast = ar_expression_ast__create_memory_access("memory", path, 1);
     assert(own_ast != NULL);
     
-    // When evaluating the memory access for a missing key
-    ar_data_t *ref_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
+    // When evaluating memory access for a missing key
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
     
-    // Then it should return NULL
-    assert(ref_result == NULL);
+    // Then it should return the centralized integer 0 sentinel
+    _assert_integer_value(own_result, 0);
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+
+    // Given a context access AST node for "context.missing"
+    own_ast = ar_expression_ast__create_memory_access("context", path, 1);
+    assert(own_ast != NULL);
+
+    // When evaluating context access for a missing key
+    own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
+
+    // Then it should return the same centralized integer 0 sentinel
+    _assert_integer_value(own_result, 0);
+    ar_data__destroy(own_result);
     
-    // Clean up
+    // Cleanup
     ar_expression_ast__destroy(own_ast);
     ar_evaluator_fixture__destroy(own_fixture);
     
-    printf("  ✓ Return NULL for missing memory key\n");
+    printf("  ✓ Return integer 0 for missing frame-root path keys\n");
 }
 
 /**
@@ -1524,12 +1541,18 @@ static void test_evaluate_append_invalid_inputs_return_zero(void) {
     _assert_integer_value(own_non_list, 0);
     ar_data__destroy(own_non_list);
 
-    // When the appended value is missing
+    // When the appended value path is missing
     ar_data_t *own_missing_value = _evaluate_expression_text(
         own_fixture,
         "append([], memory.missing_value)"
     );
-    _assert_integer_value(own_missing_value, 0);
+    // Then the path sentinel composes as ordinary integer data
+    AR_ASSERT(ar_data__get_type(own_missing_value) == AR_DATA_TYPE__LIST,
+              "Append result should be a list when appending a missing path sentinel");
+    AR_ASSERT(ar_data__list_count(own_missing_value) == 1,
+              "Append result should contain the sentinel value");
+    ar_data_t *ref_sentinel = ar_data__list_first(own_missing_value);
+    _assert_integer_value(ref_sentinel, 0);
     ar_data__destroy(own_missing_value);
 
     // Cleanup
@@ -2483,7 +2506,7 @@ int main(void) {
     test_evaluate_memory_access();
     test_evaluate_handles_int_as_memory_access();
     test_evaluate_memory_access_nested();
-    test_evaluate_memory_access_missing();
+    test_evaluate_path_access_missing_frame_roots();
     test_evaluate_binary_op_add_integers();
     test_evaluate_binary_op_multiply_doubles();
     test_evaluate_binary_op_concatenate_strings();

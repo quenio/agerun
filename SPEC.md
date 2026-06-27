@@ -137,7 +137,9 @@ claim that every current construct fully satisfies them.
 
 - **Line-Based Parsing and Evaluation**: Each nonempty source line should parse to one complete
   instruction, and instructions should evaluate in source order. Line boundaries should remain
-  visible parser and evaluation boundaries.
+  visible parser and evaluation boundaries. Once a valid method evaluation begins, every instruction
+  in the method definition should be attempted in source order; instruction failures affect status
+  and logs, not whether later instructions are attempted.
 - **Expression Purity**: Expressions should have no side effects. Evaluating an expression should
   not mutate memory, send messages, create agents, deprecate methods, exit agents, complete work, or
   change observable runtime state.
@@ -158,8 +160,11 @@ claim that every current construct fully satisfies them.
 The current language partially satisfies those principles:
 
 - **Line-Based Parsing and Evaluation**: Methods are line-oriented: one instruction per line,
-  ordered evaluation, required final newline, and ignored empty lines. Multi-line list and map
-  literals are an explicit assignment-only, strictly line-bound source-format exception.
+  ordered evaluation, required final newline, and ignored empty lines. Once evaluation starts for a
+  valid method AST, every instruction is attempted in source order before the method evaluator
+  returns; failed instructions are logged and reported in the final status but do not stop the method
+  pass early. Multi-line list and map literals are an explicit assignment-only, strictly line-bound
+  source-format exception.
 - **Expression Purity**: Current expression nodes are value-producing and side-effect free. Registered
   pure built-in calls are expression calls; effectful operations remain sequenced as method lines.
 - **Single Source of Semantics**: The shared function-call argument parser centralizes argument
@@ -167,19 +172,62 @@ The current language partially satisfies those principles:
   paths, but assigned effectful result binding now shares one storage owner. Some
   instruction-specific exceptions remain documented outside one consolidated semantics section.
 - **Syntax-Directed Semantics**: Memory assignment, function-result assignment, standalone
-  compatibility mutation such as `append(memory.items, value)`, and sentinel uses of integer `0`
-  still have documented special cases.
+  compatibility mutation such as `append(memory.items, value)`, and the language positions that use
+  integer `0` as a sentinel still have documented special cases.
 - **Explicit Exceptions**: Current exceptions include assignment-only multi-line literals,
-  memory-only mutation targets, protected `memory.self` paths, no-op `send(0, ...)` and
-  `spawn(0, ...)` behavior, and raw string values with boundary-only quote/backslash parsing.
+  memory-only mutation targets, protected `memory.self` paths, centralized integer `0` sentinel
+  behavior, and raw string values with boundary-only quote/backslash parsing.
 - **Composability**: Literals, accessors, operators, registered pure calls such as `parse(...)`,
   `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)`, and one-line list/map
   literals compose as expressions. Effectful built-in calls are not expressions and remain
   sequenced instructions.
   Multi-line literals are assignment-only and use linefeeds, not commas, as item/entry separators.
 - **Orthogonality**: Current documented exceptions include memory-only mutation targets, integer `0`
-  as several absence/no-op/failure sentinels, and boundary-level quote handling that does not define
-  value-level string escape sequences.
+  as the documented sentinel in specific language positions, and boundary-level quote handling that
+  does not define value-level string escape sequences.
+
+### Integer `0` Sentinel Semantics
+
+AgeRun does not have a null or absence data type. Integer `0` remains ordinary integer data in normal
+expression evaluation, comparison, storage, list/map values, and message payloads. It is interpreted
+as the documented fallback, absence, or no-op sentinel only in the language positions listed here:
+
+- Missing path references under the frame roots `message`, `memory`, and `context` evaluate to
+  integer `0` (for example, `message.field`, `memory.field`, and `context.field`). Inside a
+  multi-line map assignment block, missing block-local `.key` and `.key.nested` accesses also
+  evaluate to integer `0`. Once produced, that `0` composes as ordinary integer data.
+- Condition truthiness treats integer `0` as false and nonzero integers as true. Non-integer and
+  missing condition values are false. This rule is condition truthiness, not a general conversion of
+  data values into absence. It exists so methods can use integer status and flag values directly in
+  conditions when no relational operator is needed.
+- Expression-level `if(condition, true_value, false_value)` returns integer `0` when the selected
+  branch cannot produce a value. If the selected branch explicitly evaluates to integer `0`, that
+  result is still ordinary integer data selected by the branch.
+- Pure `head(list)` returns integer `0` for empty LIST inputs, missing inputs, non-LIST inputs, and
+  copy failures. A real first item whose value is integer `0` is indistinguishable from the sentinel,
+  so methods that use `head(...) = 0` as a stop condition must exclude integer `0` from the item
+  domain or wrap arbitrary items in containers.
+- Pure `tail(list)` returns integer `0` for missing inputs, non-LIST inputs, and copy failures. Empty
+  LIST inputs and single-item LIST inputs return a new empty LIST, not integer `0`.
+- Pure `append(list, value)` returns integer `0` for missing, non-LIST, invalid, or not-copyable
+  inputs and copy failures. Appending the ordinary integer value `0` to a valid list is normal data
+  construction, not a sentinel; this includes a missing path reference that has already evaluated to
+  integer `0`.
+- `send(recipient, message)` stores integer `0` as the assigned delivery status when no message is
+  sent. Recipients that evaluate to nonzero integers route to agents or delegates; recipients that
+  evaluate to integer `0` or any non-INTEGER value are non-routable sinks. No message is delivered,
+  and method evaluation continues. Integer `0` elsewhere in the message payload remains ordinary
+  data.
+- `spawn(method_name, version, context)` stores integer `0` as the assigned result when no agent is
+  spawned because the evaluated method selection cannot name or resolve to a registered method.
+  Non-string method-name values, including integer `0`, perform no spawn; string method names that
+  do not resolve to a registered method, including the empty string, also perform no spawn. The empty
+  string is not a separate sentinel. These no-spawn selections are no-op results, so method
+  evaluation continues.
+
+New language features must not add ad hoc meanings for integer `0`. A new feature that needs
+fallback, absence, or no-op semantics must either explicitly reuse this central sentinel contract or
+document a deliberate exception in this section and in the feature-specific documentation.
 
 ## Method Expressions and Instructions
 
@@ -271,7 +319,7 @@ discard their values.
 
 Function call instructions can optionally assign their result to a variable. For example:
 - `send(agent_id, message)` - Call the function without storing the result
-- `success := send(agent_id, message)` - Store the result in a memory variable
+- `memory.status := send(agent_id, message)` - Store integer `1`/`0` delivery status in memory
 - `memory.result := complete("The capital of {country} is {city}.", memory.values)` - Return a new map containing values from `memory.values` plus generated values for missing placeholders
 - `append(memory.results, message.value)` - Standalone compatibility append: mutate the existing
   `memory.results` list
@@ -382,12 +430,12 @@ The expression evaluator follows these rules:
 - In assignments, only `memory` paths can be used on the left side of the ':=' operator
 - Arithmetic operations can be performed with basic operators: +, -, *, /
 - Comparison operations use relational operators to compare values:
-  - `=` equality (returns true if the values are equal)
-  - `<>` inequality (returns true if the values are not equal)
-  - `<` less than (returns true if the left value is less than the right value)
-  - `<=` less than or equal to (returns true if the left value is less than or equal to the right value)
-  - `>` greater than (returns true if the left value is greater than the right value)
-  - `>=` greater than or equal to (returns true if the left value is greater than or equal to the right value)
+  - `=` equality (produces integer `1` if the values are equal, otherwise integer `0`)
+  - `<>` inequality (produces integer `1` if the values are not equal, otherwise integer `0`)
+  - `<` less than (produces integer `1` if the left value is less than the right value, otherwise integer `0`)
+  - `<=` less than or equal to (produces integer `1` if the left value is less than or equal to the right value, otherwise integer `0`)
+  - `>` greater than (produces integer `1` if the left value is greater than the right value, otherwise integer `0`)
+  - `>=` greater than or equal to (produces integer `1` if the left value is greater than or equal to the right value, otherwise integer `0`)
 - Type conversion is automatic where possible; integers are promoted to doubles, numeric types can be converted to strings
 
 ### 1. Parsing, Building, and Completing Strings
@@ -402,9 +450,9 @@ The expression evaluator follows these rules:
   evaluates both arguments without mutating either source value. When the first argument is a LIST,
   `append(...)` returns a new LIST containing deep copies of every source item followed by a deep
   copy of the value. Empty LIST input returns a new one-item LIST. Missing, non-LIST, invalid, or
-  not-copyable inputs return integer `0`. Argument handling is path-neutral: `memory.self`, `self`,
-  and nested paths are ordinary values, while protected identity behavior is enforced only by
-  assignment and result-storage rules.
+  not-copyable inputs return integer `0` per [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics).
+  Argument handling is path-neutral: `memory.self`, `self`, and nested paths are ordinary values,
+  while protected identity behavior is enforced only by assignment and result-storage rules.
 - Standalone compatibility `append(target, value)` instructions keep the existing mutating behavior:
   they mutate only when the target expression resolves to an existing LIST directly or indirectly
   owned by the frame memory map, such as `memory.results` or `memory.wrapper.results`. Targets under
@@ -416,9 +464,22 @@ The expression evaluator follows these rules:
   deep-copied before append, preserving nested list/map structure. Target no-ops and append failures
   complete without mutating memory further.
 
-- `head(list: expression) → data | integer`: Pure expression call that evaluates the list expression and never mutates the source list. When the value is a LIST with at least one item, `head(...)` returns a deep copy of the first item. Empty lists, missing values, non-LIST values, and values that cannot be safely copied return integer `0`. Standalone compatibility `head(...)` instructions discard the computed value when no result assignment is present.
-- `tail(list: expression) → list | integer`: Pure expression call that evaluates the list expression and never mutates the source list. When the value is a LIST, `tail(...)` returns a new LIST containing deep copies of every item after the first. Empty lists and single-item lists return a new empty LIST. Missing values, non-LIST values, and values that cannot be safely copied return integer `0`, allowing callers to distinguish invalid input from the valid tail of a single-item list. Standalone compatibility `tail(...)` instructions discard the computed value when no result assignment is present.
-- `head(...)` and `tail(...)` can be nested and used anywhere expressions are accepted. They preserve nested list/map structure in returned values. Copy failure returns integer `0`: for `head(...)`, when the first item cannot be copied; for `tail(...)`, when any retained item cannot be copied.
+- `head(list: expression) → data | integer`: Pure expression call that evaluates the list expression
+  and never mutates the source list. When the value is a LIST with at least one item, `head(...)`
+  returns a deep copy of the first item. Empty lists, missing values, non-LIST values, and values that
+  cannot be safely copied return integer `0` per
+  [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics). Standalone compatibility
+  `head(...)` instructions discard the computed value when no result assignment is present.
+- `tail(list: expression) → list | integer`: Pure expression call that evaluates the list expression
+  and never mutates the source list. When the value is a LIST, `tail(...)` returns a new LIST
+  containing deep copies of every item after the first. Empty lists and single-item lists return a new
+  empty LIST. Missing values, non-LIST values, and values that cannot be safely copied return integer
+  `0` per [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics), allowing callers to
+  distinguish invalid input from the valid tail of a single-item list. Standalone compatibility
+  `tail(...)` instructions discard the computed value when no result assignment is present.
+- `head(...)` and `tail(...)` can be nested and used anywhere expressions are accepted. They preserve
+  nested list/map structure in returned values. Copy failure returns integer `0`: for `head(...)`,
+  when the first item cannot be copied; for `tail(...)`, when any retained item cannot be copied.
 - Together, `head(...)` and `tail(...)` let a method consume an unbounded list through self-messages without loops or indexed access. Because `head(...)` uses integer `0` as the empty/invalid sentinel, callers that use `0` as a stop condition must choose an item domain where integer `0` is not a valid item, or wrap arbitrary values in maps/lists so a valid item cannot be confused with the sentinel. For example, a method can process a list of nonzero target IDs one message at a time:
 
 ```
@@ -432,15 +493,18 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
 
 ### 3. Messaging
 
-- `send(recipient_id: integer, message: data) → boolean`:
+- `send(recipient: data, message: data) → integer status`:
   - **Routing by ID**:
-    - `recipient_id == 0`: No operation (no-op); returns `true`
-    - `recipient_id > 0`: Routes to agent's message queue
-    - `recipient_id < 0`: Routes to delegate's message queue
+    - `recipient` is a nonzero INTEGER greater than `0`: Routes to agent's message queue
+    - `recipient` is a nonzero INTEGER less than `0`: Routes to delegate's message queue
+    - `recipient` is integer `0` or any non-INTEGER value: No delivery; continues with integer
+      status `0` per
+      [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics)
   - **Asynchronous Delivery**: All messages are enqueued for non-blocking operation
   - **Return Value**:
-    - Returns `true` if the recipient exists and message is enqueued
-    - Returns `false` if the recipient does not exist
+    - Produces integer `1` if the recipient exists and message is enqueued
+    - Produces integer `0` if the recipient does not exist or if the recipient is not a routable
+      nonzero INTEGER
   - The `message` parameter can be any supported data type (INTEGER, DOUBLE, STRING, LIST, or MAP)
   - **Ownership**: Message ownership transfers to the recipient's queue
 
@@ -449,6 +513,10 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
 - **Reading**: Access frame values using dot notation with the root identifiers `message`,
   `memory`, or `context` (e.g., `message.field`, `memory.user.name`, `context.settings`). Inside a
   multi-line map assignment block, `.key` reads keys already assigned earlier in that same block.
+- Missing path references under `message`, `memory`, `context`, and block-local `.` inside
+  multi-line map assignment blocks evaluate to integer `0` per
+  [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics). Ordinary stored integer `0`
+  values remain ordinary data.
 - **Writing**: Assign values to memory using `memory.path := value`. Only `memory` paths can be used on the left side of an assignment.
 
 ### 5. Arithmetic Operations
@@ -458,15 +526,26 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
 
 ### 6. Conditional Evaluation
 
-- `if(condition: expression, true_value: expression, false_value: expression) → data | integer`: Pure expression call that evaluates the condition first, treats integer `0` as false, a non-zero integer as true, and non-integer or missing condition values as false, then evaluates and returns only the selected branch expression. The unselected branch is never evaluated. If the selected branch cannot produce a value, expression-level `if(...)` returns integer `0`.
+- `if(condition: expression, true_value: expression, false_value: expression) → data | integer`: Pure
+  expression call that evaluates the condition first, treats integer `0` as false, a non-zero integer
+  as true, and non-integer or missing condition values as false, then evaluates and returns only the
+  selected branch expression. The unselected branch is never evaluated. If the selected branch cannot
+  produce a value, expression-level `if(...)` returns integer `0` per
+  [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics).
 
 ### 7. Agent Management
 
-- `compile(method_name: string, instructions: string, version: string) → boolean`: Defines a new method with the specified name, instruction code, and version string. The version string must follow semantic versioning (e.g., "1.0.0"). Compatibility between versions is determined based on semantic versioning rules: agents using version 1.x.x will automatically use the latest 1.x.x version. Returns true if the method was successfully defined, or false if the instructions cannot be parsed or compiled.
+- `compile(method_name: string, instructions: string, version: string) → integer status`: Defines a new method with the specified name, instruction code, and version string. The version string must follow semantic versioning (e.g., "1.0.0"). Compatibility between versions is determined based on semantic versioning rules: agents using version 1.x.x will automatically use the latest 1.x.x version. Produces integer `1` if the method was successfully defined, or integer `0` if the instructions cannot be parsed or compiled.
 - `complete(...)` is local-only in the first release, uses CPU-only execution, returns generated values as strings in a new map, rejects empty/outer-whitespace/braced generated values, applies build-style substitution for provided values, and never mutates the provided values map.
-- `spawn(method_name: string | integer, version: string, context: map) → agent_id`: Spawns a new agent instance based on the specified method name and version string. The version parameter is required. If a partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be used. A context map must be provided as the third argument. Returns a unique agent ID. Special no-op cases: if method_name is 0 (integer) or "" (empty string), the instruction performs no operation but returns true and sets the result to 0 if assigned to a variable.
-- `exit(agent_id: integer) → boolean`: Attempts to exit the specified agent. The agent is immediately destroyed. Returns true if successful, or false if the agent does not exist or is already destroyed.
-- `deprecate(method_name: string, method_version: string) → boolean`: Attempts to deprecate the specified method version by unregistering it from the methodology. This allows deprecating methods even when agents are actively using them. Returns true if successful, or false if the method does not exist.
+- `spawn(method_name: data, version: data, context: map) → agent_id`: Spawns a new agent instance
+  based on the specified method name and version string. The version parameter is required. If a
+  partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be
+  used. A context map must be provided as the third argument. Successful spawns return the new positive
+  agent ID. Method selections that cannot name or resolve to a registered method perform no-op
+  no-spawn evaluation and return integer `0`, per
+  [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics).
+- `exit(agent_id: integer) → integer status`: Attempts to exit the specified agent. The agent is immediately destroyed. Produces integer `1` if successful, or integer `0` if the agent does not exist or is already destroyed.
+- `deprecate(method_name: string, method_version: string) → integer status`: Attempts to deprecate the specified method version by unregistering it from the methodology. This allows deprecating methods even when agents are actively using them. Produces integer `1` if successful, or integer `0` if the method does not exist.
 
 ## Message Handling
 
