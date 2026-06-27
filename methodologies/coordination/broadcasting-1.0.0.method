@@ -55,15 +55,15 @@ memory.has_more_work := if(memory.has_more_work > 0, 1, 0)
 memory.continuation_required := memory.is_broadcast * memory.has_more_work
 memory.continuation_recipient := memory.self * memory.continuation_required
 memory.continuation_message := {
-  sender: memory.self
-  request: "broadcasting_continue"
-  trace_id: memory.trace_id
-  payload: message.payload
-  recipients: memory.remaining_recipients
-  result_recipient: memory.result_recipient
-  recipient_count: memory.recipient_count
-  sent_count: memory.sent_count
-  failed_count: memory.failed_count
+  sender := memory.self
+  request := "broadcasting_continue"
+  trace_id := memory.trace_id
+  payload := message.payload
+  recipients := memory.remaining_recipients
+  result_recipient := memory.result_recipient
+  recipient_count := memory.recipient_count
+  sent_count := memory.sent_count
+  failed_count := memory.failed_count
 }
 memory.continuation_send_result := send(memory.continuation_recipient, memory.continuation_message)
 memory.continuation_sent := memory.continuation_send_result * memory.continuation_required
@@ -83,11 +83,11 @@ memory.should_report := if(memory.continuation_sent = 1, 0, memory.should_report
 
 # Emit broadcast result
 memory.result_message := {
-  sender: memory.self
-  response: "broadcasting_result"
-  trace_id: memory.trace_id
-  status: memory.status
-  success_count: memory.sent_count
-  failure_count: memory.failed_count
+  sender := memory.self
+  response := "broadcasting_result"
+  trace_id := memory.trace_id
+  status := memory.status
+  success_count := memory.sent_count
+  failure_count := memory.failed_count
 }
 memory.result_sent := send(memory.result_recipient * memory.should_report, memory.result_message)

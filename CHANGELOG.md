@@ -1,5 +1,28 @@
 # AgeRun CHANGELOG
 
+## 2026-06-26 (Strict multiline assignment literals)
+
+- **Made multiline assignment literals strictly line-bound**
+
+  Multiline list and map literals remain valid only as top-level assignment right-hand sides, but
+  item and entry boundaries are now represented by linefeeds only. Trailing commas on multiline
+  item/entry lines are rejected. Multiline map blocks now use statement-like `key := value` entries,
+  while one-line map expressions continue to use `key: value` and comma separators.
+
+  **Implementation**: Updated `modules/ar_method_parser.c` to stop stripping optional multiline
+  item commas, reject comma-suffixed multiline list/map lines, and canonicalize multiline map
+  `identifier := expression` entries into the existing one-line map expression form without
+  promoting multiline literals into `ar_expression_parser`. Updated focused parser tests,
+  documentation, the language audit, and the intentional parser-error whitelist.
+
+  **Verification**: `make ar_method_parser_tests`, `make ar_instruction_parser_tests`,
+  `make check-test-structure 2>&1`, `make check-docs 2>&1`, `make build 2>&1`,
+  `make check-logs`, `make sanitize-tests 2>&1`, and `make check-all 2>&1` passed.
+
+  **Impact**: Multiline assignment literals are now an explicit assignment-only, strictly
+  line-bound source-format exception. One-line list/map literals, function-call comma rules, and
+  nested one-line expressions keep their existing syntax.
+
 ## 2026-06-24 (Consolidate pure-call metadata)
 
 - **Added shared pure-call metadata**

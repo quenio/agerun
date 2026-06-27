@@ -109,26 +109,11 @@ static bool _is_multiline_literal_opener(char *mut_trimmed, char *out_open_delim
     return false;
 }
 
-static bool _strip_optional_trailing_comma(char **mut_item) {
-    char *item = ar_string__trim(*mut_item);
-    size_t length = strlen(item);
-    while (length > 0 && isspace((unsigned char)item[length - 1])) {
-        item[--length] = '\0';
-    }
-
-    if (length > 0 && item[length - 1] == ',') {
-        item[length - 1] = '\0';
-        item = ar_string__trim(item);
-    }
-
-    *mut_item = item;
-    return strlen(item) > 0;
-}
-
 static bool _validate_one_line_literal_item(const char *ref_item) {
     bool in_quotes = false;
     int bracket_depth = 0;
     int brace_depth = 0;
+    int parenthesis_depth = 0;
 
     for (size_t i = 0; ref_item[i] != '\0'; i++) {
         char c = ref_item[i];
@@ -154,12 +139,71 @@ static bool _validate_one_line_literal_item(const char *ref_item) {
             if (brace_depth < 0) {
                 return false;
             }
-        } else if (c == ',' && bracket_depth == 0 && brace_depth == 0) {
+        } else if (c == '(') {
+            parenthesis_depth++;
+        } else if (c == ')') {
+            parenthesis_depth--;
+            if (parenthesis_depth < 0) {
+                return false;
+            }
+        } else if (c == ',' && bracket_depth == 0 && brace_depth == 0 &&
+                   parenthesis_depth == 0) {
             return false;
         }
     }
 
-    return !in_quotes && bracket_depth == 0 && brace_depth == 0;
+    return !in_quotes && bracket_depth == 0 && brace_depth == 0 && parenthesis_depth == 0;
+}
+
+static bool _is_identifier(const char *ref_text) {
+    if (!ref_text || (!isalpha((unsigned char)ref_text[0]) && ref_text[0] != '_')) {
+        return false;
+    }
+
+    for (size_t i = 1; ref_text[i] != '\0'; i++) {
+        if (!isalnum((unsigned char)ref_text[i]) && ref_text[i] != '_') {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static char* _find_top_level_assignment_operator(char *mut_item) {
+    bool in_quotes = false;
+    int bracket_depth = 0;
+    int brace_depth = 0;
+    int parenthesis_depth = 0;
+
+    for (size_t i = 0; mut_item[i] != '\0'; i++) {
+        char c = mut_item[i];
+        if (c == '"' && (i == 0 || mut_item[i - 1] != '\\')) {
+            in_quotes = !in_quotes;
+            continue;
+        }
+        if (in_quotes) {
+            continue;
+        }
+
+        if (c == '[') {
+            bracket_depth++;
+        } else if (c == ']') {
+            bracket_depth--;
+        } else if (c == '{') {
+            brace_depth++;
+        } else if (c == '}') {
+            brace_depth--;
+        } else if (c == '(') {
+            parenthesis_depth++;
+        } else if (c == ')') {
+            parenthesis_depth--;
+        } else if (c == ':' && mut_item[i + 1] == '=' &&
+                   bracket_depth == 0 && brace_depth == 0 && parenthesis_depth == 0) {
+            return &mut_item[i];
+        }
+    }
+
+    return NULL;
 }
 
 static bool _append_canonical_literal_block(
@@ -264,7 +308,28 @@ static bool _append_canonical_literal_block(
             return false;
         }
 
-        if (!_strip_optional_trailing_comma(&trimmed) || !_validate_one_line_literal_item(trimmed)) {
+        bool is_map_literal = open_delimiter == '{';
+        char *map_entry_value = NULL;
+        if (is_map_literal) {
+            char *assignment = _find_top_level_assignment_operator(trimmed);
+            if (!assignment) {
+                AR__HEAP__FREE(own_line);
+                _log_error(mut_parser, item_line_number, "Multi-line map entries must use identifier := expression");
+                return false;
+            }
+
+            *assignment = '\0';
+            char *map_entry_key = ar_string__trim(trimmed);
+            map_entry_value = ar_string__trim(assignment + 2);
+            if (!_is_identifier(map_entry_key) || strlen(map_entry_value) == 0 ||
+                !_validate_one_line_literal_item(map_entry_value)) {
+                AR__HEAP__FREE(own_line);
+                _log_error(mut_parser, item_line_number, "Multi-line map entries must use identifier := expression");
+                return false;
+            }
+
+            trimmed = map_entry_key;
+        } else if (!_validate_one_line_literal_item(trimmed)) {
             AR__HEAP__FREE(own_line);
             _log_error(mut_parser, item_line_number, "Multi-line literal items must be one complete item per line");
             return false;
@@ -279,7 +344,17 @@ static bool _append_canonical_literal_block(
         }
         first_item = false;
 
-        if (!_append_cstr(own_output, mut_output_length, mut_output_capacity, trimmed)) {
+        bool append_success = false;
+        if (is_map_literal) {
+            append_success =
+                _append_cstr(own_output, mut_output_length, mut_output_capacity, trimmed) &&
+                _append_cstr(own_output, mut_output_length, mut_output_capacity, ": ") &&
+                _append_cstr(own_output, mut_output_length, mut_output_capacity, map_entry_value);
+        } else {
+            append_success = _append_cstr(own_output, mut_output_length, mut_output_capacity, trimmed);
+        }
+
+        if (!append_success) {
             AR__HEAP__FREE(own_line);
             _log_error(mut_parser, item_line_number, "Out of memory");
             return false;

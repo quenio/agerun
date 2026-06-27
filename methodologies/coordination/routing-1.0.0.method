@@ -51,18 +51,18 @@ memory.scan_required := memory.is_route * memory.has_request_key
 memory.scan_required := memory.scan_required * memory.no_match
 memory.scan_required := memory.scan_required * memory.has_remaining_route
 memory.scan_routes := {
-  keys: memory.remaining_route_keys
-  recipients: memory.remaining_route_recipients
+  keys := memory.remaining_route_keys
+  recipients := memory.remaining_route_recipients
 }
 
 # Queue scan continuation
 memory.scan_message := {
-  sender: message.sender
-  request: "routing_start"
-  trace_id: memory.trace_id
-  payload: message.payload
-  route_key: message.route_key
-  routes: memory.scan_routes
+  sender := message.sender
+  request := "routing_start"
+  trace_id := memory.trace_id
+  payload := message.payload
+  route_key := message.route_key
+  routes := memory.scan_routes
 }
 memory.scan_recipient := memory.self * memory.scan_required
 memory.scan_send_result := send(memory.scan_recipient, memory.scan_message)
@@ -84,14 +84,14 @@ memory.status := if(memory.scan_failed = 1, "failure", memory.status)
 
 # Emit routing result
 memory.response_message := {
-  sender: memory.self
-  response: "routing_result"
-  trace_id: memory.trace_id
-  status: memory.status
-  routed_count: memory.routed_count
-  success_count: memory.sent_count
-  failure_count: memory.failed_count
-  sent_count: memory.sent_count
-  failed_count: memory.failed_count
+  sender := memory.self
+  response := "routing_result"
+  trace_id := memory.trace_id
+  status := memory.status
+  routed_count := memory.routed_count
+  success_count := memory.sent_count
+  failure_count := memory.failed_count
+  sent_count := memory.sent_count
+  failed_count := memory.failed_count
 }
 memory.response_sent := send(message.sender * memory.should_respond, memory.response_message)

@@ -89,16 +89,16 @@ memory.continuation_required := if(memory.continuation_required > 0, 1, 0)
 
 # Queue continuation for remaining work
 memory.continuation_message := {
-  sender: memory.self
-  request: "distribution_continue"
-  trace_id: memory.request_trace_id
-  payloads: memory.continuation_payloads
-  recipients: memory.continuation_recipients
-  all_recipients: memory.all_recipients
-  result_recipient: memory.result_recipient
-  assignment_count: memory.next_assignment_count
-  sent_count: memory.next_sent_count
-  failed_count: memory.next_failed_count
+  sender := memory.self
+  request := "distribution_continue"
+  trace_id := memory.request_trace_id
+  payloads := memory.continuation_payloads
+  recipients := memory.continuation_recipients
+  all_recipients := memory.all_recipients
+  result_recipient := memory.result_recipient
+  assignment_count := memory.next_assignment_count
+  sent_count := memory.next_sent_count
+  failed_count := memory.next_failed_count
 }
 memory.continuation_send_result := send(memory.self * memory.continuation_required, memory.continuation_message)
 memory.continuation_sent := memory.continuation_send_result * memory.continuation_required
@@ -122,12 +122,12 @@ memory.result_status := if(memory.continuation_failed = 1, "failure", memory.res
 
 # Emit distribution result
 memory.result_message := {
-  sender: memory.self
-  response: "distribution_result"
-  trace_id: memory.report_trace_id
-  status: memory.result_status
-  success_count: memory.report_sent_count
-  failure_count: memory.report_failed_count
+  sender := memory.self
+  response := "distribution_result"
+  trace_id := memory.report_trace_id
+  status := memory.result_status
+  success_count := memory.report_sent_count
+  failure_count := memory.report_failed_count
 }
 memory.report_sent := send(memory.report_sender * memory.should_report, memory.result_message)
 memory.report_recorded := memory.report_sent * memory.should_report

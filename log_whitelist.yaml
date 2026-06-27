@@ -755,6 +755,9 @@ ignored_errors:
     message: "ERROR: Line 2: Multi-line literal items must be one complete item per line (at position 2)"
     comment: "Testing rejection of nested and multi-item lines in multi-line literals"
   - context: "ar_method_parser_tests"
+    message: "ERROR: Line 2: Multi-line map entries must use identifier := expression (at position 2)"
+    comment: "Testing rejection of comma-suffixed and colon-style multi-line map entries"
+  - context: "ar_method_parser_tests"
     message: "✓ test_method_parser__successful_parse_after_failure passed"
     comment: "Test pass message treated as error by pattern"
 

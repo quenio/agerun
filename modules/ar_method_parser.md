@@ -92,17 +92,18 @@ memory.items := [
 ]
 
 memory.profile := {
-  name: "Ada"
-  scores: [1, 2]
+  name := "Ada"
+  scores := [1, 2]
 }
 ```
 
 Rules enforced by the parser:
 
 - The opener must be the full assignment right side: `memory.path := [` or `memory.path := {`
-- Every item line must contain exactly one complete top-level item
-- Item-line commas are optional
-- Every item line must use identical indentation
+- Every list item line must contain exactly one complete top-level expression
+- Every map entry line must use `identifier := expression`
+- Linefeeds are the only item/entry separators; item-line and entry-line commas are rejected
+- Every item/entry line must use identical indentation
 - The closing delimiter must be on its own line and align with the assignment line
 - Nested list/map values must be one-line literals
 - Multi-line literals are rejected inside function arguments, list items, and map values

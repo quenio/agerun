@@ -52,14 +52,14 @@ memory.should_emit := memory.is_complete * memory.not_completed
 # Emit aggregation result
 memory.output_recipient := memory.sender * memory.should_emit
 memory.output_message := {
-  sender: memory.self
-  response: "aggregation_result"
-  trace_id: memory.request_trace_id
-  session_id: memory.session_id
-  payloads: memory.payloads
-  status: memory.status
-  success_count: memory.count
-  failure_count: memory.failure_count
+  sender := memory.self
+  response := "aggregation_result"
+  trace_id := memory.request_trace_id
+  session_id := memory.session_id
+  payloads := memory.payloads
+  status := memory.status
+  success_count := memory.count
+  failure_count := memory.failure_count
 }
 memory.output_sent := send(memory.output_recipient, memory.output_message)
 

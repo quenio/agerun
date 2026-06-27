@@ -86,27 +86,27 @@ memory.deferred_payload := if(memory.defer_candidate = 1, message.payload, memor
 
 # Build participant turn
 memory.turn_message := {
-  sender: memory.self
-  request: "conversation_turn"
-  trace_id: memory.request_trace_id
-  session_id: memory.session_id
-  payload: message.payload
-  participant: memory.message_participant
-  turn_count: memory.next_turn_count
+  sender := memory.self
+  request := "conversation_turn"
+  trace_id := memory.request_trace_id
+  session_id := memory.session_id
+  payload := message.payload
+  participant := memory.message_participant
+  turn_count := memory.next_turn_count
 }
 
 # Start recipient selection
 memory.select_recipients_message := {
-  sender: memory.self
-  request: "conversation_select_recipients"
-  trace_id: memory.request_trace_id
-  session_id: memory.session_id
-  participants: memory.participants
-  recipients: []
-  participant: memory.message_participant
-  payload: memory.turn_message
-  found_sender: 0
-  recipient_count: 0
+  sender := memory.self
+  request := "conversation_select_recipients"
+  trace_id := memory.request_trace_id
+  session_id := memory.session_id
+  participants := memory.participants
+  recipients := []
+  participant := memory.message_participant
+  payload := memory.turn_message
+  found_sender := 0
+  recipient_count := 0
 }
 memory.select_sent := send(memory.self * memory.message_candidate, memory.select_recipients_message)
 memory.select_send_failed := if(memory.select_sent = 0, 1, 0)
@@ -156,16 +156,16 @@ memory.has_remaining_participants := if(memory.remaining_participants_empty = 1,
 memory.scan_continue := memory.select_active * memory.has_scan_participant
 memory.scan_continue := memory.scan_continue * memory.has_remaining_participants
 memory.scan_continue_message := {
-  sender: memory.self
-  request: "conversation_select_recipients"
-  trace_id: message.trace_id
-  session_id: message.session_id
-  participants: memory.remaining_participants
-  recipients: memory.next_recipients
-  participant: message.participant
-  payload: message.payload
-  found_sender: memory.next_found_sender
-  recipient_count: memory.next_recipient_count
+  sender := memory.self
+  request := "conversation_select_recipients"
+  trace_id := message.trace_id
+  session_id := message.session_id
+  participants := memory.remaining_participants
+  recipients := memory.next_recipients
+  participant := message.participant
+  payload := message.payload
+  found_sender := memory.next_found_sender
+  recipient_count := memory.next_recipient_count
 }
 memory.scan_continue_sent := send(memory.self * memory.scan_continue, memory.scan_continue_message)
 memory.scan_continue_send_failed := if(memory.scan_continue_sent = 0, 1, 0)
@@ -209,12 +209,12 @@ memory.pending_candidate_found := if(memory.sender_missing = 1, 0, memory.pendin
 # Retry a deferred turn after an invalid pending sender
 memory.deferred_retry_ready := memory.sender_missing * memory.deferred_turn_active
 memory.deferred_retry_message := {
-  sender: memory.self
-  request: "conversation_deferred_message"
-  trace_id: memory.deferred_trace_id
-  session_id: memory.deferred_session_id
-  payload: memory.deferred_payload
-  participant: memory.deferred_sender
+  sender := memory.self
+  request := "conversation_deferred_message"
+  trace_id := memory.deferred_trace_id
+  session_id := memory.deferred_session_id
+  payload := memory.deferred_payload
+  participant := memory.deferred_sender
 }
 memory.deferred_retry_sent := send(memory.self * memory.deferred_retry_ready, memory.deferred_retry_message)
 memory.deferred_retry_succeeded := memory.deferred_retry_sent * memory.deferred_retry_ready
@@ -222,11 +222,11 @@ memory.deferred_turn_active := if(memory.deferred_retry_succeeded = 1, 0, memory
 
 # Broadcast staged turn
 memory.broadcast_message := {
-  sender: memory.self
-  request: "broadcasting_start"
-  trace_id: memory.pending_trace_id
-  payload: memory.pending_turn_message
-  recipients: memory.next_recipients
+  sender := memory.self
+  request := "broadcasting_start"
+  trace_id := memory.pending_trace_id
+  payload := memory.pending_turn_message
+  recipients := memory.next_recipients
 }
 memory.broadcast_sent := send(memory.broadcasting_agent * memory.broadcast_ready, memory.broadcast_message)
 memory.broadcast_send_failed := if(memory.broadcast_sent = 0, 1, 0)
@@ -311,18 +311,18 @@ memory.response_status := if(memory.should_respond = 1, memory.response_status_v
 
 # Emit conversation result
 memory.response_message := {
-  sender: memory.self
-  response: "conversation_result"
-  trace_id: memory.request_trace_id
-  session_id: memory.session_id
-  status: memory.response_status
-  result: memory.response_result
-  success_count: memory.response_success_count
-  failure_count: memory.response_failure_count
-  participants: memory.participants
-  last_sender: memory.last_sender
-  last_payload: memory.last_payload
-  turn_count: memory.turn_count
-  history: memory.history
+  sender := memory.self
+  response := "conversation_result"
+  trace_id := memory.request_trace_id
+  session_id := memory.session_id
+  status := memory.response_status
+  result := memory.response_result
+  success_count := memory.response_success_count
+  failure_count := memory.response_failure_count
+  participants := memory.participants
+  last_sender := memory.last_sender
+  last_payload := memory.last_payload
+  turn_count := memory.turn_count
+  history := memory.history
 }
 memory.response_sent := send(memory.sender * memory.should_respond, memory.response_message)
