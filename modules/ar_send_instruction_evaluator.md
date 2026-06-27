@@ -56,18 +56,18 @@ Evaluates a send instruction using frame-based execution. The frame provides acc
 ### Functionality
 
 The module evaluates send instructions of the form:
-- `send(agent_id, message)`
-- `memory.result := send(agent_id, message)`
+- `send(recipient, message)`
+- `memory.result := send(recipient, message)`
 
 Key features:
-1. **Agent ID Evaluation**: Evaluates the agent ID expression to an integer
+1. **Recipient Evaluation**: Evaluates the recipient expression; only nonzero INTEGER values route
 2. **Message Evaluation**: Evaluates the message expression to any data type
 3. **ID-Based Routing**: Routes messages based on ID sign:
-   - **ID == 0**: No-op destination from the central
-     [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics); destroys message and
-     reports successful instruction status
    - **ID > 0**: Routes to agency for agent delivery
    - **ID < 0**: Routes to delegation for delegate delivery
+   - **ID == 0 or non-INTEGER recipient**: No-delivery sink from the central
+     [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics); no message is delivered,
+     and assigned calls store integer `0` because no message was sent
 4. **Result Assignment**: Stores integer `1` or `0` through `ar_result_binding` when assignment is specified
 5. **Ownership Transfer**: Transfers message ownership to appropriate destination (agency or delegation)
 6. **Nested Payloads**: Deep-copies borrowed nested list/map messages before delivery
@@ -78,9 +78,10 @@ The send instruction evaluator implements **ID-based message routing** following
 
 | Target ID | Destination | Function Called |
 |-----------|-------------|-----------------|
-| `0` | No-op destination (message destroyed) | N/A - successful instruction status |
+| `0` | No-delivery sink | N/A - no delivery status |
 | `> 0` | Agent via agency | `ar_agency__send_to_agent()` |
 | `< 0` | Delegate via delegation | `ar_delegation__send_to_delegate()` |
+| non-INTEGER | No-delivery sink | N/A - no delivery status |
 
 ### Memory Management
 
@@ -111,9 +112,9 @@ The module follows strict memory ownership rules:
 ## Implementation Details
 
 The module evaluates both arguments:
-1. Agent ID must evaluate to an integer
+1. Recipient values route only when they evaluate to nonzero integers
 2. Message can be any data type
-3. Routes based on ID sign to appropriate destination
+3. Routes nonzero integers based on ID sign to the appropriate destination
 4. Validates assigned result targets before sending so protected `memory.self` writes are rejected
 5. Handles assigned send result storage through `ar_result_binding`
 6. Properly manages ownership transfer based on destination
@@ -177,9 +178,10 @@ The send instruction evaluator handles errors gracefully:
 |------------|----------|--------------|------------------|
 | Non-existent agent | Agent not found in agency; message destroyed | Continues if assigned result stores | Integer `0` |
 | Non-existent delegate | Delegate not found in delegation; message destroyed | Continues if assigned result stores | Integer `0` |
-| Invalid agent_id expression | Expression evaluation fails; message destroyed | Fails | No result stored |
+| Recipient expression evaluation fails | Message expression is not evaluated | Fails | No result stored |
+| Non-INTEGER recipient | No message is delivered | Continues | Integer `0` |
 | Invalid message expression | Expression evaluation fails | Fails | No result stored |
-| agent_id == 0 | No-op destination per SPEC sentinel contract; message destroyed | Succeeds | Integer `1` |
+| INTEGER `0` recipient | No message is delivered | Continues | Integer `0` |
 
 All error paths ensure proper memory cleanup - messages are destroyed when delivery fails to prevent memory leaks.
 
@@ -188,7 +190,7 @@ All error paths ensure proper memory cleanup - messages are destroyed when deliv
 The module includes comprehensive tests covering:
 - Sending to valid agents (positive IDs)
 - Sending to valid delegates (negative IDs)
-- Sending to agent 0 (no-op destination)
+- Sending to non-routable recipients, including integer `0` and non-INTEGER values
 - Send with result assignment
 - Various message types (integers, strings, maps, lists)
 - Invalid agent ID handling (stores integer `0` status when assigned)

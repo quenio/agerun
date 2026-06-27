@@ -451,7 +451,8 @@ interleave with already queued messages but are not re-entrant
 - Instructions: assignments, effectful function calls
 - Pure function calls such as `parse(...)`, `if(...)`, and `append(...)` can be nested
 - Effectful function calls cannot be nested
-- `send(0, message)` is a no-op destination; assigned send status uses integer `1`/`0` ([details](kb/no-op-semantics-pattern.md))
+- `send(recipient, message)` stores integer `0` when the recipient is not a routable nonzero integer
+  and no message is sent ([details](kb/no-op-semantics-pattern.md))
 
 ### 8. Development Practices
 
@@ -678,7 +679,8 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - All parameters required
 - Version strings explicit (e.g., "1.0.0")
 - **Map literals** - one-line `{}` map literals are supported in AgeRun expressions
-- Agent ID 0 indicates failure
+- Positive agent IDs identify spawned agents; integer `0` results/statuses indicate no agent spawned
+  or no message delivered in the relevant instruction contract
 - Always process messages after sending to prevent memory leaks
 - Message processing loop required for complete execution ([details](kb/message-processing-loop-pattern.md))
 - All messages flow through system layer ([details](kb/system-message-flow-architecture.md))

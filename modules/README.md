@@ -1226,7 +1226,8 @@ instructions:
 
 The [send instruction evaluator module](ar_send_instruction_evaluator.md) handles agent messaging:
 - **Message Sending**: Sends messages to agents by ID
-- **Agent ID 0**: No-op destination per the centralized
+- **Non-Routable Recipients**: Stores integer `0` when the recipient is integer `0` or any
+  non-INTEGER value per the centralized
   [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics)
 - **Memory Management**: Transfers message ownership to agency
 - **Result Binding**: Uses `ar_result_binding` for assigned send results

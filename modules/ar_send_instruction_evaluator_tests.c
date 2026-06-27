@@ -40,6 +40,7 @@ static void test_send_instruction_evaluator__evaluate_with_instance(void) {
     ar_send_instruction_evaluator_t *own_evaluator = ar_send_evaluator_fixture__create_evaluator(fixture);
     assert(own_evaluator != NULL);
 
+    // Given a frame for evaluation
     ar_frame_t *ref_frame = ar_send_evaluator_fixture__create_frame(fixture);
 
     // When creating a send AST node for "send(0, 42)"
@@ -49,25 +50,28 @@ static void test_send_instruction_evaluator__evaluate_with_instance(void) {
     );
     assert(own_ast != NULL);
 
-    // Create and attach the expression ASTs for arguments
+    // Given argument ASTs for send(0, 42)
     ar_list_t *own_arg_asts = ar_list__create();
     assert(own_arg_asts != NULL);
 
+    // Given an integer 0 recipient AST
     ar_expression_ast_t *own_agent_ast = ar_expression_ast__create_literal_int(0);
     assert(own_agent_ast != NULL);
     ar_list__add_last(own_arg_asts, own_agent_ast);
 
+    // Given an integer message AST
     ar_expression_ast_t *own_msg_ast = ar_expression_ast__create_literal_int(42);
     assert(own_msg_ast != NULL);
     ar_list__add_last(own_arg_asts, own_msg_ast);
 
+    // Given attached argument ASTs
     bool ast_set = ar_instruction_ast__set_function_arg_asts(own_ast, own_arg_asts);
     assert(ast_set == true);
 
     // When evaluating the send with frame
     bool result = ar_send_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
 
-    // Then it should succeed
+    // Then the sink destination should continue method evaluation
     assert(result == true);
 
     // Cleanup
@@ -81,9 +85,11 @@ static void test_instruction_evaluator__evaluate_send_integer_message(void) {
     ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_send_integer_message");
     assert(fixture != NULL);
 
+    // Given a send instruction evaluator
     ar_send_instruction_evaluator_t *evaluator = ar_send_evaluator_fixture__create_evaluator(fixture);
     assert(evaluator != NULL);
 
+    // Given a frame for evaluation
     ar_frame_t *frame = ar_send_evaluator_fixture__create_frame(fixture);
 
     // When creating a send AST node for "send(0, 42)"
@@ -93,25 +99,28 @@ static void test_instruction_evaluator__evaluate_send_integer_message(void) {
     );
     assert(ast != NULL);
 
-    // Create and attach the expression ASTs for arguments
+    // Given argument ASTs for send(0, 42)
     ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
 
+    // Given an integer 0 recipient AST
     ar_expression_ast_t *agent_ast = ar_expression_ast__create_literal_int(0);
     assert(agent_ast != NULL);
     ar_list__add_last(arg_asts, agent_ast);
 
+    // Given an integer message AST
     ar_expression_ast_t *msg_ast = ar_expression_ast__create_literal_int(42);
     assert(msg_ast != NULL);
     ar_list__add_last(arg_asts, msg_ast);
 
+    // Given attached argument ASTs
     bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
 
     // When evaluating the send with frame
     bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
 
-    // Then it should succeed (send to agent 0 is a no-op that returns true)
+    // Then the sink destination should continue method evaluation
     assert(result == true);
 
     // Cleanup
@@ -125,9 +134,11 @@ static void test_instruction_evaluator__evaluate_send_string_message(void) {
     ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_send_string_message");
     assert(fixture != NULL);
 
+    // Given a send instruction evaluator
     ar_send_instruction_evaluator_t *evaluator = ar_send_evaluator_fixture__create_evaluator(fixture);
     assert(evaluator != NULL);
 
+    // Given a frame for evaluation
     ar_frame_t *frame = ar_send_evaluator_fixture__create_frame(fixture);
 
     // When creating a send AST node for "send(0, \"hello\")"
@@ -137,25 +148,28 @@ static void test_instruction_evaluator__evaluate_send_string_message(void) {
     );
     assert(ast != NULL);
 
-    // Create and attach the expression ASTs for arguments
+    // Given argument ASTs for send(0, "hello")
     ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
 
+    // Given an integer 0 recipient AST
     ar_expression_ast_t *agent_ast = ar_expression_ast__create_literal_int(0);
     assert(agent_ast != NULL);
     ar_list__add_last(arg_asts, agent_ast);
 
+    // Given a string message AST
     ar_expression_ast_t *msg_ast = ar_expression_ast__create_literal_string("hello");
     assert(msg_ast != NULL);
     ar_list__add_last(arg_asts, msg_ast);
 
+    // Given attached argument ASTs
     bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
 
     // When evaluating the send with frame
     bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
 
-    // Then it should succeed
+    // Then the sink destination should continue method evaluation
     assert(result == true);
 
     // Cleanup
@@ -169,9 +183,11 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_send_with_result");
     assert(fixture != NULL);
 
+    // Given a send instruction evaluator
     ar_send_instruction_evaluator_t *evaluator = ar_send_evaluator_fixture__create_evaluator(fixture);
     assert(evaluator != NULL);
 
+    // Given a frame for evaluation
     ar_frame_t *frame = ar_send_evaluator_fixture__create_frame(fixture);
 
     // When creating a send AST node for "memory.result := send(0, \"test\")"
@@ -181,18 +197,21 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     );
     assert(ast != NULL);
 
-    // Create and attach the expression ASTs for arguments
+    // Given argument ASTs for assigned send(0, "test")
     ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
 
+    // Given an integer 0 recipient AST
     ar_expression_ast_t *agent_ast = ar_expression_ast__create_literal_int(0);
     assert(agent_ast != NULL);
     ar_list__add_last(arg_asts, agent_ast);
 
+    // Given a string message AST
     ar_expression_ast_t *msg_ast = ar_expression_ast__create_literal_string("test");
     assert(msg_ast != NULL);
     ar_list__add_last(arg_asts, msg_ast);
 
+    // Given attached argument ASTs
     bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
 
@@ -202,12 +221,187 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     // Then it should succeed
     assert(result == true);
 
-    // And the result should be stored in memory (send returns true for agent 0)
+    // Then the result should report that no message was delivered
     ar_data_t *memory = ar_frame__get_memory(frame);
     ar_data_t *result_value = ar_data__get_map_data(memory, "result");
     assert(result_value != NULL);
     assert(ar_data__get_type(result_value) == AR_DATA_TYPE__INTEGER);
-    assert(ar_data__get_integer(result_value) == 1); // true as integer
+    assert(ar_data__get_integer(result_value) == 0);
+
+    // Cleanup
+    ar_instruction_ast__destroy(ast);
+    ar_send_instruction_evaluator__destroy(evaluator);
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+
+static void test_instruction_evaluator__evaluate_send_with_delivered_result(void) {
+    // Given a send evaluator fixture with a registered agent
+    ar_send_evaluator_fixture_t *fixture =
+        ar_send_evaluator_fixture__create("test_send_with_delivered_result");
+    assert(fixture != NULL);
+
+    // Given a registered recipient agent
+    ar_agent_t *agent = ar_send_evaluator_fixture__create_and_register_agent(fixture, 1, NULL);
+    assert(agent != NULL);
+
+    // Given a send instruction evaluator
+    ar_send_instruction_evaluator_t *evaluator =
+        ar_send_evaluator_fixture__create_evaluator(fixture);
+    assert(evaluator != NULL);
+
+    // Given a frame for evaluation
+    ar_frame_t *frame = ar_send_evaluator_fixture__create_frame(fixture);
+    assert(frame != NULL);
+
+    // When creating a send AST node for "memory.result := send(1, \"test\")"
+    const char *args[] = {"1", "\"test\""};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, "memory.result"
+    );
+    assert(ast != NULL);
+
+    // Given argument ASTs for assigned send(1, "test")
+    ar_list_t *arg_asts = ar_list__create();
+    assert(arg_asts != NULL);
+
+    // Given an integer 1 recipient AST
+    ar_expression_ast_t *agent_ast = ar_expression_ast__create_literal_int(1);
+    assert(agent_ast != NULL);
+    ar_list__add_last(arg_asts, agent_ast);
+
+    // Given a string message AST
+    ar_expression_ast_t *msg_ast = ar_expression_ast__create_literal_string("test");
+    assert(msg_ast != NULL);
+    ar_list__add_last(arg_asts, msg_ast);
+
+    // Given attached argument ASTs
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+
+    // When evaluating the delivered send with frame
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+    // Then it should continue and store successful delivery status
+    assert(result == true);
+    ar_data_t *memory = ar_frame__get_memory(frame);
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
+    assert(result_value != NULL);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_integer(result_value) == 1);
+
+    // Cleanup
+    ar_data_t *own_received = ar_agency__get_agent_message(
+        ar_send_evaluator_fixture__get_agency(fixture),
+        1
+    );
+    ar_data__destroy(own_received);
+    ar_instruction_ast__destroy(ast);
+    ar_send_instruction_evaluator__destroy(evaluator);
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+
+static void test_instruction_evaluator__evaluate_send_non_integer_recipient_continues(void) {
+    // Given a send evaluator fixture
+    ar_send_evaluator_fixture_t *fixture =
+        ar_send_evaluator_fixture__create("test_send_non_integer_recipient_continues");
+    assert(fixture != NULL);
+
+    // Given a send instruction evaluator
+    ar_send_instruction_evaluator_t *evaluator =
+        ar_send_evaluator_fixture__create_evaluator(fixture);
+    assert(evaluator != NULL);
+
+    // Given a frame for evaluation
+    ar_frame_t *frame = ar_send_evaluator_fixture__create_frame(fixture);
+    assert(frame != NULL);
+
+    // When creating a send AST node for "send(\"not-an-id\", \"test\")"
+    const char *args[] = {"\"not-an-id\"", "\"test\""};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
+    );
+    assert(ast != NULL);
+
+    // Given argument ASTs for send("not-an-id", "test")
+    ar_list_t *arg_asts = ar_list__create();
+    assert(arg_asts != NULL);
+
+    // Given a non-integer recipient AST
+    ar_expression_ast_t *agent_ast = ar_expression_ast__create_literal_string("not-an-id");
+    assert(agent_ast != NULL);
+    ar_list__add_last(arg_asts, agent_ast);
+
+    // Given a string message AST
+    ar_expression_ast_t *msg_ast = ar_expression_ast__create_literal_string("test");
+    assert(msg_ast != NULL);
+    ar_list__add_last(arg_asts, msg_ast);
+
+    // Given attached argument ASTs
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+
+    // When evaluating the non-routable recipient with frame
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+    // Then the sink destination should continue method evaluation
+    assert(result == true);
+
+    // Cleanup
+    ar_instruction_ast__destroy(ast);
+    ar_send_instruction_evaluator__destroy(evaluator);
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+
+static void test_instruction_evaluator__evaluate_send_non_integer_recipient_result_zero(void) {
+    // Given a send evaluator fixture
+    ar_send_evaluator_fixture_t *fixture =
+        ar_send_evaluator_fixture__create("test_send_non_integer_recipient_result_zero");
+    assert(fixture != NULL);
+
+    // Given a send instruction evaluator
+    ar_send_instruction_evaluator_t *evaluator =
+        ar_send_evaluator_fixture__create_evaluator(fixture);
+    assert(evaluator != NULL);
+
+    // Given a frame for evaluation
+    ar_frame_t *frame = ar_send_evaluator_fixture__create_frame(fixture);
+    assert(frame != NULL);
+
+    // When creating a send AST node for "memory.result := send(\"not-an-id\", \"test\")"
+    const char *args[] = {"\"not-an-id\"", "\"test\""};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, "memory.result"
+    );
+    assert(ast != NULL);
+
+    // Given argument ASTs for assigned send("not-an-id", "test")
+    ar_list_t *arg_asts = ar_list__create();
+    assert(arg_asts != NULL);
+
+    // Given a non-integer recipient AST
+    ar_expression_ast_t *agent_ast = ar_expression_ast__create_literal_string("not-an-id");
+    assert(agent_ast != NULL);
+    ar_list__add_last(arg_asts, agent_ast);
+
+    // Given a string message AST
+    ar_expression_ast_t *msg_ast = ar_expression_ast__create_literal_string("test");
+    assert(msg_ast != NULL);
+    ar_list__add_last(arg_asts, msg_ast);
+
+    // Given attached argument ASTs
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+
+    // When evaluating the non-routable recipient with result assignment
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+    // Then it should continue and store no-delivery status
+    assert(result == true);
+    ar_data_t *memory = ar_frame__get_memory(frame);
+    ar_data_t *result_value = ar_data__get_map_data(memory, "result");
+    assert(result_value != NULL);
+    assert(ar_data__get_type(result_value) == AR_DATA_TYPE__INTEGER);
+    assert(ar_data__get_integer(result_value) == 0);
 
     // Cleanup
     ar_instruction_ast__destroy(ast);
@@ -220,11 +414,14 @@ static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_send_memory_reference");
     assert(fixture != NULL);
 
+    // Given a send instruction evaluator
     ar_send_instruction_evaluator_t *evaluator = ar_send_evaluator_fixture__create_evaluator(fixture);
     assert(evaluator != NULL);
 
+    // Given a frame for evaluation
     ar_frame_t *frame = ar_send_evaluator_fixture__create_frame(fixture);
 
+    // Given memory containing a message value
     ar_data_t *memory = ar_frame__get_memory(frame);
     ar_data_t *msg_value = ar_data__create_string("Hello from memory");
     ar_data__set_map_data(memory, "msg", msg_value);
@@ -236,26 +433,29 @@ static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     );
     assert(ast != NULL);
 
-    // Create and attach the expression ASTs for arguments
+    // Given argument ASTs for send(0, memory.msg)
     ar_list_t *arg_asts = ar_list__create();
     assert(arg_asts != NULL);
 
+    // Given an integer 0 recipient AST
     ar_expression_ast_t *agent_ast = ar_expression_ast__create_literal_int(0);
     assert(agent_ast != NULL);
     ar_list__add_last(arg_asts, agent_ast);
 
+    // Given a memory message AST
     const char *msg_path[] = {"msg"};
     ar_expression_ast_t *msg_ast = ar_expression_ast__create_memory_access("memory", msg_path, 1);
     assert(msg_ast != NULL);
     ar_list__add_last(arg_asts, msg_ast);
 
+    // Given attached argument ASTs
     bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
     assert(ast_set == true);
 
     // When evaluating the send with frame
     bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
 
-    // Then it should succeed
+    // Then the sink destination should continue method evaluation
     assert(result == true);
 
     // Cleanup
@@ -568,6 +768,15 @@ int main(void) {
 
     test_instruction_evaluator__evaluate_send_with_result();
     printf("test_instruction_evaluator__evaluate_send_with_result passed!\n");
+
+    test_instruction_evaluator__evaluate_send_with_delivered_result();
+    printf("test_instruction_evaluator__evaluate_send_with_delivered_result passed!\n");
+
+    test_instruction_evaluator__evaluate_send_non_integer_recipient_continues();
+    printf("test_instruction_evaluator__evaluate_send_non_integer_recipient_continues passed!\n");
+
+    test_instruction_evaluator__evaluate_send_non_integer_recipient_result_zero();
+    printf("test_instruction_evaluator__evaluate_send_non_integer_recipient_result_zero passed!\n");
 
     test_instruction_evaluator__evaluate_send_memory_reference();
     printf("test_instruction_evaluator__evaluate_send_memory_reference passed!\n");

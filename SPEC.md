@@ -208,9 +208,11 @@ as the documented fallback, absence, or no-op sentinel only in the language posi
   inputs and copy failures. Appending the ordinary integer value `0` to a valid list is normal data
   construction, not a sentinel; this includes a missing path reference that has already evaluated to
   integer `0`.
-- `send(0, message)` is an instruction-level no-op destination. The message is destroyed, the
-  instruction succeeds, and no message is delivered. If the result is assigned, the stored status is
-  integer `1`. Integer `0` elsewhere in the message payload remains ordinary data.
+- `send(recipient, message)` stores integer `0` as the assigned delivery status when no message is
+  sent. Recipients that evaluate to nonzero integers route to agents or delegates; recipients that
+  evaluate to integer `0` or any non-INTEGER value are non-routable sinks. No message is delivered,
+  and method evaluation continues. Integer `0` elsewhere in the message payload remains ordinary
+  data.
 - `spawn(method_name, version, context)` stores integer `0` as the assigned result when no agent is
   spawned because the evaluated method selection cannot name or resolve to a registered method.
   Non-string method-name values, including integer `0`, perform no spawn; string method names that
@@ -485,17 +487,18 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
 
 ### 3. Messaging
 
-- `send(recipient_id: integer, message: data) → integer status`:
+- `send(recipient: data, message: data) → integer status`:
   - **Routing by ID**:
-    - `recipient_id == 0`: No operation (no-op); succeeds with integer status `1` per
+    - `recipient` is a nonzero INTEGER greater than `0`: Routes to agent's message queue
+    - `recipient` is a nonzero INTEGER less than `0`: Routes to delegate's message queue
+    - `recipient` is integer `0` or any non-INTEGER value: No delivery; continues with integer
+      status `0` per
       [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics)
-    - `recipient_id > 0`: Routes to agent's message queue
-    - `recipient_id < 0`: Routes to delegate's message queue
   - **Asynchronous Delivery**: All messages are enqueued for non-blocking operation
   - **Return Value**:
-    - Produces integer `1` if the recipient exists and message is enqueued, or if the recipient is
-      the no-op destination `0`
-    - Produces integer `0` if the recipient does not exist
+    - Produces integer `1` if the recipient exists and message is enqueued
+    - Produces integer `0` if the recipient does not exist or if the recipient is not a routable
+      nonzero INTEGER
   - The `message` parameter can be any supported data type (INTEGER, DOUBLE, STRING, LIST, or MAP)
   - **Ownership**: Message ownership transfers to the recipient's queue
 

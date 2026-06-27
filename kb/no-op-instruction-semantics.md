@@ -1,12 +1,15 @@
 # No-op Instruction Semantics
 
 ## Learning
-Instruction evaluators should handle intentional no-op cases gracefully. Some no-ops succeed in
-evaluator control flow, such as `send(0, message)` and a non-string `spawn` method-name selector.
+Instruction evaluators should handle intentional no-op cases gracefully. Some no-ops continue in
+evaluator control flow, such as a non-routable `send(...)` recipient and a non-string `spawn`
+method-name selector.
 Other no-spawn cases, such as a string method name that misses methodology lookup, may fail evaluator
 control flow while still storing the documented language result. If the instruction has a
 language-level result assignment, store the documented integer status/result value; AgeRun has no
-boolean data type.
+boolean data type. For `send(...)`, integer status reports delivery: integer `1` means a message was
+enqueued and integer `0` means no message was sent because the recipient was not a routable nonzero
+INTEGER or because delivery failed.
 
 ## Importance
 Proper no-op semantics enable:
