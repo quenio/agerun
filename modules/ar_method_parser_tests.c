@@ -325,50 +325,31 @@ static void test_method_parser__successful_parse_after_failure(void) {
     printf("✓ test_method_parser__successful_parse_after_failure passed\n");
 }
 
-static void test_method_parser__parse_multiline_list_literal_with_commas(void) {
-    printf("Testing method parser multi-line list literal with commas...\n");
-
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    ar_method_parser_t *own_parser = ar_method_parser__create(log);
-    assert(own_parser != NULL);
-
-    const char *ref_source = "memory.items := [\n  1,\n  2,\n]";
-    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
-
-    assert(own_ast != NULL);
-    assert(ar_method_ast__get_instruction_count(own_ast) == 1);
-    const ar_instruction_ast_t *ref_instruction = ar_method_ast__get_instruction(own_ast, 1);
-    const ar_expression_ast_t *ref_expr = ar_instruction_ast__get_assignment_expression_ast(ref_instruction);
-    assert(ref_expr != NULL);
-    assert(ar_expression_ast__get_type(ref_expr) == AR_EXPRESSION_AST_TYPE__LITERAL_LIST);
-    assert(ar_expression_ast__get_list_item_count(ref_expr) == 2);
-
-    ar_method_ast__destroy(own_ast);
-    ar_method_parser__destroy(own_parser);
-    ar_log__destroy(log);
-}
-
 static void test_method_parser__parse_multiline_list_literal_without_commas(void) {
     printf("Testing method parser multi-line list literal without commas...\n");
 
+    // Given a parser and a multi-line list assignment without item commas
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     ar_method_parser_t *own_parser = ar_method_parser__create(log);
     assert(own_parser != NULL);
-
     const char *ref_source = "memory.items := [\n  1\n  {a: [2, 3]}\n]";
+
+    // When parsing the method source
     ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
 
+    // Then the list assignment is parsed with one item per line
     assert(own_ast != NULL);
     const ar_instruction_ast_t *ref_instruction = ar_method_ast__get_instruction(own_ast, 1);
     const ar_expression_ast_t *ref_expr = ar_instruction_ast__get_assignment_expression_ast(ref_instruction);
     assert(ar_expression_ast__get_type(ref_expr) == AR_EXPRESSION_AST_TYPE__LITERAL_LIST);
     assert(ar_expression_ast__get_list_item_count(ref_expr) == 2);
 
+    // Then nested one-line literals keep comma-based expression syntax
     const ar_expression_ast_t *ref_second = ar_expression_ast__get_list_item(ref_expr, 1);
     assert(ar_expression_ast__get_type(ref_second) == AR_EXPRESSION_AST_TYPE__LITERAL_MAP);
 
+    // Cleanup
     ar_method_ast__destroy(own_ast);
     ar_method_parser__destroy(own_parser);
     ar_log__destroy(log);
@@ -377,14 +358,19 @@ static void test_method_parser__parse_multiline_list_literal_without_commas(void
 static void test_method_parser__parse_multiline_map_literal_without_commas(void) {
     printf("Testing method parser multi-line map literal without commas...\n");
 
+    // Given a parser and a multi-line map assignment with := entry lines
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     ar_method_parser_t *own_parser = ar_method_parser__create(log);
     assert(own_parser != NULL);
 
-    const char *ref_source = "memory.profile := {\n  name: \"Ada\"\n  scores: [1, 2]\n}";
+    // Given a multi-line map assignment source
+    const char *ref_source = "memory.profile := {\n  name := \"Ada\"\n  scores := [1, 2]\n}";
+
+    // When parsing the method source
     ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
 
+    // Then the map assignment is canonicalized and parsed with two entries
     assert(own_ast != NULL);
     const ar_instruction_ast_t *ref_instruction = ar_method_ast__get_instruction(own_ast, 1);
     const ar_expression_ast_t *ref_expr = ar_instruction_ast__get_assignment_expression_ast(ref_instruction);
@@ -393,6 +379,55 @@ static void test_method_parser__parse_multiline_map_literal_without_commas(void)
     assert(strcmp(ar_expression_ast__get_map_key(ref_expr, 0), "name") == 0);
     assert(strcmp(ar_expression_ast__get_map_key(ref_expr, 1), "scores") == 0);
 
+    // Cleanup
+    ar_method_ast__destroy(own_ast);
+    ar_method_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+static void test_method_parser__parse_multiline_literals_with_function_call_commas(void) {
+    printf("Testing method parser preserves function call commas in multi-line literals...\n");
+
+    // Given a parser and multi-line literals containing one-line function call expressions
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(log);
+    assert(own_parser != NULL);
+    const char *ref_source =
+        "memory.items := [\n"
+        "  append([1], 2)\n"
+        "]\n"
+        "memory.profile := {\n"
+        "  items := append([3], 4)\n"
+        "}";
+
+    // When parsing the method source
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+
+    // Then commas inside function-call arguments remain valid expression syntax
+    assert(own_ast != NULL);
+    const ar_instruction_ast_t *ref_list_instruction =
+        ar_method_ast__get_instruction(own_ast, 1);
+    const ar_expression_ast_t *ref_list_expr =
+        ar_instruction_ast__get_assignment_expression_ast(ref_list_instruction);
+    const ar_expression_ast_t *ref_list_item =
+        ar_expression_ast__get_list_item(ref_list_expr, 0);
+    assert(ar_expression_ast__get_type(ref_list_item) == AR_EXPRESSION_AST_TYPE__CALL);
+    assert(strcmp(ar_expression_ast__get_function_name(ref_list_item), "append") == 0);
+    assert(ar_expression_ast__get_function_arg_count(ref_list_item) == 2);
+
+    // Then map entry values also preserve function-call argument commas
+    const ar_instruction_ast_t *ref_map_instruction =
+        ar_method_ast__get_instruction(own_ast, 2);
+    const ar_expression_ast_t *ref_map_expr =
+        ar_instruction_ast__get_assignment_expression_ast(ref_map_instruction);
+    const ar_expression_ast_t *ref_map_value =
+        ar_expression_ast__get_map_value(ref_map_expr, 0);
+    assert(ar_expression_ast__get_type(ref_map_value) == AR_EXPRESSION_AST_TYPE__CALL);
+    assert(strcmp(ar_expression_ast__get_function_name(ref_map_value), "append") == 0);
+    assert(ar_expression_ast__get_function_arg_count(ref_map_value) == 2);
+
+    // Cleanup
     ar_method_ast__destroy(own_ast);
     ar_method_parser__destroy(own_parser);
     ar_log__destroy(log);
@@ -438,6 +473,56 @@ static void test_method_parser__rejects_multiple_items_on_multiline_item_line(vo
     test_method_parser__rejects_invalid_multiline_literal("memory.items := [\n  1, 2\n]");
 }
 
+static void test_method_parser__rejects_multiline_list_literal_with_trailing_commas(void) {
+    printf("Testing method parser rejects multi-line list literal with trailing commas...\n");
+
+    // Given a multi-line list assignment with a trailing item comma
+    const char *ref_source = "memory.items := [\n  1,\n  2\n]";
+
+    // When/Then parsing rejects the source
+    test_method_parser__rejects_invalid_multiline_literal(ref_source);
+}
+
+static void test_method_parser__rejects_multiline_map_literal_with_trailing_commas(void) {
+    printf("Testing method parser rejects multi-line map literal with trailing commas...\n");
+
+    // Given a multi-line map assignment with a trailing entry comma
+    const char *ref_source = "memory.profile := {\n  name := \"Ada\",\n  score := 2\n}";
+
+    // When/Then parsing rejects the source
+    test_method_parser__rejects_invalid_multiline_literal(ref_source);
+}
+
+static void test_method_parser__rejects_multiline_map_literal_with_colon_entries(void) {
+    printf("Testing method parser rejects multi-line map literal with colon entries...\n");
+
+    // Given a multi-line map assignment using one-line map colon entry syntax
+    const char *ref_source = "memory.profile := {\n  name: \"Ada\"\n  score: 2\n}";
+
+    // When/Then parsing rejects the source
+    test_method_parser__rejects_invalid_multiline_literal(ref_source);
+}
+
+static void test_method_parser__rejects_one_line_map_literal_with_local_reference(void) {
+    printf("Testing method parser rejects one-line map literal with local reference...\n");
+
+    // Given a one-line map assignment that tries to use multi-line block-local access
+    const char *ref_source = "memory.profile := {base: 2, doubled: .base * 2}";
+
+    // When/Then parsing rejects the source because `.base` is only valid in multi-line map blocks
+    test_method_parser__rejects_invalid_multiline_literal(ref_source);
+}
+
+static void test_method_parser__rejects_malformed_multiline_map_local_reference(void) {
+    printf("Testing method parser rejects malformed multi-line map local reference...\n");
+
+    // Given a multi-line map assignment with a block-local accessor missing an identifier
+    const char *ref_source = "memory.profile := {\n  value := .123\n}";
+
+    // When/Then parsing rejects the source because block-local access requires `.identifier`
+    test_method_parser__rejects_invalid_multiline_literal(ref_source);
+}
+
 int main(void) {
     printf("Running method parser tests...\n\n");
     
@@ -454,14 +539,19 @@ int main(void) {
     test_method_parser__parse_hash_in_string();
     test_method_parser__parse_invalid_instruction();
     test_method_parser__successful_parse_after_failure();
-    test_method_parser__parse_multiline_list_literal_with_commas();
     test_method_parser__parse_multiline_list_literal_without_commas();
     test_method_parser__parse_multiline_map_literal_without_commas();
+    test_method_parser__parse_multiline_literals_with_function_call_commas();
     test_method_parser__rejects_inconsistent_multiline_item_indentation();
     test_method_parser__rejects_multiline_closing_indentation_mismatch();
     test_method_parser__rejects_multiline_literal_as_argument();
     test_method_parser__rejects_nested_multiline_literal();
     test_method_parser__rejects_multiple_items_on_multiline_item_line();
+    test_method_parser__rejects_multiline_list_literal_with_trailing_commas();
+    test_method_parser__rejects_multiline_map_literal_with_trailing_commas();
+    test_method_parser__rejects_multiline_map_literal_with_colon_entries();
+    test_method_parser__rejects_one_line_map_literal_with_local_reference();
+    test_method_parser__rejects_malformed_multiline_map_local_reference();
     
     printf("\nAll method parser tests passed!\n");
     return 0;

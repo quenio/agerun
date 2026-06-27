@@ -36,14 +36,14 @@ memory.is_step_done_active := memory.is_step_done * memory.message_session_match
 
 # Start first step execution
 memory.start_execute_message := {
-  sender: memory.self
-  request: "workflow_execute_step"
-  trace_id: memory.trace_id
-  session_id: memory.session_id
-  recipients: message.recipients
-  payloads: message.payloads
-  step_number: 1
-  skip_positive: 0
+  sender := memory.self
+  request := "workflow_execute_step"
+  trace_id := memory.trace_id
+  session_id := memory.session_id
+  recipients := message.recipients
+  payloads := message.payloads
+  step_number := 1
+  skip_positive := 0
 }
 memory.start_execute_sent := send(memory.self * memory.is_start, memory.start_execute_message)
 memory.start_handoff_failed := if(memory.start_execute_sent = 0, 1, 0)
@@ -78,14 +78,14 @@ memory.skip_positive_step := memory.is_execute_step_active * memory.has_step * m
 
 # Skip empty step placeholders
 memory.skip_step_message := {
-  sender: memory.self
-  request: "workflow_execute_step"
-  trace_id: memory.trace_id
-  session_id: memory.session_id
-  recipients: memory.remaining_step_recipients
-  payloads: memory.remaining_step_payloads
-  step_number: message.step_number
-  skip_positive: memory.skip_positive
+  sender := memory.self
+  request := "workflow_execute_step"
+  trace_id := memory.trace_id
+  session_id := memory.session_id
+  recipients := memory.remaining_step_recipients
+  payloads := memory.remaining_step_payloads
+  step_number := message.step_number
+  skip_positive := memory.skip_positive
 }
 memory.skip_step_sent := send(memory.self * memory.skip_empty_step, memory.skip_step_message)
 memory.skip_step_failed := if(memory.skip_step_sent = 0, 1, 0)
@@ -94,14 +94,14 @@ memory.skip_step_failed := memory.skip_step_failed * memory.skip_empty_step
 # Skip branched positive step
 memory.skip_positive_step_number := message.step_number + memory.skip_positive_step
 memory.skip_positive_message := {
-  sender: memory.self
-  request: "workflow_execute_step"
-  trace_id: memory.trace_id
-  session_id: memory.session_id
-  recipients: memory.remaining_step_recipients
-  payloads: memory.remaining_step_payloads
-  step_number: memory.skip_positive_step_number
-  skip_positive: 0
+  sender := memory.self
+  request := "workflow_execute_step"
+  trace_id := memory.trace_id
+  session_id := memory.session_id
+  recipients := memory.remaining_step_recipients
+  payloads := memory.remaining_step_payloads
+  step_number := memory.skip_positive_step_number
+  skip_positive := 0
 }
 memory.skip_positive_sent := send(memory.self * memory.skip_positive_step, memory.skip_positive_message)
 memory.skip_positive_failed := if(memory.skip_positive_sent = 0, 1, 0)
@@ -141,14 +141,14 @@ memory.next_step_number := memory.current_step + 1
 
 # Continue workflow execution
 memory.continue_message := {
-  sender: memory.self
-  request: "workflow_execute_step"
-  trace_id: memory.trace_id
-  session_id: memory.session_id
-  recipients: memory.next_step_recipients
-  payloads: memory.next_step_payloads
-  step_number: memory.next_step_number
-  skip_positive: memory.skip_next
+  sender := memory.self
+  request := "workflow_execute_step"
+  trace_id := memory.trace_id
+  session_id := memory.session_id
+  recipients := memory.next_step_recipients
+  payloads := memory.next_step_payloads
+  step_number := memory.next_step_number
+  skip_positive := memory.skip_next
 }
 memory.continue_sent := send(memory.self * memory.step_completion * memory.has_next_step, memory.continue_message)
 memory.continue_required := memory.step_completion * memory.has_next_step
@@ -173,13 +173,13 @@ memory.completion_failure_count := if(memory.handoff_failed > 0, 1, 0)
 
 # Emit workflow result
 memory.complete_message := {
-  sender: memory.self
-  response: "workflow_result"
-  trace_id: memory.request_trace_id
-  session_id: memory.session_id
-  status: memory.completion_status
-  success_count: memory.completed_step_count
-  failure_count: memory.completion_failure_count
+  sender := memory.self
+  response := "workflow_result"
+  trace_id := memory.request_trace_id
+  session_id := memory.session_id
+  status := memory.completion_status
+  success_count := memory.completed_step_count
+  failure_count := memory.completion_failure_count
 }
 memory.complete_sent := send(memory.sender * memory.should_complete, memory.complete_message)
 memory.completion_delivered := memory.should_complete * memory.complete_sent

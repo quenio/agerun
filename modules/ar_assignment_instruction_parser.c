@@ -8,6 +8,8 @@
 #include "ar_expression_parser.h"
 #include "ar_heap.h"
 
+static const char *MULTILINE_MAP_EXPRESSION_PREFIX = "__agerun_multiline_map__(";
+
 /**
  * Opaque parser structure for assignment instructions.
  */
@@ -72,16 +74,55 @@ static bool _parse_and_set_expression_ast(ar_assignment_instruction_parser_t *mu
                                          ar_instruction_ast_t *mut_inst_ast, 
                                          const char *ref_expression,
                                          size_t error_offset) {
-    ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(mut_parser->ref_log, ref_expression);
+    const char *ref_parse_expression = ref_expression;
+    char *own_parse_expression = NULL;
+    bool is_multiline_map_expression = false;
+    size_t prefix_length = strlen(MULTILINE_MAP_EXPRESSION_PREFIX);
+    size_t expression_length = strlen(ref_expression);
+
+    if (strncmp(ref_expression, MULTILINE_MAP_EXPRESSION_PREFIX, prefix_length) == 0 &&
+        expression_length > prefix_length && ref_expression[expression_length - 1] == ')') {
+        size_t inner_length = expression_length - prefix_length - 1;
+        own_parse_expression = AR__HEAP__MALLOC(inner_length + 1, "multiline map expression");
+        if (!own_parse_expression) {
+            _log_error(mut_parser, "Memory allocation failed", error_offset);
+            return false;
+        }
+        memcpy(own_parse_expression, ref_expression + prefix_length, inner_length);
+        own_parse_expression[inner_length] = '\0';
+        ref_parse_expression = own_parse_expression;
+        is_multiline_map_expression = true;
+    }
+
+    ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(
+        mut_parser->ref_log,
+        ref_parse_expression
+    );
     if (!own_expr_parser) {
+        if (own_parse_expression) {
+            AR__HEAP__FREE(own_parse_expression);
+        }
         _log_error(mut_parser, "Failed to create expression parser", error_offset);
         return false;
     }
+    ar_expression_parser__set_local_access_enabled(own_expr_parser, is_multiline_map_expression);
     
     ar_expression_ast_t *own_expr_ast = ar_expression_parser__parse_expression(own_expr_parser);
     if (!own_expr_ast) {
         ar_expression_parser__destroy(own_expr_parser);
+        if (own_parse_expression) {
+            AR__HEAP__FREE(own_parse_expression);
+        }
         _log_error(mut_parser, "Failed to parse expression", error_offset);
+        return false;
+    }
+
+    if (is_multiline_map_expression &&
+        !ar_expression_ast__set_map_local_access_enabled(own_expr_ast, true)) {
+        ar_expression_ast__destroy(own_expr_ast);
+        ar_expression_parser__destroy(own_expr_parser);
+        AR__HEAP__FREE(own_parse_expression);
+        _log_error(mut_parser, "Failed to mark multi-line map expression", error_offset);
         return false;
     }
     
@@ -89,10 +130,16 @@ static bool _parse_and_set_expression_ast(ar_assignment_instruction_parser_t *mu
         _log_error(mut_parser, "Failed to set expression AST", error_offset);
         ar_expression_ast__destroy(own_expr_ast);
         ar_expression_parser__destroy(own_expr_parser);
+        if (own_parse_expression) {
+            AR__HEAP__FREE(own_parse_expression);
+        }
         return false;
     }
     
     ar_expression_parser__destroy(own_expr_parser);
+    if (own_parse_expression) {
+        AR__HEAP__FREE(own_parse_expression);
+    }
     return true;
 }
 
@@ -253,4 +300,3 @@ size_t ar_assignment_instruction_parser__get_error_position(
     (void)ref_parser; // Suppress unused parameter warning
     return 0;
 }
-

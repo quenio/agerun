@@ -49,13 +49,13 @@ memory.should_send_continuation := memory.should_emit * memory.not_continuation_
 
 # Build continuation message
 memory.continuation_message := {
-  sender: memory.self
-  request: memory.continuation_request
-  trace_id: memory.request_trace_id
-  session_id: memory.session_id
-  text: memory.continuation_text
-  done_count: memory.done_count
-  dependencies: memory.received
+  sender := memory.self
+  request := memory.continuation_request
+  trace_id := memory.request_trace_id
+  session_id := memory.session_id
+  text := memory.continuation_text
+  done_count := memory.done_count
+  dependencies := memory.received
 }
 
 # Deliver continuation
@@ -67,15 +67,15 @@ memory.continuation_done := if(memory.continuation_delivered_now = 1, 1, memory.
 
 # Build synchronization result
 memory.report_message := {
-  sender: memory.self
-  response: "synchronization_result"
-  trace_id: memory.request_trace_id
-  session_id: memory.session_id
-  status: "success"
-  success_count: memory.done_count
-  failure_count: 0
-  done_count: memory.done_count
-  dependencies: memory.received
+  sender := memory.self
+  response := "synchronization_result"
+  trace_id := memory.request_trace_id
+  session_id := memory.session_id
+  status := "success"
+  success_count := memory.done_count
+  failure_count := 0
+  done_count := memory.done_count
+  dependencies := memory.received
 }
 
 # Emit and record completion

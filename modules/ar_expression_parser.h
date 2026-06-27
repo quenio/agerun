@@ -47,6 +47,18 @@ size_t ar_expression_parser__get_position(const ar_expression_parser_t *ref_pars
  */
 const char* ar_expression_parser__get_error(const ar_expression_parser_t *ref_parser);
 
+/**
+ * Enable or disable block-local access parsing.
+ *
+ * @param mut_parser The parser instance (mutable reference)
+ * @param enabled true to parse `.key` access, false to reject it
+ * @note Block-local access is reserved for multi-line map assignment entry expressions.
+ */
+void ar_expression_parser__set_local_access_enabled(
+    ar_expression_parser_t *mut_parser,
+    bool enabled
+);
+
 
 /**
  * Parse an expression and return the AST.
@@ -71,6 +83,7 @@ ar_expression_ast_t* ar_expression_parser__parse_literal(ar_expression_parser_t 
 
 /**
  * Parse a memory access expression (e.g., memory.x, message.content).
+ * Block-local `.key` access is parsed only when explicitly enabled for multi-line map blocks.
  * 
  * @param mut_parser The parser instance (mutable reference)
  * @return Parsed memory access AST node (owned by caller), or NULL on failure

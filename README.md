@@ -303,7 +303,10 @@ Agents use a simple expression and instruction language for their methods:
 - Read: `memory.key` or nested paths like `memory.user.name`
 - Write: `memory.key := value` or nested paths like `memory.user.settings.theme := "dark"`
 - Literal containers: one-line lists and maps such as `[1, 2]` and `{name: "Ada"}` can be assigned or passed as function arguments
-- Multi-line lists and maps are assignment-only, with one item per line and consistent item indentation
+- Multi-line lists and maps are assignment-only source blocks. Lists use one item per line, maps use
+  `key := value` entry lines, all item/entry separators are linefeeds, and indentation must be
+  consistent. In a multi-line map block, `.key` reads a key assigned on an earlier line in that same
+  block; `memory.`, `message.`, and `context.` keep their normal frame-root meaning.
 - List processing: `append(list, value)` returns a new deep-copied list in expression contexts,
   standalone `append(memory.items, value)` mutates an existing memory-owned list for compatibility,
   and `head(list)` / `tail(list)` return deep-copied list parts for recursive self-message

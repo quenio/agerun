@@ -37,10 +37,11 @@ const literal_map_entry_t = struct {
 
 const literal_map_data_t = struct {
     own_entries: ?*c.ar_list_t,
+    local_access_enabled: bool,
 };
 
 const memory_access_data_t = struct {
-    own_base: ?[*:0]u8,        // "memory", "message", or "context"
+    own_base: ?[*:0]u8,        // "memory", "message", "context", or "."
     own_path: ?*c.ar_list_t,   // List of path components (strings)
 };
 
@@ -289,9 +290,31 @@ export fn ar_expression_ast__create_literal_map(
     }
 
     own_ast_node.?.node_type = c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP;
-    own_ast_node.?.data = node_data_t{ .literal_map = literal_map_data_t{ .own_entries = own_entries_list } };
+    own_ast_node.?.data = node_data_t{
+        .literal_map = literal_map_data_t{
+            .own_entries = own_entries_list,
+            .local_access_enabled = false,
+        },
+    };
 
     return @ptrCast(own_ast_node);
+}
+
+export fn ar_expression_ast__set_map_local_access_enabled(
+    mut_node: ?*c.ar_expression_ast_t,
+    enabled: bool
+) bool {
+    if (mut_node == null) {
+        return false;
+    }
+
+    const node = @as(*ar_expression_ast_t, @ptrCast(@alignCast(mut_node)));
+    if (node.node_type != c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP) {
+        return false;
+    }
+
+    node.data.literal_map.local_access_enabled = enabled;
+    return true;
 }
 
 export fn ar_expression_ast__create_memory_access(
@@ -647,6 +670,21 @@ export fn ar_expression_ast__get_map_value(
 ) ?*const c.ar_expression_ast_t {
     const ref_entry = _get_map_entry(ref_node, index) orelse return null;
     return @ptrCast(ref_entry.own_value);
+}
+
+export fn ar_expression_ast__is_map_local_access_enabled(
+    ref_node: ?*const c.ar_expression_ast_t
+) bool {
+    if (ref_node == null) {
+        return false;
+    }
+
+    const ref_ast_node = @as(*const ar_expression_ast_t, @ptrCast(@alignCast(ref_node)));
+    if (ref_ast_node.node_type != c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP) {
+        return false;
+    }
+
+    return ref_ast_node.data.literal_map.local_access_enabled;
 }
 
 export fn ar_expression_ast__get_memory_base(ref_node: ?*const c.ar_expression_ast_t) ?[*:0]const u8 {

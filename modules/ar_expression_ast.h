@@ -14,7 +14,7 @@ typedef enum {
     AR_EXPRESSION_AST_TYPE__LITERAL_STRING,   /* String literal (e.g., "hello") */
     AR_EXPRESSION_AST_TYPE__LITERAL_LIST,     /* List literal (e.g., [1, 2]) */
     AR_EXPRESSION_AST_TYPE__LITERAL_MAP,      /* Map literal (e.g., {name: "Ada"}) */
-    AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS,    /* Memory/message/context access (e.g., memory.x, message.content) */
+    AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS,    /* Memory/message/context/local access (e.g., memory.x, .name) */
     AR_EXPRESSION_AST_TYPE__BINARY_OP,        /* Binary operation (arithmetic or comparison) */
     AR_EXPRESSION_AST_TYPE__CALL              /* Pure function call (e.g., parse("x={x}", input)) */
 } ar_expression_ast_type_t;
@@ -113,9 +113,21 @@ ar_expression_ast_t* ar_expression_ast__create_literal_map(
 );
 
 /**
+ * Enable or disable block-local access for a map literal AST node.
+ *
+ * @param mut_node The AST node (mutable reference)
+ * @param enabled true to evaluate map entries with `.key` access to earlier entries
+ * @return true if successful, false if not a map literal
+ */
+bool ar_expression_ast__set_map_local_access_enabled(
+    ar_expression_ast_t *mut_node,
+    bool enabled
+);
+
+/**
  * Create a memory access AST node.
  * 
- * @param ref_base The base accessor ("memory", "message", or "context") (borrowed reference)
+ * @param ref_base The base accessor ("memory", "message", "context", or ".") (borrowed reference)
  * @param ref_path Array of path components after the base (borrowed reference, can be NULL)
  * @param path_count Number of path components
  * @return Newly created AST node (owned by caller), or NULL on failure
@@ -250,6 +262,14 @@ const ar_expression_ast_t* ar_expression_ast__get_map_value(
     const ar_expression_ast_t *ref_node,
     size_t index
 );
+
+/**
+ * Check whether a map literal evaluates entries with block-local `.key` access.
+ *
+ * @param ref_node The AST node (borrowed reference)
+ * @return true if the node is a map literal with block-local access enabled
+ */
+bool ar_expression_ast__is_map_local_access_enabled(const ar_expression_ast_t *ref_node);
 
 /**
  * Get base accessor from a memory access node.

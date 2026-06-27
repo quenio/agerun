@@ -41,12 +41,12 @@ memory.should_trigger := memory.pending * memory.session_tick * memory.tick_read
 
 # Send scheduled payload
 memory.execution_message := {
-  sender: memory.sender
-  request: memory.payload_request
-  trace_id: memory.request_trace_id
-  session_id: memory.session_id
-  text: memory.payload_text
-  attempt: memory.payload_attempt
+  sender := memory.sender
+  request := memory.payload_request
+  trace_id := memory.request_trace_id
+  session_id := memory.session_id
+  text := memory.payload_text
+  attempt := memory.payload_attempt
 }
 memory.has_recipient := if(memory.recipient > 0, 1, 0)
 memory.trigger_ready := memory.should_trigger * memory.has_recipient
@@ -68,15 +68,15 @@ memory.report_status := if(memory.report_failure_count > 0, "failure", "success"
 
 # Emit scheduling result
 memory.report_message := {
-  sender: memory.self
-  response: "scheduling_result"
-  trace_id: memory.request_trace_id
-  session_id: memory.session_id
-  status: memory.report_status
-  success_count: memory.report_success_count
-  failure_count: memory.report_failure_count
-  pending: memory.pending
-  current_tick: memory.current_tick
+  sender := memory.self
+  response := "scheduling_result"
+  trace_id := memory.request_trace_id
+  session_id := memory.session_id
+  status := memory.report_status
+  success_count := memory.report_success_count
+  failure_count := memory.report_failure_count
+  pending := memory.pending
+  current_tick := memory.current_tick
 }
 memory.should_report := memory.is_schedule + memory.should_cancel + memory.should_trigger
 memory.report_sent := send(memory.sender * memory.should_report, memory.report_message)

@@ -38,7 +38,7 @@ typedef enum {
     AR_EXPRESSION_AST_TYPE__LITERAL_STRING,   /* String literal (e.g., "hello") */
     AR_EXPRESSION_AST_TYPE__LITERAL_LIST,     /* List literal (e.g., [1, 2]) */
     AR_EXPRESSION_AST_TYPE__LITERAL_MAP,      /* Map literal (e.g., {name: "Ada"}) */
-    AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS,    /* Memory/message/context access */
+    AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS,    /* Memory/message/context/local access */
     AR_EXPRESSION_AST_TYPE__BINARY_OP,        /* Binary operation (arithmetic or comparison) */
     AR_EXPRESSION_AST_TYPE__CALL              /* Pure function call */
 } ar_expression_ast_type_t;
@@ -77,6 +77,8 @@ Each node type has its own creation function:
 - `ar_expression_ast__create_literal_string(const char *ref_value)` - Creates string literal nodes
 - `ar_expression_ast__create_literal_list(own_items, item_count)` - Creates list literal nodes
 - `ar_expression_ast__create_literal_map(ref_keys, own_values, entry_count)` - Creates map literal nodes
+- `ar_expression_ast__set_map_local_access_enabled(node, enabled)` - Marks map literal nodes that
+  should evaluate entries with block-local `.key` access
 - `ar_expression_ast__create_memory_access(base, path, count)` - Creates memory access nodes
 - `ar_expression_ast__create_binary_op(op, left, right)` - Creates binary operation nodes
 - `ar_expression_ast__create_function_call(name, own_args, arg_count)` - Creates pure function call nodes
@@ -94,6 +96,8 @@ Type-safe accessor functions for retrieving node data:
 - `ar_expression_ast__get_map_entry_count()` - Gets map literal entry count
 - `ar_expression_ast__get_map_key()` - Gets a borrowed map literal key
 - `ar_expression_ast__get_map_value()` - Gets a borrowed map value AST node
+- `ar_expression_ast__is_map_local_access_enabled()` - Checks whether a map literal has
+  block-local `.key` access enabled
 - `ar_expression_ast__get_memory_base()` - Gets base accessor from memory nodes
 - `ar_expression_ast__get_memory_path()` - Gets path components from memory nodes
 - `ar_expression_ast__get_operator()` - Gets operator from binary nodes

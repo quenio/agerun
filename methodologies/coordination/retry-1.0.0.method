@@ -33,12 +33,12 @@ memory.start_attempt := memory.attempts + memory.is_start
 
 # Send first operation attempt
 memory.operation_message := {
-  sender: memory.self
-  request: memory.operation_request
-  trace_id: memory.trace_id
-  session_id: memory.session_id
-  text: memory.operation_text
-  attempt: memory.start_attempt
+  sender := memory.self
+  request := memory.operation_request
+  trace_id := memory.trace_id
+  session_id := memory.session_id
+  text := memory.operation_text
+  attempt := memory.start_attempt
 }
 memory.has_operation_recipient := if(memory.operation_recipient > 0, 1, 0)
 memory.start_dispatch_ready := memory.is_start * memory.has_operation_recipient
@@ -78,12 +78,12 @@ memory.use_immediate := memory.retry_allowed - memory.use_scheduled
 
 # Dispatch retry attempt
 memory.retry_message := {
-  sender: memory.self
-  request: memory.operation_request
-  trace_id: memory.request_trace_id
-  session_id: memory.session_id
-  text: memory.operation_text
-  attempt: memory.next_attempt
+  sender := memory.self
+  request := memory.operation_request
+  trace_id := memory.request_trace_id
+  session_id := memory.session_id
+  text := memory.operation_text
+  attempt := memory.next_attempt
 }
 memory.retry_sent := send(memory.operation_recipient * memory.use_immediate, memory.retry_message)
 memory.failure_tick := if(memory.active_failure = 1, message.current_tick, 0)
@@ -91,15 +91,15 @@ memory.retry_due_tick := memory.failure_tick + memory.delay_ticks
 memory.has_scheduler_agent := if(memory.scheduler_agent > 0, 1, 0)
 memory.use_scheduled_ready := memory.use_scheduled * memory.has_scheduler_agent
 memory.schedule_message := {
-  sender: memory.self
-  request: "scheduling_schedule"
-  trace_id: memory.request_trace_id
-  session_id: memory.session_id
-  due_tick: memory.retry_due_tick
-  recipient: memory.operation_recipient
-  payload_request: memory.operation_request
-  payload_text: memory.operation_text
-  payload_attempt: memory.next_attempt
+  sender := memory.self
+  request := "scheduling_schedule"
+  trace_id := memory.request_trace_id
+  session_id := memory.session_id
+  due_tick := memory.retry_due_tick
+  recipient := memory.operation_recipient
+  payload_request := memory.operation_request
+  payload_text := memory.operation_text
+  payload_attempt := memory.next_attempt
 }
 memory.schedule_sent := send(memory.scheduler_agent * memory.use_scheduled_ready, memory.schedule_message)
 memory.immediate_dispatched := memory.use_immediate * memory.retry_sent
@@ -128,14 +128,14 @@ memory.report_status := if(memory.report_failure_count > 0, "failure", "success"
 
 # Emit retry result
 memory.report_message := {
-  sender: memory.self
-  response: "retry_result"
-  trace_id: memory.request_trace_id
-  session_id: memory.session_id
-  status: memory.report_status
-  success_count: memory.report_success_count
-  failure_count: memory.report_failure_count
-  attempts: memory.report_attempts
+  sender := memory.self
+  response := "retry_result"
+  trace_id := memory.request_trace_id
+  session_id := memory.session_id
+  status := memory.report_status
+  success_count := memory.report_success_count
+  failure_count := memory.report_failure_count
+  attempts := memory.report_attempts
 }
 memory.report_recipient := memory.sender * memory.final_failure
 memory.report_recipient := if(memory.active_success = 1, memory.sender, memory.report_recipient)

@@ -63,7 +63,11 @@ Each precedence level has its own parsing function:
 
 - `ar_expression_parser__parse_expression(parser)` - Main entry point, parses complete expression
 - `ar_expression_parser__parse_literal(parser)` - Parses integer, double, or string literals
-- `ar_expression_parser__parse_memory_access(parser)` - Parses memory/message/context access
+- `ar_expression_parser__parse_memory_access(parser)` - Parses memory/message/context access; it
+  parses block-local `.key` access only when the caller enables that mode for multi-line map
+  assignment entries
+- `ar_expression_parser__set_local_access_enabled(parser, enabled)` - Enables or disables
+  block-local `.key` access parsing
 - `ar_expression_parser__parse_arithmetic(parser)` - Parses arithmetic expressions
 - `ar_expression_parser__parse_comparison(parser)` - Parses comparison expressions
 
@@ -83,6 +87,8 @@ Map literal keys are identifiers only. Quoted keys such as `{"name": "Ada"}` are
 
 - **Simple**: `memory`, `message`, `context`
 - **With Path**: `memory.x`, `message.user.name`, `context.request_id`
+- **Block Local**: `.name`, `.profile.title` only when evaluating a later entry in the same
+  multi-line map assignment block
 
 ### Binary Operations
 

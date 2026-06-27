@@ -9,10 +9,11 @@ The expression evaluator module provides functionality for evaluating expression
 ## Key Features
 
 - **AST-Based Evaluation**: Evaluates expression AST nodes created by the expression parser
-- **Frame-Based Execution**: Uses frame context for memory and context access
+- **Frame-Based Execution**: Uses frame context for memory, message, and context access
 - **Opaque Evaluator Type**: Uses an opaque structure to encapsulate evaluation state
 - **Single Evaluation Function**: Unified interface that handles all expression types internally
-- **Memory and Context Access**: Supports evaluation of memory.x and context.x paths via frame
+- **Memory, Message, and Context Access**: Supports evaluation of `memory.x`, `message.x`, and
+  `context.x` paths via frame
 - **Container Literals**: Evaluates list and map literal AST nodes into fresh ar_data_t containers
 - **Pure Function Calls**: Evaluates registered pure calls such as `parse(...)`, `build(...)`,
   `if(...)`, `append(...)`, `head(...)`, and `tail(...)` into fresh values
@@ -49,9 +50,12 @@ The module is designed with clean separation of concerns:
 
 The evaluator follows strict ownership semantics:
 - **Frame Parameter**: Borrowed reference, not owned by evaluator
-- **Memory Access Results**: Returns borrowed references to existing values in frame's memory/context
+- **Memory Access Results**: Returns borrowed references to existing values in frame
+  memory/message/context roots
 - **Literal Results**: Returns new owned values that caller must destroy
 - **Literal Container Results**: Returns new list/map values containing owned evaluated child values
+- **Block-Local Results**: During map literal entry evaluation, `.key` reads from entries already
+  stored in the map under construction and is copied before reuse as another entry value
 - **Pure Call Results**: Return new owned values; `parse(...)` returns a new MAP, `build(...)`
   returns a new STRING, `if(...)` returns the selected branch value or integer `0`, `append(...)`
   returns a new LIST or integer `0`, `head(...)` returns a copied item or integer `0`, and
@@ -66,7 +70,9 @@ Supports evaluation of all AgeRun data types:
 - **Doubles**: Floating-point operations with automatic type promotion
 - **Strings**: Concatenation (with +) and comparison operations
 - **Lists**: Literal construction with evaluated item values
-- **Maps**: Navigation through nested structures via memory access and literal construction with identifier keys
+- **Maps**: Navigation through nested structures via memory access and literal construction with
+  identifier keys. Map entries are evaluated in order, so assignment-block map expressions can read
+  prior entries through `.key`.
 
 ## Pure Function Calls
 
@@ -154,6 +160,7 @@ The module provides comprehensive error handling:
 - Division by zero detection
 - Missing memory key handling
 - Invalid base accessor detection
+- Block-local accessor rejection when no map literal is being evaluated
 
 ## Usage Example
 

@@ -159,7 +159,7 @@ The current language partially satisfies those principles:
 
 - **Line-Based Parsing and Evaluation**: Methods are line-oriented: one instruction per line,
   ordered evaluation, required final newline, and ignored empty lines. Multi-line list and map
-  literals are an explicit assignment-only source-format exception.
+  literals are an explicit assignment-only, strictly line-bound source-format exception.
 - **Expression Purity**: Current expression nodes are value-producing and side-effect free. Registered
   pure built-in calls are expression calls; effectful operations remain sequenced as method lines.
 - **Single Source of Semantics**: The shared function-call argument parser centralizes argument
@@ -176,7 +176,7 @@ The current language partially satisfies those principles:
   `build(...)`, `if(...)`, `append(...)`, `head(...)`, and `tail(...)`, and one-line list/map
   literals compose as expressions. Effectful built-in calls are not expressions and remain
   sequenced instructions.
-  Multi-line literals are assignment-only.
+  Multi-line literals are assignment-only and use linefeeds, not commas, as item/entry separators.
 - **Orthogonality**: Current documented exceptions include memory-only mutation targets, integer `0`
   as several absence/no-op/failure sentinels, and boundary-level quote handling that does not define
   value-level string escape sequences.
@@ -329,9 +329,9 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 
 <parenthesized-expression> ::= '(' <expression> ')'
 
-<multiline-list-literal> ::= '[' <newline> {<indent> <expression> [','] <newline>} <assignment-indent> ']'
+<multiline-list-literal> ::= '[' <newline> {<indent> <expression> <newline>} <assignment-indent> ']'
 
-<multiline-map-literal> ::= '{' <newline> {<indent> <identifier> ':' <expression> [','] <newline>} <assignment-indent> '}'
+<multiline-map-literal> ::= '{' <newline> {<indent> <identifier> ':=' <expression> <newline>} <assignment-indent> '}'
 
 <integer> ::= ['-'] <digit> {<digit>}
 <double>  ::= <integer> '.' <digit> {<digit>}
@@ -339,6 +339,9 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 <memory-access> ::= 'message' {'.' <identifier>}
                  | 'memory' {'.' <identifier>}
                  | 'context' {'.' <identifier>}
+                 | <block-local-access>
+
+<block-local-access> ::= '.' <identifier> {'.' <identifier>}
 
 <arithmetic-expression> ::= <expression> <arithmetic-operator> <expression>
 <arithmetic-operator> ::= '+' | '-' | '*' | '/'
@@ -364,7 +367,14 @@ The expression evaluator follows these rules:
 - One-line list and map literals can appear anywhere expressions are accepted, including assignment values and function arguments
 - One-line list and map literals do not allow trailing commas before the closing delimiter
 - Multi-line list and map literals are accepted only as the top-level right side of an assignment
-- Multi-line literal item lines must use identical indentation, the closing delimiter must align with the assignment line, and item-line commas are optional
+- Multi-line list item lines contain one expression; multi-line map entry lines use `identifier := expression`
+- Multi-line literal item/entry lines must use identical indentation, the closing delimiter must align with the assignment line, and linefeeds are the only item/entry separators
+- Multi-line literal item/entry lines do not allow trailing commas
+- In a multi-line map assignment, an entry right-hand expression may use `.key` or `.key.nested`
+  to read a key assigned on an earlier line in the same map block
+- Block-local `.key` access is rejected in ordinary one-line expressions and one-line map literals
+- In those same entry right-hand expressions, `memory.`, `message.`, and `context.` retain their
+  ordinary frame-root meaning
 - Multi-line literals cannot appear as function arguments, list elements, or map values; nested list and map values must be written as one-line literals
 - `message` refers to the current message being processed, and nested fields can be accessed using dot notation (e.g., `message.field`)
 - `memory` provides access to the agent's memory map, and nested fields can be accessed using dot notation (e.g., `memory.field`)
@@ -436,7 +446,9 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
 
 ### 4. Memory Access
 
-- **Reading**: Access values using dot notation with the root identifiers `message`, `memory`, or `context` (e.g., `message.field`, `memory.user.name`, `context.settings`).
+- **Reading**: Access frame values using dot notation with the root identifiers `message`,
+  `memory`, or `context` (e.g., `message.field`, `memory.user.name`, `context.settings`). Inside a
+  multi-line map assignment block, `.key` reads keys already assigned earlier in that same block.
 - **Writing**: Assign values to memory using `memory.path := value`. Only `memory` paths can be used on the left side of an assignment.
 
 ### 5. Arithmetic Operations
