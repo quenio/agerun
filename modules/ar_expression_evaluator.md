@@ -79,7 +79,9 @@ Supports evaluation of all AgeRun data types:
 The evaluator supports registered pure function calls through generic `CALL` AST nodes. Each call is
 first classified through `ar_pure_call`, then evaluated by the matching pure operation. Pure calls
 evaluate their arguments using ordinary expression semantics and pass the resulting values to shared
-pure operations.
+pure operations. The language-level integer `0` sentinel positions are centralized in
+[SPEC.md](../SPEC.md#integer-0-sentinel-semantics); outside those documented positions, integer `0`
+remains ordinary integer data.
 
 For `parse(...)`:
 - STRING, INTEGER, and DOUBLE arguments are interpreted as strings.
@@ -99,26 +101,30 @@ For `if(...)`:
 - Integer `0`, non-integer values, and missing condition values select the false branch.
 - Nonzero integers select the true branch.
 - Only the selected branch expression is evaluated; the unselected branch is never evaluated.
-- If the selected branch cannot produce a value, expression-level `if(...)` returns integer `0`.
+- If the selected branch cannot produce a value, expression-level `if(...)` returns integer `0` per
+  the central sentinel contract.
 - Argument handling is path-neutral; storage rules, not argument paths, protect `memory.self`.
 
 For `append(...)`:
 - LIST values return a new LIST containing deep copies of every source item followed by a deep copy
   of the appended value.
 - Empty LIST values return a new one-item LIST.
-- Missing values, non-LIST list inputs, and copy failures return integer `0`.
+- Missing values, non-LIST list inputs, and copy failures return integer `0` per the central sentinel
+  contract.
 - The source list and appended value are never mutated.
 - Argument handling is path-neutral; storage rules, not argument paths, protect `memory.self`.
 
 For `head(...)`:
 - LIST values with at least one item return a deep copy of the first item.
-- Empty LIST values, missing values, non-LIST values, and copy failures return integer `0`.
+- Empty LIST values, missing values, non-LIST values, and copy failures return integer `0` per the
+  central sentinel contract.
 - Argument handling is path-neutral; storage rules, not argument paths, protect `memory.self`.
 
 For `tail(...)`:
 - LIST values return a new LIST containing deep copies of every item after the first.
 - Empty and single-item LIST values return a new empty LIST.
-- Missing values, non-LIST values, and copy failures return integer `0`.
+- Missing values, non-LIST values, and copy failures return integer `0` per the central sentinel
+  contract.
 - Argument handling is path-neutral; storage rules, not argument paths, protect `memory.self`.
 
 ## Binary Operations
@@ -158,7 +164,8 @@ The module provides comprehensive error handling:
 - NULL checks for all parameters
 - Type validation for node-specific functions
 - Division by zero detection
-- Missing memory key handling
+- Missing `message.*` access returns integer `0`; missing `memory.*` and `context.*` accesses remain
+  missing values for callers to handle
 - Invalid base accessor detection
 - Block-local accessor rejection when no map literal is being evaluated
 

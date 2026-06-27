@@ -17,7 +17,9 @@ ar_data_t* ar_append__create_result(
 
 Creates a new result value. LIST inputs return a new LIST containing deep copies of every source
 item followed by a deep copy of the appended value. Empty LIST inputs return a new one-item LIST.
-Missing list inputs, non-LIST list inputs, missing values, and copy failures return integer `0`.
+Missing list inputs, non-LIST list inputs, missing values, and copy failures return integer `0` per
+the central [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics). Appending an
+ordinary integer `0` value to a valid list is normal list construction, not a sentinel case.
 
 ## Argument Semantics
 

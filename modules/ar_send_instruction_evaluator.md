@@ -63,7 +63,9 @@ Key features:
 1. **Agent ID Evaluation**: Evaluates the agent ID expression to an integer
 2. **Message Evaluation**: Evaluates the message expression to any data type
 3. **ID-Based Routing**: Routes messages based on ID sign:
-   - **ID == 0**: No-op (destroys message, returns true)
+   - **ID == 0**: No-op destination from the central
+     [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics); destroys message and
+     returns true
    - **ID > 0**: Routes to agency for agent delivery
    - **ID < 0**: Routes to delegation for delegate delivery
 4. **Result Assignment**: Stores integer `1` or `0` through `ar_result_binding` when assignment is specified
@@ -76,7 +78,7 @@ The send instruction evaluator implements **ID-based message routing** following
 
 | Target ID | Destination | Function Called |
 |-----------|-------------|-----------------|
-| `0` | No-op (message destroyed) | N/A - returns `true` |
+| `0` | No-op destination (message destroyed) | N/A - returns `true` |
 | `> 0` | Agent via agency | `ar_agency__send_to_agent()` |
 | `< 0` | Delegate via delegation | `ar_delegation__send_to_delegate()` |
 
@@ -177,7 +179,7 @@ The send instruction evaluator handles errors gracefully:
 | Non-existent delegate | Delegate not found in delegation | `false` | Message destroyed |
 | Invalid agent_id expression | Expression evaluation fails | `false` | Message destroyed |
 | Invalid message expression | Expression evaluation fails | `false` | No message created |
-| agent_id == 0 | No-op (special case) | `true` | Message destroyed |
+| agent_id == 0 | No-op destination per SPEC sentinel contract | `true` | Message destroyed |
 
 All error paths ensure proper memory cleanup - messages are destroyed when delivery fails to prevent memory leaks.
 
@@ -186,7 +188,7 @@ All error paths ensure proper memory cleanup - messages are destroyed when deliv
 The module includes comprehensive tests covering:
 - Sending to valid agents (positive IDs)
 - Sending to valid delegates (negative IDs)
-- Sending to agent 0 (no-op case)
+- Sending to agent 0 (no-op destination)
 - Send with result assignment
 - Various message types (integers, strings, maps, lists)
 - Invalid agent ID handling (returns false gracefully)

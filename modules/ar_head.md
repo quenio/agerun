@@ -15,7 +15,10 @@ ar_data_t* ar_head__create_result(
 ```
 
 Creates a new result value. LIST values with at least one item return a deep copy of the first item.
-Missing values, empty LIST values, non-LIST values, and copy failures return integer `0`.
+Missing values, empty LIST values, non-LIST values, and copy failures return integer `0` per the
+central [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics). A first item whose
+ordinary value is integer `0` is indistinguishable from that sentinel. Callers using `head(...) = 0`
+as a stop condition need an item domain that excludes integer `0` or a wrapper container.
 
 ## Argument Semantics
 

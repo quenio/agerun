@@ -1180,6 +1180,8 @@ The expression evaluator module provides evaluation of expression ASTs against m
 - **Binary Operations**: Supports all arithmetic and comparison operators
 - **Pure Function Calls**: Evaluates `parse(...)`, `build(...)`, `if(...)`, `append(...)`,
   `head(...)`, and `tail(...)`
+- **Sentinel Contract**: Uses the centralized integer `0` sentinel positions documented in
+  [SPEC.md](../SPEC.md#integer-0-sentinel-semantics)
 - **Type Conversions**: Handles automatic promotion between integers and doubles
 - **String Operations**: Implements string concatenation and comparison
 - **Ownership Semantics**: Returns references for memory access, owned values for operations
@@ -1222,7 +1224,8 @@ instructions:
 
 The [send instruction evaluator module](ar_send_instruction_evaluator.md) handles agent messaging:
 - **Message Sending**: Sends messages to agents by ID
-- **Agent ID 0**: Special case for logging/no-op sends
+- **Agent ID 0**: No-op destination per the centralized
+  [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics)
 - **Memory Management**: Transfers message ownership to agency
 - **Result Binding**: Uses `ar_result_binding` for assigned send results
 
@@ -1231,7 +1234,9 @@ The [send instruction evaluator module](ar_send_instruction_evaluator.md) handle
 The [condition instruction evaluator module](ar_condition_instruction_evaluator.md) handles conditional value selection:
 - **Condition Evaluation**: Evaluates the condition expression
 - **Branch Selection**: Evaluates only the selected branch expression
-- **Truthiness**: Integer `0` is false; non-zero integers are true; non-integer values select the false branch
+- **Truthiness**: Integer `0` is false per the centralized
+  [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics); non-zero integers are true;
+  non-integer values select the false branch
 
 #### Condition Module (`ar_condition`)
 
@@ -1281,7 +1286,8 @@ The [complete instruction evaluator module](ar_complete_instruction_evaluator.md
 The [append module](ar_append.md) provides pure value-level list construction:
 - **Pure Operation**: Returns a new LIST without mutating the source list or appended value
 - **Deep-Copy Semantics**: Copies every source item and the appended value into the result
-- **Fallback Semantics**: Returns integer `0` for missing, non-LIST, or not-copyable inputs
+- **Fallback Semantics**: Returns integer `0` for missing, non-LIST, or not-copyable inputs per the
+  centralized [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics)
 - **Expression Semantics**: Used by expression `append(...)` evaluation
 
 #### Append Instruction Evaluator Module (`ar_append_instruction_evaluator`)
@@ -1289,7 +1295,9 @@ The [append module](ar_append.md) provides pure value-level list construction:
 The [append instruction evaluator module](ar_append_instruction_evaluator.md) handles standalone
 compatibility `append(...)` execution:
 - **Memory-Owned Lists**: Mutates only existing LIST values owned by frame memory
-- **No-op Semantics**: Stores integer `0` for invalid targets or append failures when assigned
+- **No-op Semantics**: Stores integer `0` for invalid targets or append failures when assigned; this
+  is compatibility instruction result status, while pure `append(...)` uses the centralized sentinel
+  contract
 - **Atomic Result Writes**: Avoids partial mutation when result assignment cannot be stored
 
 #### Head Instruction Evaluator Module (`ar_head_instruction_evaluator`)
@@ -1299,13 +1307,15 @@ compatibility `head(...)` execution:
 - **First Item Return**: Stores a deep copy of the first LIST item
 - **Source Preservation**: Never mutates the source list
 - **Shared Head Semantics**: Delegates value behavior to `ar_head`
-- **Fallback Semantics**: Stores integer `0` for empty, missing, non-LIST, or not-copyable inputs
+- **Fallback Semantics**: Stores integer `0` for empty, missing, non-LIST, or not-copyable inputs per
+  the centralized [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics)
 
 #### Head Module (`ar_head`)
 
 The [head module](ar_head.md) provides pure value-level list head extraction:
 - **Pure Operation**: Returns a deep copy of the first item without mutating runtime state
-- **Fallback Semantics**: Returns integer `0` for empty, missing, non-LIST, or not-copyable inputs
+- **Fallback Semantics**: Returns integer `0` for empty, missing, non-LIST, or not-copyable inputs per
+  the centralized [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics)
 - **Shared Semantics**: Used by expression `head(...)` and standalone head instruction evaluation
 
 #### Tail Instruction Evaluator Module (`ar_tail_instruction_evaluator`)
@@ -1315,13 +1325,16 @@ compatibility `tail(...)` execution:
 - **Remaining Items Return**: Stores a new LIST of deep-copied items after the first
 - **Empty Tail Distinction**: Stores an empty LIST for empty and single-item source lists
 - **Shared Tail Semantics**: Delegates value behavior to `ar_tail`
-- **Fallback Semantics**: Stores integer `0` for missing, non-LIST, or not-copyable inputs
+- **Fallback Semantics**: Stores integer `0` for missing, non-LIST, or not-copyable inputs per the
+  centralized [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics)
 
 #### Tail Module (`ar_tail`)
 
 The [tail module](ar_tail.md) provides pure value-level list tail extraction:
 - **Pure Operation**: Returns a new LIST of deep-copied items after the first
 - **Empty Tail Distinction**: Returns an empty LIST for empty and single-item source lists
+- **Fallback Semantics**: Returns integer `0` for missing, non-LIST, or not-copyable inputs per the
+  centralized [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics)
 - **Shared Semantics**: Used by expression `tail(...)` and standalone tail instruction evaluation
 
 #### Compile Instruction Evaluator Module (`ar_compile_instruction_evaluator`)
@@ -1335,6 +1348,8 @@ The [compile instruction evaluator module](ar_compile_instruction_evaluator.md) 
 
 The [spawn instruction evaluator module](ar_spawn_instruction_evaluator.md) handles agent spawning:
 - **Agent Creation**: Creates agents with specified method and context
+- **No-op Method Selection**: Treats integer `0` and empty-string method names as no-op selections
+  per the centralized [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics)
 - **Context Handling**: Supports both memory and context references
 
 #### Exit Instruction Evaluator Module (`ar_exit_instruction_evaluator`)

@@ -44,8 +44,11 @@ Key features:
 1. **Frame-Based Execution**: Uses ar_frame_t for memory, context, and message bundling
 2. **Agent Creation**: Spawns agents with specified method and context
 3. **Method Validation**: Ensures the method exists before creating agent
-4. **Context Handling**: Uses borrowed context expressions or owned literal context maps
-5. **Result Assignment**: Stores the spawned agent ID, or `0` for no-op/failure result cases, through `ar_result_binding`
+4. **No-op Method Selection**: Treats integer `0` and empty-string method names as no-op selections
+   from the central [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics)
+5. **Context Handling**: Uses borrowed context expressions or owned literal context maps
+6. **Result Assignment**: Stores the spawned agent ID, or integer `0` for no-op/failure result cases,
+   through `ar_result_binding`
 
 ### Frame-Based Architecture
 
@@ -91,10 +94,11 @@ The module:
 2. Uses `ar_data__destroy_if_owned` with defer for automatic cleanup
 3. Context evaluation returns a borrowed reference unless the context AST is a literal map
 4. Validates method exists in methodology before agent creation
-5. Creates agent via agency with borrowed context reference or owned literal context
-6. Validates assigned result targets before spawning so protected `memory.self` writes are rejected
-7. Stores agent ID through `ar_result_binding` if assignment specified
-7. Eliminates temporary variables by combining operations
+5. Performs no spawn for integer `0` and empty-string method names and stores integer `0` if assigned
+6. Creates agent via agency with borrowed context reference or owned literal context
+7. Validates assigned result targets before spawning so protected `memory.self` writes are rejected
+8. Stores agent ID through `ar_result_binding` if assignment specified
+9. Eliminates temporary variables by combining operations
 
 ## Usage Examples
 

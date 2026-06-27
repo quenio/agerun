@@ -16,7 +16,9 @@ ar_data_t* ar_tail__create_result(
 
 Creates a new result value. LIST values return a new LIST containing deep copies of every item after
 the first. Empty and single-item LIST values return a new empty LIST. Missing values, non-LIST
-values, and copy failures return integer `0`.
+values, and copy failures return integer `0` per the central
+[SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics). Empty-tail results are valid
+empty LIST values and deliberately do not use the integer `0` sentinel.
 
 ## Argument Semantics
 
