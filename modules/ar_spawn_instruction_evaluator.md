@@ -44,10 +44,13 @@ Key features:
 1. **Frame-Based Execution**: Uses ar_frame_t for memory, context, and message bundling
 2. **Agent Creation**: Spawns agents with specified method and context
 3. **Method Validation**: Ensures the method exists before creating agent
-4. **No-op Method Selection**: Treats integer `0` and empty-string method names as no-op selections
-   from the central [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics)
-5. **Context Handling**: Uses borrowed context expressions or owned literal context maps
-6. **Result Assignment**: Stores the spawned agent ID, or integer `0` for no-op/failure result cases,
+4. **No-Spawn Result**: Stores integer `0` when no agent is spawned because the evaluated method
+   selection cannot name or resolve to a registered method, per the central
+   [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics). Non-string method-name
+   values are no-op selectors; string method names that miss lookup are ordinary lookup failures.
+   The empty string is not a separate sentinel.
+5. **Context Handling**: Uses borrowed context expressions or owned context values
+6. **Result Assignment**: Stores the spawned agent ID, or integer `0` for failure result cases
    through `ar_result_binding`
 
 ### Frame-Based Architecture
@@ -66,7 +69,7 @@ The module follows strict memory ownership rules:
 - Method name and version use `ar_data__claim_or_copy` to ensure ownership
 - Cleanup uses `ar_data__destroy_if_owned` for safe destruction
 - Context expressions such as `memory.config` are passed as borrowed references
-- Literal map contexts such as `{config: "prod"}` are transferred to the spawned agent
+- Owned map contexts such as `{config: "prod"}` are transferred to the spawned agent
 - Agent ID result is created when assignment specified
 - All temporary values properly cleaned up using Zig's defer mechanism
 - The create function returns ownership to the caller
@@ -92,12 +95,14 @@ The module follows strict memory ownership rules:
 The module:
 1. Evaluates method name and version expressions directly into `ar_data__claim_or_copy`
 2. Uses `ar_data__destroy_if_owned` with defer for automatic cleanup
-3. Context evaluation returns a borrowed reference unless the context AST is a literal map
+3. Context evaluation returns a borrowed reference for path access and an owned value for other
+   expression forms
 4. Validates method exists in methodology before agent creation
-5. Performs no spawn for integer `0` and empty-string method names and stores integer `0` if assigned
-6. Creates agent via agency with borrowed context reference or owned literal context
+5. Performs no spawn for method selections that cannot name or resolve to a registered method and
+   stores integer `0` if assigned
+6. Creates agent via agency with borrowed context reference or owned context
 7. Validates assigned result targets before spawning so protected `memory.self` writes are rejected
-8. Stores agent ID through `ar_result_binding` if assignment specified
+8. Stores the agent ID through `ar_result_binding` if assignment specified
 9. Eliminates temporary variables by combining operations
 
 ## Usage Examples

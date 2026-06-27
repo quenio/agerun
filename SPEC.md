@@ -211,9 +211,11 @@ as the documented fallback, absence, or no-op sentinel only in the language posi
 - `send(0, message)` is an instruction-level no-op destination. The message is destroyed, the
   instruction succeeds, and no message is delivered. If the result is assigned, the stored status is
   integer `1`. Integer `0` elsewhere in the message payload remains ordinary data.
-- `spawn(0, version, context)` and `spawn("", version, context)` are instruction-level no-op method
-  selections. The instruction performs no spawn and stores integer `0` as the assigned result when a
-  result target is present.
+- `spawn(method_name, version, context)` stores integer `0` as the assigned result when no agent is
+  spawned because the evaluated method selection cannot name or resolve to a registered method.
+  Non-string method-name values, including integer `0`, perform no spawn; string method names that
+  do not resolve to a registered method, including the empty string, also perform no spawn. The empty
+  string is not a separate sentinel.
 
 New language features must not add ad hoc meanings for integer `0`. A new feature that needs
 fallback, absence, or no-op semantics must either explicitly reuse this central sentinel contract or
@@ -526,13 +528,12 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
 
 - `compile(method_name: string, instructions: string, version: string) → integer status`: Defines a new method with the specified name, instruction code, and version string. The version string must follow semantic versioning (e.g., "1.0.0"). Compatibility between versions is determined based on semantic versioning rules: agents using version 1.x.x will automatically use the latest 1.x.x version. Produces integer `1` if the method was successfully defined, or integer `0` if the instructions cannot be parsed or compiled.
 - `complete(...)` is local-only in the first release, uses CPU-only execution, returns generated values as strings in a new map, rejects empty/outer-whitespace/braced generated values, applies build-style substitution for provided values, and never mutates the provided values map.
-- `spawn(method_name: string | integer, version: string, context: map) → agent_id`: Spawns a new agent
-  instance based on the specified method name and version string. The version parameter is required.
-  If a partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x")
-  will be used. A context map must be provided as the third argument. Returns a unique agent ID.
-  Special no-op cases: if method_name is integer `0` or an empty string, the instruction performs no
-  operation and sets the result to integer `0` if assigned to a variable, per
-  [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics).
+- `spawn(method_name: data, version: data, context: map) → agent_id`: Spawns a new agent instance
+  based on the specified method name and version string. The version parameter is required. If a
+  partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be
+  used. A context map must be provided as the third argument. Successful spawns return the new positive
+  agent ID. Method selections that cannot name or resolve to a registered method perform no spawn and
+  return integer `0`, per [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics).
 - `exit(agent_id: integer) → integer status`: Attempts to exit the specified agent. The agent is immediately destroyed. Produces integer `1` if successful, or integer `0` if the agent does not exist or is already destroyed.
 - `deprecate(method_name: string, method_version: string) → integer status`: Attempts to deprecate the specified method version by unregistering it from the methodology. This allows deprecating methods even when agents are actively using them. Produces integer `1` if successful, or integer `0` if the method does not exist.
 

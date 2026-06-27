@@ -1,10 +1,12 @@
 # No-op Instruction Semantics
 
 ## Learning
-Instruction evaluators should handle no-op cases gracefully by succeeding in evaluator control flow
-rather than failing the instruction. This allows conditional execution without breaking the method's
-control flow. If the instruction has a language-level result assignment, store the documented integer
-status/result value; AgeRun has no boolean data type.
+Instruction evaluators should handle intentional no-op cases gracefully. Some no-ops succeed in
+evaluator control flow, such as `send(0, message)` and a non-string `spawn` method-name selector.
+Other no-spawn cases, such as a string method name that misses methodology lookup, may fail evaluator
+control flow while still storing the documented language result. If the instruction has a
+language-level result assignment, store the documented integer status/result value; AgeRun has no
+boolean data type.
 
 ## Importance
 Proper no-op semantics enable:
@@ -17,34 +19,38 @@ Proper no-op semantics enable:
 ```c
 // In ar_spawn_instruction_evaluator.zig:
 
-// Check for no-op cases: method_name is 0 or ""
-if (c.ar_data__get_type(own_method_name) == c.AR_DATA_TYPE__INTEGER and 
-    c.ar_data__get_integer(own_method_name) == 0) {
-    // No-op case: method_name is 0
+// Non-string method-name selectors do not spawn an agent, but preserve method control flow.
+if (c.ar_data__get_type(own_method_name) != c.AR_DATA_TYPE__STRING) {
     if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {
         const own_result = c.ar_data__create_integer(0);
-        // Set result to 0 for no-op
-        c.ar_data__set_map_data_if_root_matched(
-            mut_memory, "memory", ref_result_path, own_result
-        );
+        _ = c.ar_result_binding__bind(ref_log, ref_frame, ref_result_path, own_result);
     }
-    return true; // Host bool: evaluator succeeds for this no-op
+    return true; // Host bool: intentional no-op selector
+}
+
+// String method names that miss lookup also store the no-spawn result, but are lookup failures.
+if (ref_method == null) {
+    if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {
+        const own_result = c.ar_data__create_integer(0);
+        _ = c.ar_result_binding__bind(ref_log, ref_frame, ref_result_path, own_result);
+    }
+    return false; // Host bool: lookup failed
 }
 ```
 
 AgeRun method usage:
 ```agerun
-# Conditional spawning - no-op when not booting
+# Conditional spawning - no spawn when not booting
 memory.method_name := if(memory.is_boot = 1, "echo", 0)
 memory.echo_id := spawn(memory.method_name, memory.version, context)
-# spawn succeeds and echo_id = 0 when method_name = 0
+# spawn does not create an agent and echo_id = 0 when method_name = 0
 ```
 
 ## Generalization
 When implementing instruction evaluators:
-1. Identify valid no-op conditions (0, empty string, null equivalent)
-2. Succeed in evaluator control flow for no-op cases to allow method continuation
-3. Set result variables to appropriate no-op values (usually 0)
+1. Identify documented no-op/failure conditions; do not add extra sentinel values by analogy
+2. Choose host evaluator success or failure according to the documented instruction contract
+3. Set result variables to the documented result value, such as integer `0` when no agent is spawned
 4. Document no-op behavior in specifications
 5. Add tests specifically for no-op cases
 

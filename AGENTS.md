@@ -686,7 +686,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Send with memory references not supported** - send() needs ownership of message
 - **Message accessor** - `message.field` returns references like memory/context ([details](kb/expression-evaluator-accessor-extension.md))
 - **Language constraints** - No type checking, if() returns values ([details](kb/agerun-language-constraint-workarounds.md))
-- **No-op instructions** - spawn(0,..) & spawn("",..) succeed and store integer `0` when assigned ([details](kb/no-op-instruction-semantics.md))
+- **No-op instructions** - spawn selections that cannot create an agent store integer `0` when assigned ([details](kb/no-op-instruction-semantics.md))
 
 ## Method Test Template
 

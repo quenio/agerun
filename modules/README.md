@@ -1351,8 +1351,10 @@ The [compile instruction evaluator module](ar_compile_instruction_evaluator.md) 
 
 The [spawn instruction evaluator module](ar_spawn_instruction_evaluator.md) handles agent spawning:
 - **Agent Creation**: Creates agents with specified method and context
-- **No-op Method Selection**: Treats integer `0` and empty-string method names as no-op selections
-  per the centralized [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics)
+- **No-Spawn Result**: Stores integer `0` when no agent is spawned because the method selection
+  cannot name or resolve to a registered method, per the centralized
+  [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics). Empty-string names are not a
+  separate sentinel.
 - **Context Handling**: Supports both memory and context references
 
 #### Exit Instruction Evaluator Module (`ar_exit_instruction_evaluator`)
