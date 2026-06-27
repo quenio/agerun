@@ -434,6 +434,7 @@ static void test_method_evaluator__evaluates_multiline_map_local_references(void
         "memory.profile := {\n"
         "  base := 2\n"
         "  doubled := .base * 2\n"
+        "  fallback := .missing\n"
         "}\n";
     ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
     AR_ASSERT(own_ast != NULL, "Multi-line map with local reference should parse");
@@ -459,6 +460,8 @@ static void test_method_evaluator__evaluates_multiline_map_local_references(void
     AR_ASSERT(ar_data__get_type(ref_profile) == AR_DATA_TYPE__MAP, "Profile should be a map");
     AR_ASSERT(ar_data__get_map_integer(ref_profile, "base") == 2, "Base key should be stored");
     AR_ASSERT(ar_data__get_map_integer(ref_profile, "doubled") == 4, "Doubled key should use .base");
+    AR_ASSERT(ar_data__get_map_integer(ref_profile, "fallback") == 0,
+              "Missing .key should use integer 0 sentinel");
 
     // Cleanup
     ar_frame__destroy(own_frame);

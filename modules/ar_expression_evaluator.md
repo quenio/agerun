@@ -51,11 +51,12 @@ The module is designed with clean separation of concerns:
 The evaluator follows strict ownership semantics:
 - **Frame Parameter**: Borrowed reference, not owned by evaluator
 - **Memory Access Results**: Returns borrowed references to existing values in frame
-  memory/message/context roots
+  memory/message/context roots, or owned integer `0` for missing path references
 - **Literal Results**: Returns new owned values that caller must destroy
 - **Literal Container Results**: Returns new list/map values containing owned evaluated child values
 - **Block-Local Results**: During map literal entry evaluation, `.key` reads from entries already
-  stored in the map under construction and is copied before reuse as another entry value
+  stored in the map under construction and is copied before reuse as another entry value; missing
+  block-local paths return owned integer `0`
 - **Pure Call Results**: Return new owned values; `parse(...)` returns a new MAP, `build(...)`
   returns a new STRING, `if(...)` returns the selected branch value or integer `0`, `append(...)`
   returns a new LIST or integer `0`, `head(...)` returns a copied item or integer `0`, and
@@ -109,8 +110,9 @@ For `append(...)`:
 - LIST values return a new LIST containing deep copies of every source item followed by a deep copy
   of the appended value.
 - Empty LIST values return a new one-item LIST.
-- Missing values, non-LIST list inputs, and copy failures return integer `0` per the central sentinel
-  contract.
+- NULL evaluated values, non-LIST list inputs, and copy failures return integer `0` per the central
+  sentinel contract. A missing path reference that has already evaluated to integer `0` is an
+  ordinary value and can be appended to a valid list.
 - The source list and appended value are never mutated.
 - Argument handling is path-neutral; storage rules, not argument paths, protect `memory.self`.
 
@@ -164,8 +166,8 @@ The module provides comprehensive error handling:
 - NULL checks for all parameters
 - Type validation for node-specific functions
 - Division by zero detection
-- Missing `message.*` access returns integer `0`; missing `memory.*` and `context.*` accesses remain
-  missing values for callers to handle
+- Missing `message.*`, `memory.*`, `context.*`, and active block-local `.*` path references return
+  integer `0` per the central sentinel contract
 - Invalid base accessor detection
 - Block-local accessor rejection when no map literal is being evaluated
 

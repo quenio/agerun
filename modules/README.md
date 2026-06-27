@@ -1176,7 +1176,8 @@ The expression evaluator module provides evaluation of expression ASTs against m
 - **AST Evaluation**: Evaluates expression AST nodes to produce data values
 - **Opaque Evaluator**: Uses opaque structure to hold memory and context references
 - **Type-Specific Functions**: Separate evaluation functions for each AST node type
-- **Memory Access**: Evaluates memory.x and context.x paths with nested navigation
+- **Path Access**: Evaluates `message.x`, `memory.x`, `context.x`, and active block-local `.x`
+  paths with nested navigation; missing path references return integer `0`
 - **Binary Operations**: Supports all arithmetic and comparison operators
 - **Pure Function Calls**: Evaluates `parse(...)`, `build(...)`, `if(...)`, `append(...)`,
   `head(...)`, and `tail(...)`
@@ -1184,7 +1185,8 @@ The expression evaluator module provides evaluation of expression ASTs against m
   [SPEC.md](../SPEC.md#integer-0-sentinel-semantics)
 - **Type Conversions**: Handles automatic promotion between integers and doubles
 - **String Operations**: Implements string concatenation and comparison
-- **Ownership Semantics**: Returns references for memory access, owned values for operations
+- **Ownership Semantics**: Returns references for existing path values and owned values for
+  operations or missing path sentinels
 - **Recursive Evaluation**: Properly evaluates nested expressions
 - **Depends on AST**: Uses expression_ast module for node inspection
 - **Depends on Data**: Uses data module for value creation and manipulation
@@ -1286,8 +1288,9 @@ The [complete instruction evaluator module](ar_complete_instruction_evaluator.md
 The [append module](ar_append.md) provides pure value-level list construction:
 - **Pure Operation**: Returns a new LIST without mutating the source list or appended value
 - **Deep-Copy Semantics**: Copies every source item and the appended value into the result
-- **Fallback Semantics**: Returns integer `0` for missing, non-LIST, or not-copyable inputs per the
-  centralized [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics)
+- **Fallback Semantics**: Returns integer `0` for NULL, non-LIST, or not-copyable inputs per the
+  centralized [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics); missing path
+  references that already evaluated to integer `0` can be appended as ordinary values
 - **Expression Semantics**: Used by expression `append(...)` evaluation
 
 #### Append Instruction Evaluator Module (`ar_append_instruction_evaluator`)

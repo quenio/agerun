@@ -187,9 +187,10 @@ AgeRun does not have a null or absence data type. Integer `0` remains ordinary i
 expression evaluation, comparison, storage, list/map values, and message payloads. It is interpreted
 as the documented fallback, absence, or no-op sentinel only in the language positions listed here:
 
-- Missing `message.field` and nested `message.field.path` accesses evaluate to integer `0`. Missing
-  `memory` and `context` accesses are not generalized into this sentinel; callers that receive a
-  missing value apply their own documented fallback behavior.
+- Missing path references under the frame roots `message`, `memory`, and `context` evaluate to
+  integer `0` (for example, `message.field`, `memory.field`, and `context.field`). Inside a
+  multi-line map assignment block, missing block-local `.key` and `.key.nested` accesses also
+  evaluate to integer `0`. Once produced, that `0` composes as ordinary integer data.
 - Condition truthiness treats integer `0` as false and nonzero integers as true. Non-integer and
   missing condition values are false. This rule is condition truthiness, not a general conversion of
   data values into absence.
@@ -204,7 +205,8 @@ as the documented fallback, absence, or no-op sentinel only in the language posi
   LIST inputs and single-item LIST inputs return a new empty LIST, not integer `0`.
 - Pure `append(list, value)` returns integer `0` for missing, non-LIST, invalid, or not-copyable
   inputs and copy failures. Appending the ordinary integer value `0` to a valid list is normal data
-  construction, not a sentinel.
+  construction, not a sentinel; this includes a missing path reference that has already evaluated to
+  integer `0`.
 - `send(0, message)` is an instruction-level no-op destination. The message is destroyed, the
   instruction succeeds, and no message is delivered. If the result is assigned, the stored status is
   integer `1`. Integer `0` elsewhere in the message payload remains ordinary data.
@@ -499,7 +501,8 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
 - **Reading**: Access frame values using dot notation with the root identifiers `message`,
   `memory`, or `context` (e.g., `message.field`, `memory.user.name`, `context.settings`). Inside a
   multi-line map assignment block, `.key` reads keys already assigned earlier in that same block.
-- Missing `message.field` and nested `message.field.path` accesses evaluate to integer `0` per
+- Missing path references under `message`, `memory`, `context`, and block-local `.` inside
+  multi-line map assignment blocks evaluate to integer `0` per
   [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics). Ordinary stored integer `0`
   values remain ordinary data.
 - **Writing**: Assign values to memory using `memory.path := value`. Only `memory` paths can be used on the left side of an assignment.

@@ -510,18 +510,21 @@ static void test_append_instruction_evaluator__stores_zero_for_non_list_target(v
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
-static void test_append_instruction_evaluator__continues_when_unassigned_value_expression_fails(void) {
-    printf("Testing append continues when unassigned value expression fails...\n");
+static void test_append_instruction_evaluator__appends_missing_value_path_sentinel(void) {
+    printf("Testing append appends missing value path sentinel...\n");
 
-    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("append_unassigned_value_failure");
+    // Given an append evaluator and a frame
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("append_missing_path_sentinel");
     AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
     ar_append_instruction_evaluator_t *own_evaluator = _create_evaluator(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
 
+    // Given a memory-owned target list
     ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     AR_ASSERT(ar_data__set_map_data(mut_memory, "results", ar_data__create_list()), "Results list should be stored");
 
+    // Given an append instruction whose value path is missing
     const char *target_path[] = {"results"};
     const char *value_path[] = {"missing"};
     ar_instruction_ast_t *own_ast = _create_append_ast(
@@ -532,13 +535,58 @@ static void test_append_instruction_evaluator__continues_when_unassigned_value_e
         ar_expression_ast__create_memory_access("memory", value_path, 1)
     );
 
+    // When evaluating the append instruction
     bool result = ar_append_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
 
+    // Then the missing path sentinel should be appended as ordinary data
+    AR_ASSERT(result == true, "Unassigned append should complete when value path is missing");
+    ar_data_t *ref_results = ar_data__get_map_data(mut_memory, "results");
+    AR_ASSERT(ref_results != NULL, "Results list should still exist");
+    AR_ASSERT(ar_data__list_count(ref_results) == 1, "Missing path sentinel should be appended");
+    AR_ASSERT(ar_data__get_integer(ar_data__list_first(ref_results)) == 0,
+              "Appended missing path sentinel should be integer 0");
+
+    // Cleanup
+    ar_instruction_ast__destroy(own_ast);
+    ar_append_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_append_instruction_evaluator__continues_when_unassigned_value_expression_fails(void) {
+    printf("Testing append continues when unassigned value expression fails...\n");
+
+    // Given an append evaluator and a frame
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("append_unassigned_value_failure");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+    ar_append_instruction_evaluator_t *own_evaluator = _create_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
+
+    // Given a memory-owned target list
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "results", ar_data__create_list()), "Results list should be stored");
+
+    // Given an append instruction whose value expression is invalid outside a map block
+    const char *target_path[] = {"results"};
+    const char *value_path[] = {"missing"};
+    ar_instruction_ast_t *own_ast = _create_append_ast(
+        "memory.results",
+        ".missing",
+        NULL,
+        ar_expression_ast__create_memory_access("memory", target_path, 1),
+        ar_expression_ast__create_memory_access(".", value_path, 1)
+    );
+
+    // When evaluating the append instruction
+    bool result = ar_append_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+
+    // Then the failed value expression should leave the target list unchanged
     AR_ASSERT(result == true, "Unassigned append value failure should complete as no-op");
     ar_data_t *ref_results = ar_data__get_map_data(mut_memory, "results");
     AR_ASSERT(ref_results != NULL, "Results list should still exist");
     AR_ASSERT(ar_data__list_count(ref_results) == 0, "Failed append should not mutate target list");
 
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_append_instruction_evaluator__destroy(own_evaluator);
     ar_evaluator_fixture__destroy(own_fixture);
@@ -686,6 +734,7 @@ int main(void) {
     test_append_instruction_evaluator__stores_zero_for_message_owned_target();
     test_append_instruction_evaluator__stores_zero_for_literal_target();
     test_append_instruction_evaluator__stores_zero_for_non_list_target();
+    test_append_instruction_evaluator__appends_missing_value_path_sentinel();
     test_append_instruction_evaluator__continues_when_unassigned_value_expression_fails();
     test_append_instruction_evaluator__stores_result_assignment();
     test_append_instruction_evaluator__does_not_mutate_when_result_path_invalid();
