@@ -30,7 +30,7 @@ The facade currently coordinates specialized evaluators for:
 
 `complete(...)` support is split between:
 - `ar_complete_instruction_evaluator`, which enforces AgeRun semantics such as atomic writes,
-  boolean status results, and failure handling
+  integer status results, and failure handling
 - `ar_local_completion`, which owns local backend initialization and placeholder-value generation
 
 Standalone compatibility `append(...)` support is handled by `ar_append_instruction_evaluator`,
@@ -65,7 +65,7 @@ bool ar_instruction_evaluator__evaluate(
 - all specialized evaluators are created during facade initialization
 - `ar_instruction_evaluator__evaluate()` uses `ar_instruction_ast__get_type()` for dispatch
 - `complete(...)` failures are handled as normal instruction outcomes: the specialized evaluator
-  logs actionable diagnostics, preserves prior memory on failure, and writes boolean `0` when the
+  logs actionable diagnostics, preserves prior memory on failure, and writes integer `0` when the
   call has a result assignment
 - standalone `append(...)` evaluates the target expression, accepts it only when it resolves to a
   memory-owned LIST, and transfers the claimed or copied value to that list
@@ -76,7 +76,8 @@ bool ar_instruction_evaluator__evaluate(
 - standalone `tail(...)` delegates to `ar_tail` and returns a new LIST of deep-copied items after
   the first, a new empty LIST for an empty or single-item source list, or integer `0` for invalid
   input/copy failure
-- post-failure execution continues normally for later non-`complete(...)` instructions
+- the method evaluator owns full-pass control flow: an instruction evaluator can report failure, but
+  a valid method evaluation still attempts later instructions before returning final status
 
 ## Typical usage
 

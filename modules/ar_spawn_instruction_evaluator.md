@@ -47,8 +47,7 @@ Key features:
 4. **No-Spawn Result**: Stores integer `0` when no agent is spawned because the evaluated method
    selection cannot name or resolve to a registered method, per the central
    [SPEC.md sentinel contract](../SPEC.md#integer-0-sentinel-semantics). Non-string method-name
-   values are no-op selectors; string method names that miss lookup are ordinary lookup failures.
-   The empty string is not a separate sentinel.
+   values and string lookup misses are no-op selectors. The empty string is not a separate sentinel.
 5. **Context Handling**: Uses borrowed context expressions or owned context values
 6. **Result Assignment**: Stores the spawned agent ID, or integer `0` for failure result cases
    through `ar_result_binding`
@@ -98,8 +97,8 @@ The module:
 3. Context evaluation returns a borrowed reference for path access and an owned value for other
    expression forms
 4. Validates method exists in methodology before agent creation
-5. Performs no spawn for method selections that cannot name or resolve to a registered method and
-   stores integer `0` if assigned
+5. Performs no-op no-spawn evaluation for method selections that cannot name or resolve to a
+   registered method and stores integer `0` if assigned
 6. Creates agent via agency with borrowed context reference or owned context
 7. Validates assigned result targets before spawning so protected `memory.self` writes are rejected
 8. Stores the agent ID through `ar_result_binding` if assignment specified

@@ -681,6 +681,8 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Map literals** - one-line `{}` map literals are supported in AgeRun expressions
 - Positive agent IDs identify spawned agents; integer `0` results/statuses indicate no agent spawned
   or no message delivered in the relevant instruction contract
+- **Full method pass** - once valid method evaluation starts, every instruction is attempted in
+  source order; failed instructions affect logs/status, not whether later lines are attempted
 - Always process messages after sending to prevent memory leaks
 - Message processing loop required for complete execution ([details](kb/message-processing-loop-pattern.md))
 - All messages flow through system layer ([details](kb/system-message-flow-architecture.md))

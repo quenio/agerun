@@ -137,7 +137,9 @@ claim that every current construct fully satisfies them.
 
 - **Line-Based Parsing and Evaluation**: Each nonempty source line should parse to one complete
   instruction, and instructions should evaluate in source order. Line boundaries should remain
-  visible parser and evaluation boundaries.
+  visible parser and evaluation boundaries. Once a valid method evaluation begins, every instruction
+  in the method definition should be attempted in source order; instruction failures affect status
+  and logs, not whether later instructions are attempted.
 - **Expression Purity**: Expressions should have no side effects. Evaluating an expression should
   not mutate memory, send messages, create agents, deprecate methods, exit agents, complete work, or
   change observable runtime state.
@@ -158,8 +160,11 @@ claim that every current construct fully satisfies them.
 The current language partially satisfies those principles:
 
 - **Line-Based Parsing and Evaluation**: Methods are line-oriented: one instruction per line,
-  ordered evaluation, required final newline, and ignored empty lines. Multi-line list and map
-  literals are an explicit assignment-only, strictly line-bound source-format exception.
+  ordered evaluation, required final newline, and ignored empty lines. Once evaluation starts for a
+  valid method AST, every instruction is attempted in source order before the method evaluator
+  returns; failed instructions are logged and reported in the final status but do not stop the method
+  pass early. Multi-line list and map literals are an explicit assignment-only, strictly line-bound
+  source-format exception.
 - **Expression Purity**: Current expression nodes are value-producing and side-effect free. Registered
   pure built-in calls are expression calls; effectful operations remain sequenced as method lines.
 - **Single Source of Semantics**: The shared function-call argument parser centralizes argument
@@ -217,7 +222,8 @@ as the documented fallback, absence, or no-op sentinel only in the language posi
   spawned because the evaluated method selection cannot name or resolve to a registered method.
   Non-string method-name values, including integer `0`, perform no spawn; string method names that
   do not resolve to a registered method, including the empty string, also perform no spawn. The empty
-  string is not a separate sentinel.
+  string is not a separate sentinel. These no-spawn selections are no-op results, so method
+  evaluation continues.
 
 New language features must not add ad hoc meanings for integer `0`. A new feature that needs
 fallback, absence, or no-op semantics must either explicitly reuse this central sentinel contract or
@@ -535,8 +541,9 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
   based on the specified method name and version string. The version parameter is required. If a
   partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be
   used. A context map must be provided as the third argument. Successful spawns return the new positive
-  agent ID. Method selections that cannot name or resolve to a registered method perform no spawn and
-  return integer `0`, per [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics).
+  agent ID. Method selections that cannot name or resolve to a registered method perform no-op
+  no-spawn evaluation and return integer `0`, per
+  [Integer `0` Sentinel Semantics](#integer-0-sentinel-semantics).
 - `exit(agent_id: integer) → integer status`: Attempts to exit the specified agent. The agent is immediately destroyed. Produces integer `1` if successful, or integer `0` if the agent does not exist or is already destroyed.
 - `deprecate(method_name: string, method_version: string) → integer status`: Attempts to deprecate the specified method version by unregistering it from the methodology. This allows deprecating methods even when agents are actively using them. Produces integer `1` if successful, or integer `0` if the method does not exist.
 

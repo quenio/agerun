@@ -41,8 +41,7 @@ static void _set_spawn_arg_asts(
 static void _assert_unresolved_method_selection_returns_zero(
     const char *ref_fixture_name,
     const char *ref_method_arg,
-    ar_expression_ast_t *own_method_ast,
-    bool expected_result
+    ar_expression_ast_t *own_method_ast
 ) {
     ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create(ref_fixture_name);
     AR_ASSERT(fixture != NULL, "Test fixture should be created");
@@ -76,8 +75,8 @@ static void _assert_unresolved_method_selection_returns_zero(
     bool result = ar_spawn_instruction_evaluator__evaluate(evaluator, frame, ast);
 
     AR_ASSERT(
-        result == expected_result,
-        "Unresolved spawn method selection should report expected evaluator status"
+        result == true,
+        "Unresolved spawn method selection should succeed as a no-op"
     );
     AR_ASSERT(
         ar_agency__count_agents(mut_agency) == agent_count_before,
@@ -318,8 +317,7 @@ static void test_spawn_instruction_evaluator__evaluate_invalid_method(void) {
     _assert_unresolved_method_selection_returns_zero(
         "test_evaluate_invalid_method",
         "\"missing\"",
-        ar_expression_ast__create_literal_string("missing"),
-        false
+        ar_expression_ast__create_literal_string("missing")
     );
 }
 
@@ -611,8 +609,7 @@ static void test_spawn_instruction_evaluator__unresolved_integer_zero_returns_ze
     _assert_unresolved_method_selection_returns_zero(
         "test_spawn_unresolved_integer_zero",
         "0",
-        ar_expression_ast__create_literal_int(0),
-        true
+        ar_expression_ast__create_literal_int(0)
     );
 
     printf("PASS\n");
@@ -625,8 +622,7 @@ static void test_spawn_instruction_evaluator__unresolved_empty_string_returns_ze
     _assert_unresolved_method_selection_returns_zero(
         "test_spawn_unresolved_empty_string",
         "\"\"",
-        ar_expression_ast__create_literal_string(""),
-        false
+        ar_expression_ast__create_literal_string("")
     );
 
     printf("PASS\n");
@@ -639,8 +635,7 @@ static void test_spawn_instruction_evaluator__unresolved_nonzero_integer_returns
     _assert_unresolved_method_selection_returns_zero(
         "test_spawn_unresolved_nonzero_integer",
         "42",
-        ar_expression_ast__create_literal_int(42),
-        true
+        ar_expression_ast__create_literal_int(42)
     );
 
     printf("PASS\n");

@@ -55,8 +55,9 @@ void ar_method_evaluator__destroy(
  * @param ref_evaluator The method evaluator to use (borrowed reference)
  * @param ref_frame The execution frame containing memory, context, and message (borrowed reference)
  * @param ref_ast The method AST to evaluate (borrowed reference)
- * @return true if evaluation succeeded, false otherwise
- * @note The method will execute all instructions in sequence until completion or error
+ * @return true if every instruction succeeded, false if any instruction failed
+ * @note Once evaluation starts with valid inputs, every instruction is attempted in sequence before
+ *       returning. Instruction failures are logged and do not stop the method pass early.
  */
 bool ar_method_evaluator__evaluate(
     const ar_method_evaluator_t *ref_evaluator,

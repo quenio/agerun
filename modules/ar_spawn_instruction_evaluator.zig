@@ -173,7 +173,7 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
 
     if (c.ar_data__get_type(own_version) != c.AR_DATA_TYPE__STRING) {
         _bind_result_if_assigned(ref_evaluator, ref_frame, ref_ast, ref_result_path, 0);
-        return false;
+        return true;
     }
 
     const ref_method_name_slice = _normalized_string_slice(own_method_name) orelse return false;
@@ -192,7 +192,7 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
         own_version_string);
     if (ref_method == null) {
         _bind_result_if_assigned(ref_evaluator, ref_frame, ref_ast, ref_result_path, 0);
-        return false;
+        return true;
     }
 
     const context_returns_owned =
